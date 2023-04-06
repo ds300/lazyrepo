@@ -1,5 +1,5 @@
-import { existsSync, readFileSync } from 'fs'
 import glob from 'fast-glob'
+import { existsSync, readFileSync } from 'fs'
 import path from 'path'
 
 export type PackageDetails = {
@@ -7,7 +7,12 @@ export type PackageDetails = {
 	dir: string
 	localDeps: string[]
 	version: string
-	scripts?: Record<string, string>
+	scripts: Record<string, string>
+}
+
+export type RepoDetails = {
+	packagesByName: Record<string, PackageDetails>
+	packagesInTopologicalOrder: PackageDetails[]
 }
 
 function getPackageDetails({
@@ -26,43 +31,49 @@ function getPackageDetails({
 		name: packageJson.name,
 		dir,
 		version: packageJson.version,
-		scripts: packageJson.scripts,
+		scripts: packageJson.scripts ?? {},
 		localDeps: Object.keys(packageJson.dependencies ?? {}).filter((dep) =>
-			allLocalPackageNames.includes(dep)
+			allLocalPackageNames.includes(dep),
 		),
 	}
 }
 
-export function getAllPackageDetails(): Record<string, PackageDetails> {
-	const rootDir = process.cwd()
-	const packageJson = JSON.parse(readFileSync(path.join(rootDir, 'package.json'), 'utf8'))
-	if (!packageJson.workspaces) {
-		return {
-			[packageJson.name]: getPackageDetails({
-				dir: rootDir,
-				allLocalPackageNames: [packageJson.name],
-			}) as PackageDetails,
-		}
+let _repoDetails: RepoDetails | null = null
+
+export function getRepoDetails(): RepoDetails {
+	if (_repoDetails) {
+		return _repoDetails
 	}
 
-	const packageJsonsPaths: string[] = packageJson.workspaces.flatMap((workspace: string) =>
-		glob.sync(path.join(workspace, 'package.json'))
-	)
+	const rootDir = process.cwd()
+	const packageJson = JSON.parse(readFileSync(path.join(rootDir, 'package.json'), 'utf8'))
 
-	const packageJsons = packageJsonsPaths.map((path: string) =>
-		JSON.parse(readFileSync(path, 'utf8'))
-	)
+	const packageJsonsPaths: string[] = packageJson.workspaces
+		? packageJson.workspaces.flatMap((workspace: string) =>
+				glob.sync(path.join(workspace, 'package.json')),
+		  )
+		: ['./package.json']
+
+	const packageJsons = packageJson.workspaces
+		? packageJsonsPaths.map((path: string) => JSON.parse(readFileSync(path, 'utf8')))
+		: [packageJson]
 
 	const allLocalPackageNames = packageJsons.map((packageJson) => packageJson.name)
 
-	return Object.fromEntries(
+	const packages = Object.fromEntries(
 		packageJsonsPaths
 			.map((path, i) => [
 				packageJsons[i].name,
 				getPackageDetails({ dir: path.replace('/package.json', ''), allLocalPackageNames }),
 			])
-			.filter(([, result]) => result !== null)
+			.filter(([, result]) => result !== null),
 	)
+
+	_repoDetails = {
+		packagesByName: packages,
+		packagesInTopologicalOrder: topologicalSortPackages(packages),
+	}
+	return _repoDetails
 }
 
 export function topologicalSortPackages(packages: Record<string, PackageDetails>) {

@@ -7,11 +7,11 @@ import { compareManifests, renderChange } from '../manifest/compareManifests'
 import { writeManifest } from '../manifest/writeManifest'
 import { runCommand } from '../runCommand'
 
-export async function runIfNeeded({ stepName, cwd }: { stepName: string; cwd: string }) {
-	const currentManifestPath = getManifestPath({ stepName, cwd })
+export async function runIfNeeded({ taskName, cwd }: { taskName: string; cwd: string }) {
+	const currentManifestPath = getManifestPath({ taskName, cwd })
 	const previousManifestPath = currentManifestPath + '.prev'
 
-	log.log(`${kleur.bold(stepName)} 🎁 ${kleur.red(cwd)}`)
+	log.log(`${kleur.bold(taskName)} 🎁 ${kleur.red(cwd)}`)
 
 	const didHaveManifest = fs.existsSync(currentManifestPath)
 
@@ -30,7 +30,7 @@ export async function runIfNeeded({ stepName, cwd }: { stepName: string; cwd: st
 		}
 	}
 
-	await writeManifest({ stepName, cwd, prevManifest })
+	await writeManifest({ taskName, cwd, prevManifest })
 
 	let didRunCommand = false
 
@@ -45,11 +45,11 @@ export async function runIfNeeded({ stepName, cwd }: { stepName: string; cwd: st
 			diff.map(renderChange).forEach(log.substep)
 			log.log()
 
-			await runCommand({ stepName, cwd })
+			await runCommand({ taskName, cwd })
 			didRunCommand = true
 		}
 	} else {
-		await runCommand({ stepName, cwd })
+		await runCommand({ taskName, cwd })
 		didRunCommand = true
 	}
 

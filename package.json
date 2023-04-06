@@ -1,7 +1,7 @@
 {
-	"name": "burbo",
+	"name": "daddyrepo",
 	"version": "0.0.0-alpha.0",
-	"description": "burborepo is a caching task runner for npm/yarn/pnpm monorepos",
+	"description": "daddyrepo is a caching task runner for npm/yarn/pnpm monorepos",
 	"main": "index.js",
 	"scripts": {
 		"test": "vitest",
@@ -9,7 +9,9 @@
 	},
 	"keywords": [],
 	"author": "David Sheldrick",
-	"bin": "./bin",
+	"bin": {
+		"daddy": "./bin"
+	},
 	"license": "ISC",
 	"dependencies": {
 		"@sindresorhus/slugify": "^2.2.0",

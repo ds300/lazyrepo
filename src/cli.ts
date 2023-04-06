@@ -1,51 +1,45 @@
 import kleur from 'kleur'
 import { help } from './commands/help'
 import { runIfNeeded } from './commands/run-if-needed'
-import { getStep } from './config'
+import { getTask } from './config'
 import { log } from './log'
 import { rainbow } from './rainbow'
-import { getAllPackageDetails, topologicalSortPackages } from './workspace'
+import { getRepoDetails } from './workspace'
 
 async function cli(args: string[]) {
-	const [stepName] = args
-	if (!stepName) {
+	const [taskName] = args
+	if (!taskName) {
 		help(true)
 		process.exit(1)
 	}
 
-	const step = getStep({ stepName })
+	const task = await getTask({ taskName })
 
-	if (!step) {
+	if (!task) {
 		help(true)
 		process.exit(1)
 	}
 
-	for (const dep of step.dependsOn ?? []) {
+	for (const dep of Object.keys(task.dependsOn ?? {})) {
 		await cli([dep])
 	}
 
-	if (stepName.startsWith('//#')) {
-		await runIfNeeded({ stepName, cwd: './' })
+	if (taskName.startsWith('//#')) {
+		await runIfNeeded({ taskName, cwd: './' })
 	} else {
-		const packages = getAllPackageDetails()
-		const relevantPackages = Object.values(packages)
-			.filter((pkg) => pkg.scripts?.[stepName])
-			.map((pkg) => pkg.name)
+		const { packagesInTopologicalOrder } = getRepoDetails()
+		const relevantPackages = packagesInTopologicalOrder.filter((pkg) => pkg.scripts?.[taskName])
 
-		const sorted = topologicalSortPackages(packages)
-
-		for (const p of sorted) {
-			if (relevantPackages.includes(p.name)) {
-				await runIfNeeded({ stepName, cwd: p.dir })
-			}
+		for (const p of relevantPackages) {
+			await runIfNeeded({ taskName, cwd: p.dir })
 		}
 	}
 }
 
 async function main() {
-	const done = log.timedTask(kleur.bold().bgGreen(' burborepo '))
+	const done = log.timedTask(kleur.bold().bgGreen(' daddyrepo '))
 	await cli(process.argv.slice(2))
-	done(rainbow('>>> FULL BURBO'))
+	done(rainbow('>>> FULL DADDY'))
 }
 
 main()

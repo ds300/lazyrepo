@@ -1,21 +1,21 @@
 import { statSync } from 'fs'
-import { getStep } from '../config'
+import { getTask } from '../config'
 import { log } from '../log'
 import { getInputFiles } from './getInputFiles'
 import { hashFile, hashString } from './hash'
 
 export async function getManifest({
-	stepName,
+	taskName,
 	cwd,
 	prevManifest,
 }: {
-	stepName: string
+	taskName: string
 	cwd: string
 	prevManifest?: Record<string, [hash: string, lastModified: number]>
 }) {
 	const result: string[] = []
 
-	const step = getStep({ stepName })
+	const step = await getTask({ taskName })
 
 	for (const envVar of step.env ?? []) {
 		result.push(`env ${envVar} \t${hashString(process.env[envVar] ?? '')}`)
@@ -23,7 +23,7 @@ export async function getManifest({
 
 	let numSkipped = 0
 	let numHashed = 0
-	for (const file of await getInputFiles({ stepName, cwd })) {
+	for (const file of await getInputFiles({ taskName, cwd })) {
 		const prev = prevManifest?.[file]
 		const stat = statSync(file)
 		if (prev && prev[1] === stat.mtime.getTime()) {

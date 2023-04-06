@@ -6,9 +6,9 @@ import { log } from './log'
 
 const { cyan, gray, green } = k
 
-export async function runCommand({ stepName, cwd }: { stepName: string; cwd: string }) {
+export async function runCommand({ taskName, cwd }: { taskName: string; cwd: string }) {
 	const packageJson = JSON.parse(readFileSync(`${cwd}/package.json`, 'utf8'))
-	const command = packageJson.scripts[stepName.startsWith('//#') ? stepName.slice(3) : stepName]
+	const command = packageJson.scripts[taskName.startsWith('//#') ? taskName.slice(3) : taskName]
 
 	const extraArgs = process.argv.slice(3)
 
@@ -24,7 +24,7 @@ export async function runCommand({ stepName, cwd }: { stepName: string; cwd: str
 		},
 	})
 	if (result.status != 0) {
-		const manifestPath = getManifestPath({ stepName, cwd })
+		const manifestPath = getManifestPath({ taskName, cwd })
 		if (existsSync(manifestPath)) {
 			unlinkSync(manifestPath)
 		}
@@ -34,7 +34,7 @@ export async function runCommand({ stepName, cwd }: { stepName: string; cwd: str
 			}`,
 			{
 				error: result.error,
-			}
+			},
 		)
 	}
 	log.log(gray(`\n              ∙  ∙  ∙\n`))
