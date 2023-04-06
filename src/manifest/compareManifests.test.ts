@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest'
 import { Change, compareManifests } from './compareManifests'
 
 function changes(...changes: Change[]): Change[] {
@@ -7,7 +8,7 @@ function manifest(...lines: [string, string][]): string {
 	return lines.map(([entity, value]) => `${entity}\t${value}`).join('\n')
 }
 
-describe(compareManifests, () => {
+describe('compareManifests', () => {
 	it(`returns zero changes when no things changed`, async () => {
 		expect(compareManifests({ currentManifest: '', previousManifest: '' })).toEqual([])
 
@@ -22,7 +23,7 @@ describe(compareManifests, () => {
 					compareManifests({
 						currentManifest: manifest,
 						previousManifest: manifest,
-					})
+					}),
 				).toEqual([])
 			} catch (error) {
 				console.log(`badly handled manifest`, JSON.stringify(manifest))
@@ -37,48 +38,48 @@ describe(compareManifests, () => {
 			compareManifests({
 				previousManifest: manifest(['a', '0']),
 				currentManifest: '',
-			})
+			}),
 		).toEqual(changes({ type: 'removal', value: 'a' }))
 
 		expect(
 			compareManifests({
 				previousManifest: manifest(['a', '0'], ['b', '1']),
 				currentManifest: manifest(['b', '1']),
-			})
+			}),
 		).toEqual(changes({ type: 'removal', value: 'a' }))
 
 		expect(
 			compareManifests({
 				previousManifest: manifest(['a', '0'], ['b', '1']),
 				currentManifest: manifest(['a', '0']),
-			})
+			}),
 		).toEqual(changes({ type: 'removal', value: 'b' }))
 
 		expect(
 			compareManifests({
 				previousManifest: manifest(['a', '0'], ['b', '1'], ['c', '2']),
 				currentManifest: manifest(['a', '0'], ['c', '2']),
-			})
+			}),
 		).toEqual(changes({ type: 'removal', value: 'b' }))
 
 		expect(
 			compareManifests({
 				previousManifest: manifest(['a', '0'], ['b', '1'], ['c', '2']),
 				currentManifest: manifest(['a', '0']),
-			})
+			}),
 		).toEqual(changes({ type: 'removal', value: 'b' }, { type: 'removal', value: 'c' }))
 
 		expect(
 			compareManifests({
 				previousManifest: manifest(['a', '0'], ['b', '1'], ['c', '2']),
 				currentManifest: manifest(),
-			})
+			}),
 		).toEqual(
 			changes(
 				{ type: 'removal', value: 'a' },
 				{ type: 'removal', value: 'b' },
-				{ type: 'removal', value: 'c' }
-			)
+				{ type: 'removal', value: 'c' },
+			),
 		)
 	})
 
@@ -87,42 +88,42 @@ describe(compareManifests, () => {
 			compareManifests({
 				previousManifest: '',
 				currentManifest: manifest(['a', '0']),
-			})
+			}),
 		).toEqual(changes({ type: 'addition', value: 'a' }))
 
 		expect(
 			compareManifests({
 				previousManifest: manifest(['b', '1']),
 				currentManifest: manifest(['a', '0'], ['b', '1']),
-			})
+			}),
 		).toEqual(changes({ type: 'addition', value: 'a' }))
 
 		expect(
 			compareManifests({
 				previousManifest: manifest(['a', '0']),
 				currentManifest: manifest(['a', '0'], ['b', '1']),
-			})
+			}),
 		).toEqual(changes({ type: 'addition', value: 'b' }))
 
 		expect(
 			compareManifests({
 				previousManifest: manifest(['a', '0'], ['c', '2']),
 				currentManifest: manifest(['a', '0'], ['b', '1'], ['c', '2']),
-			})
+			}),
 		).toEqual(changes({ type: 'addition', value: 'b' }))
 
 		expect(
 			compareManifests({
 				previousManifest: manifest(['a', '0']),
 				currentManifest: manifest(['a', '0'], ['b', '1'], ['c', '2']),
-			})
+			}),
 		).toEqual(changes({ type: 'addition', value: 'b' }, { type: 'addition', value: 'c' }))
 
 		expect(
 			compareManifests({
 				previousManifest: manifest(['b', '1']),
 				currentManifest: manifest(['a', '0'], ['b', '1'], ['c', '2']),
-			})
+			}),
 		).toEqual(changes({ type: 'addition', value: 'a' }, { type: 'addition', value: 'c' }))
 	})
 
@@ -131,28 +132,28 @@ describe(compareManifests, () => {
 			compareManifests({
 				previousManifest: manifest(['a', '0']),
 				currentManifest: manifest(['a', '1']),
-			})
+			}),
 		).toEqual(changes({ type: 'modification', value: 'a' }))
 
 		expect(
 			compareManifests({
 				previousManifest: manifest(['a', '0'], ['b', '1']),
 				currentManifest: manifest(['a', '1'], ['b', '1']),
-			})
+			}),
 		).toEqual(changes({ type: 'modification', value: 'a' }))
 
 		expect(
 			compareManifests({
 				previousManifest: manifest(['a', '0'], ['b', '1']),
 				currentManifest: manifest(['a', '0'], ['b', '2']),
-			})
+			}),
 		).toEqual(changes({ type: 'modification', value: 'b' }))
 
 		expect(
 			compareManifests({
 				previousManifest: manifest(['a', '0'], ['b', '1']),
 				currentManifest: manifest(['a', '1'], ['b', '2']),
-			})
+			}),
 		).toEqual(changes({ type: 'modification', value: 'a' }, { type: 'modification', value: 'b' }))
 	})
 })
