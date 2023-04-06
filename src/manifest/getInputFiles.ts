@@ -4,7 +4,7 @@ import path from 'path'
 import { getTask, GlobConfig } from '../config'
 import { log } from '../log'
 
-function getIncludes(includes: string | string[] | undefined): string[] {
+function getIncludes(includes: string[] | undefined): string[] {
 	if (!includes) {
 		return ['**/*']
 	}
@@ -14,7 +14,7 @@ function getIncludes(includes: string | string[] | undefined): string[] {
 	return includes
 }
 
-function getExcludes(excludes: string | string[] | undefined): string[] {
+function getExcludes(excludes: string[] | undefined): string[] {
 	if (!excludes) {
 		return []
 	}
@@ -28,12 +28,6 @@ function extractGlobPattern(glob: GlobConfig | null | undefined) {
 	if (!glob) {
 		return {
 			include: ['**/*'],
-			exclude: [],
-		}
-	}
-	if (typeof glob === 'string') {
-		return {
-			include: [glob],
 			exclude: [],
 		}
 	}

@@ -3,13 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import { log } from './log'
 
-import k from 'kleur'
-const { gray } = k
-
-export type GlobConfig =
-	| string
-	| string[]
-	| { include?: string | string[]; exclude?: string | string[] }
+export type GlobConfig = string[] | { include?: string[]; exclude?: string[] }
 
 export interface Task {
 	/**

@@ -1,7 +1,7 @@
 import kleur from 'kleur'
+import { TaskGraph } from './TaskGraph'
 import { help } from './commands/help'
-import { runIfNeeded } from './commands/run-if-needed'
-import { getTask } from './config'
+import { getConfig, getTask } from './config'
 import { log } from './log'
 import { rainbow } from './rainbow'
 import { getRepoDetails } from './workspace'
@@ -20,20 +20,28 @@ async function cli(args: string[]) {
 		process.exit(1)
 	}
 
-	for (const dep of Object.keys(task.dependsOn ?? {})) {
-		await cli([dep])
-	}
+	const tasks = new TaskGraph({
+		config: await getConfig(),
+		endTasks: [taskName],
+		repoDetails: getRepoDetails(),
+	})
 
-	if (taskName.startsWith('//#')) {
-		await runIfNeeded({ taskName, cwd: './' })
-	} else {
-		const { packagesInTopologicalOrder } = getRepoDetails()
-		const relevantPackages = packagesInTopologicalOrder.filter((pkg) => pkg.scripts?.[taskName])
+	while (await tasks.startNextTask()) {}
 
-		for (const p of relevantPackages) {
-			await runIfNeeded({ taskName, cwd: p.dir })
-		}
-	}
+	// for (const dep of Object.keys(task.dependsOn ?? {})) {
+	// 	await cli([dep])
+	// }
+
+	// if (task.topLevel) {
+	// 	await runIfNeeded({ taskName, cwd: './' })
+	// } else {
+	// 	const { packagesInTopologicalOrder } = getRepoDetails()
+	// 	const relevantPackages = packagesInTopologicalOrder.filter((pkg) => pkg.scripts?.[taskName])
+
+	// 	for (const p of relevantPackages) {
+	// 		await runIfNeeded({ taskName, cwd: p.dir })
+	// 	}
+	// }
 }
 
 async function main() {
