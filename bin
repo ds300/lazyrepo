@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+NODE_OPTIONS='--loader tsx --no-warnings' node ./src/cli.ts

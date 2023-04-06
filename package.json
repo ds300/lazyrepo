@@ -1,0 +1,27 @@
+{
+  "name": "burbo",
+  "version": "0.0.0-alpha.0",
+  "description": "burborepo is a caching task runner for npm/yarn/pnpm monorepos",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest",
+    "cli": "tsx src/cli.ts"
+  },
+  "keywords": [],
+  "author": "David Sheldrick",
+  "license": "ISC",
+  "dependencies": {
+    "@sindresorhus/slugify": "^2.2.0",
+    "fast-glob": "^3.2.12",
+    "fast-json-stable-stringify": "^2.1.0",
+    "kleur": "^4.1.5",
+    "tsx": "^3.12.6"
+  },
+  "devDependencies": {
+    "@types/node": "^18.15.11",
+    "prettier": "^2.8.7",
+    "prettier-plugin-organize-imports": "^3.2.2",
+    "typescript": "^5.0.3",
+    "vitest": "^0.29.8"
+  }
+}

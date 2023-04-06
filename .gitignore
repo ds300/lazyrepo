@@ -1,0 +1,8 @@
+# Logs
+*.log
+.*
+node_modules
+*.tgz
+
+!.gitignore
+!.prettierrc
