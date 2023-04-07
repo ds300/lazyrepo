@@ -1,35 +1,36 @@
 {
-	"name": "lazyrepo",
-	"version": "0.0.0-alpha.0",
-	"description": "lazyrepo is a caching task runner for npm/yarn/pnpm monorepos",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/ds300/lazyrepo.git"
-	},
-	"main": "index.js",
-	"scripts": {
-		"test": "vitest"
-	},
-	"keywords": [],
-	"author": "David Sheldrick",
-	"bin": {
-		"lazy": "./bin"
-	},
-	"license": "MIT",
-	"types": "index.d.ts",
-	"dependencies": {
-		"@sindresorhus/slugify": "^2.2.0",
-		"fast-glob": "^3.2.12",
-		"fast-json-stable-stringify": "^2.1.0",
-		"kleur": "^4.1.5",
-		"strip-ansi": "^7.0.1",
-		"tsx": "^3.12.6"
-	},
-	"devDependencies": {
-		"@types/node": "^18.15.11",
-		"prettier": "^2.8.7",
-		"prettier-plugin-organize-imports": "^3.2.2",
-		"typescript": "^5.0.3",
-		"vitest": "^0.29.8"
-	}
+  "name": "lazyrepo",
+  "version": "0.0.0-alpha.0",
+  "description": "lazyrepo is a caching task runner for npm/yarn/pnpm monorepos",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ds300/lazyrepo.git"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest",
+    "format": "prettier --write ."
+  },
+  "keywords": [],
+  "author": "David Sheldrick",
+  "bin": {
+    "lazy": "./bin"
+  },
+  "license": "MIT",
+  "types": "index.d.ts",
+  "dependencies": {
+    "@sindresorhus/slugify": "^2.2.0",
+    "fast-glob": "^3.2.12",
+    "fast-json-stable-stringify": "^2.1.0",
+    "kleur": "^4.1.5",
+    "strip-ansi": "^7.0.1",
+    "tsx": "^3.12.6"
+  },
+  "devDependencies": {
+    "@types/node": "^18.15.11",
+    "prettier": "^2.8.7",
+    "prettier-plugin-organize-imports": "^3.2.2",
+    "typescript": "^5.0.3",
+    "vitest": "^0.29.8"
+  }
 }

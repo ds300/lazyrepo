@@ -45,15 +45,15 @@ If we want to have explicit config for this it would look like
 ```ts
 import type { LazyConfig } from 'lazyrepo'
 export default {
-	tasks: {
-		test: {
-			cache: {
-				inputs: ['**/*'],
-				outputs: [],
-				usesOutputFromDependencies: true,
-			},
-		},
-	},
+  tasks: {
+    test: {
+      cache: {
+        inputs: ['**/*'],
+        outputs: [],
+        usesOutputFromDependencies: true,
+      },
+    },
+  },
 } satisfies LazyConfig
 ```
 
