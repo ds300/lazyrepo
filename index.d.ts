@@ -65,7 +65,7 @@ export interface Task {
   /**
    * The configuration for the input + output caches.
    *
-   * Set to `"none"` to disable caching. This means the task will always run fully when invoked.
+   * Set to `"none"` to disable caching and make sure the task will always execute when invoked.
    *
    * @default { inputs: ["**\/*"] }
    */
