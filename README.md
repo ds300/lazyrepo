@@ -6,7 +6,7 @@
 
 It fits right into the slot that `turborepo` carved out: making your `"scripts"` commands scale better without having to opt in to an industrial-strength build system like `nx`, `bazel`, `rush`, or `buck`.
 
-`lazyrepo` is scary fast, despite being implemented with _(yawn)_ [TypeScript](https://typescriptlang.org), instead of a young handsome clever funny systems language like `zig` or `rust`.
+`lazyrepo` is scary fast, despite being implemented with _(yawn)_ [TypeScript](https://typescriptlang.org), rather than a young handsome witty systems language.
 
 It has a human-friendly config format, and the default behaviors are `:chefs-kiss:`-tier.
 
