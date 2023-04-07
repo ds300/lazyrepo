@@ -1,7 +1,9 @@
 # urgent
 
+- consistent way to set defaults. we need a TaskConfig vs Task and so on.
+- do less allocation when creating/comparing manifests getNextManifest(prev, files, evnVars): [diff, next] THIS IS ACTUALLY CRITICAL FOR MAKING DIFFS MINIMAL
+- usesOutputFromDependencies + independent
 - cache outputs
-- feed outputs into inputs, and inputs into inputs
 - make sure other config options are satisfied
 - add --force mode
 - test
@@ -13,9 +15,8 @@
 - log levels
 - --filter
 - general cli args parsing improvement
-- do less allocation when creating/comparing manifests getNextManifest(prev, files, evnVars): [diff, next]
 - handle failure gracefully
-- validate config
+- validate config, incl sanity checks for interdependent config options (caching + independence, e.g)
 - print version on launch
 - support json schema and .ts config files
 - Add turbo.json migrator
@@ -24,6 +25,7 @@
 
 # questions
 
+- allow globbing on upstream (both task and package) inputs/outputs?
 - does npm need --workspace-root equivalent?
 - should peer deps, dev deps, and optional deps count towards the dep graph?
 - Look at turbo's api, cli options, behavior & make explicit decisions about what to keep/drop/modify.

@@ -81,16 +81,18 @@ export class TaskGraph {
         enqueueTask(depTaskName, result.dependencies)
       }
 
-      for (const packageName of packageDetails?.localDeps ?? []) {
-        const pkg = this.repoDetails.packagesByName[packageName]
-        if (pkg.scripts?.[taskName]) {
-          result.dependencies.push(taskKey(pkg.dir, taskName))
-          visit({
-            task,
-            taskName,
-            dir: pkg.dir,
-            packageDetails: pkg,
-          })
+      if (task.independent !== true) {
+        for (const packageName of packageDetails?.localDeps ?? []) {
+          const pkg = this.repoDetails.packagesByName[packageName]
+          if (pkg.scripts?.[taskName]) {
+            result.dependencies.push(taskKey(pkg.dir, taskName))
+            visit({
+              task,
+              taskName,
+              dir: pkg.dir,
+              packageDetails: pkg,
+            })
+          }
         }
       }
 

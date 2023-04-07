@@ -48,7 +48,10 @@ export async function getManifest({ tasks, task, prevManifest }) {
     }
   }
 
-  if (taskConfig.cache?.inheritsInputFromDependencies ?? true) {
+  if (
+    taskConfig.independent !== true &&
+    (taskConfig.cache?.inheritsInputFromDependencies ?? true)
+  ) {
     // TODO: test that localDeps is always sorted
     for (const packageName of task.packageDetails?.localDeps ?? []) {
       const depPackage = tasks.repoDetails.packagesByName[packageName]
