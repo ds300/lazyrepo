@@ -1,8 +1,9 @@
 import glob from 'fast-glob'
 import fs from 'fs'
+import kleur from 'kleur'
 import path from 'path'
 import { getTask } from '../config.js'
-import { log } from '../log.js'
+import { timeSince } from '../log.js'
 
 /**
  * @param {string[] | undefined} includes
@@ -56,11 +57,11 @@ function extractGlobPattern(glob) {
 
 /**
  *
- * @param {{taskName: string, cwd: string}} arg
+ * @param {import('../types.js').ScheduledTask} task
  * @returns
  */
-export async function getInputFiles({ taskName, cwd }) {
-  const { cache } = (await getTask({ taskName })) ?? {}
+export async function getInputFiles(task) {
+  const { cache } = (await getTask({ taskName: task.taskName })) ?? {}
 
   if (cache === 'none') {
     return null
@@ -77,19 +78,25 @@ export async function getInputFiles({ taskName, cwd }) {
   const excludes = getExcludes(exclude)
 
   for (const pattern of includes) {
-    await log.timedStep('Finding inputs ' + pattern, () => {
-      for (const file of glob.sync(pattern, {
-        cwd,
-        ignore: ['node_modules', ...excludes],
-      })) {
-        const fullPath = path.join(cwd, file)
-        if (fs.statSync(fullPath).isDirectory()) {
-          visitAllFiles(fullPath, (filePath) => files.add(filePath))
-        } else {
-          files.add(fullPath)
-        }
+    const start = Date.now()
+    for (const file of glob.sync(pattern, {
+      cwd: task.cwd,
+      ignore: ['node_modules', '**/node_modules', ...excludes],
+    })) {
+      const fullPath = path.join(task.cwd, file)
+      if (fs.statSync(fullPath).isDirectory()) {
+        visitAllFiles(fullPath, (filePath) => files.add(filePath))
+      } else {
+        files.add(fullPath)
       }
-    })
+    }
+    // todo: always log this if verbose
+    if (Date.now() - start > 100) {
+      console.log(
+        task.terminalPrefix,
+        kleur.gray(`Searching ${pattern} took ${kleur.cyan(timeSince(start))}`),
+      )
+    }
   }
 
   return [...files].sort()

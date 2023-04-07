@@ -1,5 +1,6 @@
 import slugify from '@sindresorhus/slugify'
 import glob from 'fast-glob'
+import { readFileSync } from 'fs'
 import path from 'path'
 import { log } from './log.js'
 
@@ -33,9 +34,9 @@ export async function getConfig() {
   }
   const file = files[0]
   if (file.endsWith('.json')) {
-    _config = (await import(file, { assert: { type: 'json' } })).default
+    _config = JSON.parse(readFileSync(file, 'utf8'))
   } else {
-    _config = (await import(files[0])).default
+    _config = (await import(file)).default
   }
 
   if (!_config) {

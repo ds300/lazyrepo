@@ -153,4 +153,4 @@ export const log = {
  * @param {number} start
  * @returns {string}
  */
-const timeSince = (start) => `${((Date.now() - start) / 1000).toFixed(2)}s`
+export const timeSince = (start) => `${((Date.now() - start) / 1000).toFixed(2)}s`

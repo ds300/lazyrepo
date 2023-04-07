@@ -1,6 +1,6 @@
-import { spawn } from 'child_process'
 import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'fs'
 import kleur from 'kleur'
+import { spawn } from 'node-pty'
 import { getDiffPath, getManifestPath } from './config.js'
 import { log } from './log.js'
 
@@ -17,7 +17,10 @@ export async function runIfNeeded(task) {
   const currentManifestPath = getManifestPath(task)
   const previousManifestPath = currentManifestPath + '.prev'
 
-  log.log(`${kleur.bold(task.taskName)} 🎁 ${kleur.red(path.relative(process.cwd(), task.cwd))}`)
+  /**
+   * @param  {string} msg
+   */
+  const print = (msg) => console.log(task.terminalPrefix, msg)
 
   const didHaveManifest = existsSync(currentManifestPath)
 
@@ -39,7 +42,7 @@ export async function runIfNeeded(task) {
     }
   }
 
-  await writeManifest({ ...task, prevManifest })
+  await writeManifest({ task, prevManifest })
 
   let didRunCommand = false
 
@@ -56,10 +59,10 @@ export async function runIfNeeded(task) {
         mkdirSync(path.dirname(diffPath), { recursive: true })
       }
       writeFileSync(diffPath, stripAnsi(allLines.join('\n')))
-      log.substep('Cache miss, changes since last run:')
-      allLines.slice(0, 10).forEach(log.substep)
+      print('cache miss, changes since last run:')
+      allLines.slice(0, 10).forEach((line) => print(kleur.gray(line)))
       if (allLines.length > 10) {
-        log.substep(`... and ${allLines.length - 10} more. See ${diffPath} for full diff.`)
+        print(kleur.gray(`... and ${allLines.length - 10} more. See ${diffPath} for full diff.`))
       }
 
       await runCommand(task)
@@ -70,8 +73,10 @@ export async function runIfNeeded(task) {
     didRunCommand = true
   }
 
+  print(kleur.gray('input manifest saved: ' + path.relative(process.cwd(), currentManifestPath)))
+
   if (!didRunCommand) {
-    log.step(`Cache hit! 🎉\n`)
+    print(`cache hit ⚡️`)
   }
 
   return didRunCommand
@@ -81,31 +86,49 @@ export async function runIfNeeded(task) {
  * @param {import('./types.js').ScheduledTask} task
  * @returns {Promise<void>}
  */
-export async function runCommand(task) {
+async function runCommand(task) {
   const packageJson = JSON.parse(readFileSync(`${task.cwd}/package.json`, 'utf8'))
-  const command =
-    packageJson.scripts[task.taskName.startsWith('//#') ? task.taskName.slice(3) : task.taskName]
+  const command = packageJson.scripts[task.taskName]
 
   const extraArgs = process.argv.slice(3)
-  const color = log.step(kleur.green().bold(command))
   const start = Date.now()
+
+  console.log(task.terminalPrefix + kleur.bold(' RUN ') + kleur.green().bold(command))
   try {
     await new Promise((resolve, reject) => {
-      const proc = spawn(command + ' ' + extraArgs.join(' '), {
-        stdio: 'inherit',
-        shell: true,
+      const proc = spawn('/usr/bin/env', ['sh', '-c', command + ' ' + extraArgs.join(' ')], {
         cwd: task.cwd,
         env: {
           ...process.env,
           PATH: `${process.env.PATH}:./node_modules/.bin:${process.cwd()}/node_modules/.bin`,
+          FORCE_COLOR: '1',
         },
       })
-      proc.on('error', reject)
-      proc.on('exit', (code) => {
-        if (code === 0) {
+      // forward all output to the terminal without losing color
+      let buf = ''
+      proc.onData((data) => {
+        buf += data
+        const lastCarriageReturn = buf.lastIndexOf('\n')
+        if (lastCarriageReturn === -1) {
+          return
+        }
+
+        const lines = buf.split('\n')
+        buf = lines.pop() || ''
+
+        for (const line of lines) {
+          process.stdout.write(task.terminalPrefix + ' ' + line + '\n')
+        }
+      })
+
+      proc.onExit(({ exitCode }) => {
+        if (buf) {
+          process.stdout.write(task.terminalPrefix + ' ' + buf + '\n')
+        }
+        if (exitCode === 0) {
           resolve(null)
         } else {
-          reject(new Error(`Command '${command}' exited with code ${code}`))
+          reject(new Error(`Command '${command}' exited with code ${exitCode}`))
         }
       })
     })
@@ -117,6 +140,8 @@ export async function runCommand(task) {
     throw e
   }
 
-  log.log(kleur.gray(`\n              ∙  ∙  ∙\n`))
-  log.step(`Done in ${kleur.cyan(((Date.now() - start) / 1000).toFixed(2) + 's')}`)
+  log.log(
+    task.terminalPrefix,
+    `done in ${kleur.cyan(((Date.now() - start) / 1000).toFixed(2) + 's')}`,
+  )
 }

@@ -1,31 +1,32 @@
 import { statSync } from 'fs'
-import { getTask } from '../config.js'
-import { log } from '../log.js'
+import kleur from 'kleur'
+import { getTask as getTaskConfig } from '../config.js'
+import { log, timeSince } from '../log.js'
 import { getInputFiles } from './getInputFiles.js'
 import { hashFile, hashString } from './hash.js'
 
 /**
- *
- * @param {{ taskName: string, cwd: string, prevManifest?: Record<string, [hash: string, lastModified: number]> }} param0
+ * @param {{ task: import('../types.js').ScheduledTask, prevManifest?: Record<string, [hash: string, lastModified: number]> }} param0
  * @returns
  */
-export async function getManifest({ taskName, cwd, prevManifest }) {
+export async function getManifest({ task, prevManifest }) {
   /**
    * @type {string[]}
    */
   const result = []
 
-  const task = await getTask({ taskName })
+  const taskConfig = await getTaskConfig({ taskName: task.taskName })
 
-  if (task.cache === 'none') return null
+  if (taskConfig.cache === 'none') return null
 
-  for (const envVar of task.cache?.env ?? []) {
+  for (const envVar of taskConfig.cache?.env ?? []) {
     result.push(`env ${envVar} \t${hashString(process.env[envVar] ?? '')}`)
   }
 
   let numSkipped = 0
   let numHashed = 0
-  const files = await getInputFiles({ taskName, cwd })
+  const files = await getInputFiles(task)
+  const start = Date.now()
   if (!files) return null
   for (const file of files) {
     const prev = prevManifest?.[file]
@@ -41,7 +42,15 @@ export async function getManifest({ taskName, cwd, prevManifest }) {
     result.push(`file ${file}\t${hash}\t${stat.mtime.getTime()}`)
   }
 
-  log.substep(`Hashed ${numHashed}/${numSkipped + numHashed} files`)
+  // todo: always log this if verbose
+  if (Date.now() - start > 100) {
+    console.log(
+      task.terminalPrefix,
+      kleur.gray(
+        `Hashed ${numHashed}/${numSkipped + numHashed} files in ${kleur.cyan(timeSince(start))}`,
+      ),
+    )
+  }
 
   result.sort()
   return result

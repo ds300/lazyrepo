@@ -8,7 +8,7 @@
  * @returns {[number, number, number]}
  */
 function rgb(i) {
-  const f = 0.345
+  const f = 0.285
 
   return [
     Math.floor(Math.sin(f * i + (4 * Math.PI) / 3) * 127 + 128),

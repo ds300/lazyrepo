@@ -6,6 +6,7 @@ export interface ScheduledTask {
   status: TaskStatus
   outputFiles: string[]
   dependencies: string[]
+  terminalPrefix: string
 }
 
 export type PackageDetails = {

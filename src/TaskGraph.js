@@ -1,4 +1,6 @@
+import kleur from 'kleur'
 import { cpus } from 'os'
+import { relative } from 'path'
 import { runIfNeeded } from './runCommand.js'
 
 /**
@@ -8,7 +10,7 @@ import { runIfNeeded } from './runCommand.js'
  * @returns {string}
  */
 function taskKey(cwd, taskName) {
-  return `${cwd}:${taskName}`
+  return `${relative(process.cwd(), cwd)}:${taskName}`
 }
 
 const numCpus = cpus().length
@@ -49,6 +51,12 @@ export class TaskGraph {
     }
 
     /**
+     * @type {Array<import('kleur').Color>}
+     */
+    const colors = [kleur.cyan, kleur.magenta, kleur.yellow, kleur.blue, kleur.green]
+    let nextColorIndex = 0
+
+    /**
      * @param {{ task: import('./types.js').Task, taskName: string, dir: string, packageDetails: import('./types.js').PackageDetails | null }} arg
      * @returns
      */
@@ -63,6 +71,7 @@ export class TaskGraph {
         status: 'pending',
         outputFiles: [],
         dependencies: [],
+        terminalPrefix: colors[nextColorIndex++ % colors.length](key),
       }
       const result = this.allTasks[key]
 
