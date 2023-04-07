@@ -10,6 +10,16 @@ export function help(error?: boolean) {
 	// eslint-disable-next-line no-console
 	console[error ? 'error' : 'log'](`USAGE
 
-  ${bold('lazy')} ${required('task')} [...args]
+Running tasks:
+
+  ${bold('lazy run')} ${required('task')} [...args]
+
+Creating a blank config file
+
+  ${bold('lazy init')} ${required('task')} [...args]
+
+Showing this help message
+
+  ${bold('lazy help')}
 `)
 }

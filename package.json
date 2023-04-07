@@ -2,6 +2,10 @@
 	"name": "lazyrepo",
 	"version": "0.0.0-alpha.0",
 	"description": "lazyrepo is a caching task runner for npm/yarn/pnpm monorepos",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/ds300/lazyrepo.git"
+	},
 	"main": "index.js",
 	"scripts": {
 		"test": "vitest"

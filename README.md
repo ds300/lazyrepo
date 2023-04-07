@@ -6,14 +6,20 @@ opt in to an industrial-strength build system like `nx`, `bazel`, `rush`, or `bu
 
 ## Usage
 
+Install with one of
+
+- `pnpm install lazyrepo --save-dev` 
+- `yarn add lazyrepo --dev`
+- `npm install lazyrepo --save-dev`
+
 Default task behavior is optimized for 'test' scripts. Let's say you have two packages `app` and
 `utils`. `app` depends on `utils` and they both have `"test"` scripts.
 
-The `lazy.config.mjs` file looks like this:
+The `lazy.config.ts` file looks like this:
 
 ```ts
-/** @type {import('lazyrepo').LazyConfig} */
-export default {}
+import type { LazyConfig } from 'lazyrepo'
+export default {} satisfies LazyConfig
 ```
 
 - `utils`'s tests will be executed before `app`'s. If `utils`'s tests fail `app`'s tests will not

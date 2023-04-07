@@ -1,23 +1,40 @@
+import { writeFileSync } from 'fs'
 import kleur from 'kleur'
 import { TaskGraph } from './TaskGraph'
 import { help } from './commands/help'
-import { getConfig, getTask } from './config'
+import { getConfig } from './config'
 import { log } from './log'
 import { rainbow } from './rainbow'
 import { getRepoDetails } from './workspace'
 
 async function cli(args: string[]) {
-	const [taskName] = args
-	if (!taskName) {
+	let [command, taskName] = args
+	if (!command) {
 		help(true)
 		process.exit(1)
 	}
 
-	const task = await getTask({ taskName })
+	if (command === 'init') {
+		writeFileSync(
+			'lazy.config.ts',
+			`import { LazyConfig } from 'lazyrepo'\n\nexport default {} satisfies LazyConfig`,
+		)
+		log.success('Created lazy.config.ts')
+		process.exit(1)
+	}
 
-	if (!task) {
+	if (command === 'help') {
+		help()
+		process.exit(0)
+	}
+
+	if (command === 'run' && !taskName) {
 		help(true)
 		process.exit(1)
+	}
+
+	if (!taskName) {
+		taskName = command
 	}
 
 	const tasks = new TaskGraph({
@@ -27,7 +44,7 @@ async function cli(args: string[]) {
 	})
 
 	if (tasks.sortedTaskKeys.length === 0) {
-		log.fail(`No tasks found for '${taskName}'`)
+		log.fail(`No tasks found called '${taskName}'`)
 	}
 
 	while (await tasks.startNextTask()) {}
