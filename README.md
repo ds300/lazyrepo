@@ -8,7 +8,7 @@
 
 It fits right into the slot that `turborepo` carved out: making your `"scripts"` commands scale better without having to opt in to an industrial-strength build system like `nx`, `bazel`, `rush`, or `buck`.
 
-`lazyrepo` is scary fast, a lot faster than `turborepo`. And this is despite being written in TypeScript instead of some young handsome witty systems language.
+`lazyrepo` is scary fast, a lot faster than `turborepo`. And this is despite being written in TypeScript instead of some young handsome clever funny systems language.
 
 `lazyrepo` has a human-friendly config format, and the defaults are profoundly sensible. Best of all, it gives you helpful concise feedback so you can quickly debug when things aren't working quite how you'd expect.
 
