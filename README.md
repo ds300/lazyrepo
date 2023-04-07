@@ -46,11 +46,11 @@ The default behavior is optimized for `"test"`-style scripts, where:
 
 Let's say you have two packages `app` and `utils`. `app` depends on `utils` and they both have `"test"` scripts.
 
-With an empty config file, when you run `lazy test`
+With no config, when you run `lazy test`
 
 - `utils`'s tests will be executed before `app`'s. If `utils`'s tests fail `app`'s tests will not run. This is because if something breaks in `utils` it could lead to false negatives in `app`'s test suite.
-- If I change a source file in `app`, only `app`'s tests needs to run again.
-- If I change a source file in `utils`, both `utils` and `app` need to be retested.
+- If you change a source file in `app`, only `app`'s tests needs to run again.
+- If you change a source file in `utils`, both `utils` and `app` need to be retested.
 
 To explicitly configure this default behavior for the `"test"` scripts, your config file would look like this:
 
