@@ -5,7 +5,6 @@
 - Add concurrency
 - cache outputs
 - feed outputs into inputs, and inputs into inputs
-- update bin to use local lazyrepo if found
 
 # features
 
