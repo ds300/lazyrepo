@@ -4,7 +4,7 @@
 
 > 💡 Currently in early alpha!
 
-`lazyrepo` is a caching task runner for npm/pnpm/yarn monorepos.
+`lazyrepo` is a zero-config caching task runner for npm/pnpm/yarn monorepos.
 
 It fits right into the slot that `turborepo` carved out: making your `"scripts"` commands scale better without having to opt in to an industrial-strength build system like `nx`, `bazel`, `rush`, or `buck`.
 
@@ -27,8 +27,6 @@ And also as a dev dependency for your project
 - `pnpm install lazyrepo --workspace-root --save-dev`
 - `yarn add lazyrepo --dev`
 - `npm install lazyrepo --save-dev`
-
-Then `lazy init` to create a config file.
 
 And finally add `.lazy` to your .gitignore
 
