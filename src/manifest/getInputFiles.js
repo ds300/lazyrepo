@@ -80,7 +80,7 @@ export async function getInputFiles({ taskName, cwd }) {
     await log.timedStep('Finding inputs ' + pattern, () => {
       for (const file of glob.sync(pattern, {
         cwd,
-        ignore: ['node_modules', '.git', '.lazy', ...excludes],
+        ignore: ['node_modules','.yarn-cache', '.git', '.lazy', ...excludes],
         dot: true,
       })) {
         const fullPath = path.join(cwd, file)
