@@ -22,6 +22,13 @@ export interface Task {
 			 * @default true
 			 */
 			usesOutput?: boolean
+			/**
+			 * Whether or not the input files of the named task should contribute to the
+			 * input files of this task.
+			 *
+			 * @default false
+			 */
+			inheritsInput?: boolean
 		}
 	}
 	/**
@@ -55,12 +62,19 @@ export interface Task {
 	 */
 	usesOutputFromDependencies?: boolean
 	/**
+	 * If this task is not independent, this controls whether or not the inputs used by
+	 * upstream packages running this task counts towards the input for the current package.
+	 *
+	 * @default true
+	 */
+	usesInputFromDependencies?: boolean
+	/**
 	 * Whether this task can be executed in parallel.
 	 */
 	singleThreaded?: boolean
 }
 
-export interface DaddyConfig {
+export interface LazyConfig {
 	/** Globs of any files that should contribute to the cache key for all steps. */
 	globalDependencies?: string[]
 	/** Globs of any files that should _never_ contribute to the cache key for all steps. These cannot be overridden. */
@@ -68,21 +82,21 @@ export interface DaddyConfig {
 	pipeline: { [taskName: string]: Task }
 }
 
-let _config: DaddyConfig | null = null
+let _config: LazyConfig | null = null
 
-export async function getConfig(): Promise<DaddyConfig> {
+export async function getConfig(): Promise<LazyConfig> {
 	if (_config) {
 		return _config
 	}
 
-	const file = path.join(process.cwd(), 'daddy.config.ts')
+	const file = path.join(process.cwd(), 'lazy.config.ts')
 	if (!fs.existsSync(file)) {
 		log.fail(`Can't find config file at '${file}'`, {
 			error: new Error('stack'),
 		})
 	}
 
-	const config = (await import(file)).default as DaddyConfig
+	const config = (await import(file)).default as LazyConfig
 
 	_config = config
 
@@ -94,6 +108,6 @@ export async function getTask({ taskName }: { taskName: string }) {
 }
 
 export function getManifestPath({ taskName, cwd }: { taskName: string; cwd: string }) {
-	const dir = path.join(cwd, 'node_modules', '.cache', 'daddy', 'manifests')
+	const dir = path.join(cwd, 'node_modules', '.cache', 'lazy', 'manifests')
 	return path.join(dir, slugify(taskName))
 }

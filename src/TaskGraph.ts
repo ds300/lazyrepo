@@ -1,5 +1,5 @@
 import { runIfNeeded } from './commands/run-if-needed'
-import { DaddyConfig, Task } from './config'
+import { LazyConfig, Task } from './config'
 import { PackageDetails, RepoDetails } from './workspace'
 
 type TaskStatus = 'pending' | 'running' | 'success' | 'failure'
@@ -18,7 +18,7 @@ function taskKey({ taskName, cwd }: { taskName: string; cwd: string }) {
 
 export class TaskGraph {
 	readonly repoDetails: RepoDetails
-	readonly config: DaddyConfig
+	readonly config: LazyConfig
 	readonly allTasks: Record<string, ScheduledTask> = {}
 	readonly sortedTaskKeys: string[] = []
 
@@ -28,7 +28,7 @@ export class TaskGraph {
 		endTasks,
 		filteredPackages,
 	}: {
-		config: DaddyConfig
+		config: LazyConfig
 		repoDetails: RepoDetails
 		endTasks: string[]
 		filteredPackages?: string[]

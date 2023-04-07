@@ -10,6 +10,6 @@ export function help(error?: boolean) {
 	// eslint-disable-next-line no-console
 	console[error ? 'error' : 'log'](`USAGE
 
-  ${bold('daddy')} ${required('task')} [...args]
+  ${bold('lazy')} ${required('task')} [...args]
 `)
 }

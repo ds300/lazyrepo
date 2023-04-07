@@ -1,16 +1,15 @@
 {
-	"name": "daddyrepo",
+	"name": "lazyrepo",
 	"version": "0.0.0-alpha.0",
-	"description": "daddyrepo is a caching task runner for npm/yarn/pnpm monorepos",
+	"description": "lazyrepo is a caching task runner for npm/yarn/pnpm monorepos",
 	"main": "index.js",
 	"scripts": {
-		"test": "vitest",
-		"cli": "tsx src/cli.ts"
+		"test": "vitest"
 	},
 	"keywords": [],
 	"author": "David Sheldrick",
 	"bin": {
-		"daddy": "./bin"
+		"lazy": "./bin"
 	},
 	"license": "ISC",
 	"dependencies": {

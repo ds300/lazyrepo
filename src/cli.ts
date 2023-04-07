@@ -27,27 +27,12 @@ async function cli(args: string[]) {
 	})
 
 	while (await tasks.startNextTask()) {}
-
-	// for (const dep of Object.keys(task.dependsOn ?? {})) {
-	// 	await cli([dep])
-	// }
-
-	// if (task.topLevel) {
-	// 	await runIfNeeded({ taskName, cwd: './' })
-	// } else {
-	// 	const { packagesInTopologicalOrder } = getRepoDetails()
-	// 	const relevantPackages = packagesInTopologicalOrder.filter((pkg) => pkg.scripts?.[taskName])
-
-	// 	for (const p of relevantPackages) {
-	// 		await runIfNeeded({ taskName, cwd: p.dir })
-	// 	}
-	// }
 }
 
 async function main() {
-	const done = log.timedTask(kleur.bold().bgGreen(' daddyrepo '))
+	const done = log.timedTask(kleur.bold().bgGreen(' lazyrepo '))
 	await cli(process.argv.slice(2))
-	done(rainbow('>>> FULL DADDY'))
+	done(rainbow('>>> FULL LAZY 🐢'))
 }
 
 main()
