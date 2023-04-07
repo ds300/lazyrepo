@@ -1,6 +1,6 @@
-import { writeFileSync } from 'fs'
 import kleur from 'kleur'
 import { help } from './commands/help.js'
+import { init } from './commands/init.js'
 import { run } from './commands/run.js'
 import { log } from './log.js'
 
@@ -15,7 +15,7 @@ async function cli(args) {
   }
 
   if (command === 'init') {
-
+    init()
     process.exit(0)
   }
 

@@ -2,7 +2,9 @@
 
 `lazyrepo` is a caching task runner for npm/pnpm/yarn monorepos. It aims to fit right into the slot that `turborepo` carved out: making your `package.json` `"scripts"` scale better without having to opt in to an industrial-strength build system like `nx`, `bazel`, `rush`, or `buck`.
 
-It's scary fast, despite being implemented with _(yawn)_ TypeScript instead of _(swoon)_ Rust. Although it is actually written in `.js` files with JSDoc-based TypeScript annotations, which makes it profoundly debuggable, [patch](https://github.com/ds300/patch-package)-able, and _pull-request_-able.
+`lazyrepo` is scary fast, despite being implemented with _(yawn)_ TypeScript and not a handsome new superfast systems language.
+
+Although it is actually written in `.js` files with JSDoc-based TypeScript annotations, which makes it profoundly debuggable, [patch](https://github.com/ds300/patch-package)-able, and _pull-request_-able.
 
 It has a human-friendly config format, and the default behaviors are `:chefs-kiss:`-tier.
 
@@ -44,7 +46,7 @@ The default behavior is optimized for 'test'-style scripts, where:
 
 Let's say you have two packages `app` and `utils`. `app` depends on `utils` and they both have `"test"` scripts.
 
-The empty `lazy.config.ts` file looks like this:
+The empty `lazy.config.js` file looks like this:
 
 ```ts
 import type { LazyConfig } from 'lazyrepo'
