@@ -20,6 +20,10 @@ And also as a dev dependency for your project
 
 Then `lazy init` to create a config file.
 
+And finally add `.lazy` to your .gitignore
+
+    echo "\n\n#lazyrepo\n.lazy" >> .gitignore
+
 ## Usage
 
 Run tasks defined in workspace packages using `lazy run <task>`

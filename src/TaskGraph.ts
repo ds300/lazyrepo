@@ -1,5 +1,5 @@
-import { runIfNeeded } from './commands/run-if-needed'
 import { LazyConfig, Task } from './config'
+import { runIfNeeded } from './runCommand'
 import { PackageDetails, RepoDetails } from './workspace'
 
 type TaskStatus = 'pending' | 'running' | 'success:eager' | 'success:lazy' | 'failure'

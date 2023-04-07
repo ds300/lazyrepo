@@ -1,11 +1,8 @@
 import { writeFileSync } from 'fs'
 import kleur from 'kleur'
-import { TaskGraph } from './TaskGraph'
 import { help } from './commands/help'
-import { getConfig } from './config'
+import { run } from './commands/run'
 import { log } from './log'
-import { rainbow } from './rainbow'
-import { getRepoDetails } from './workspace'
 
 async function cli(args: string[]) {
   let [command, taskName] = args
@@ -37,21 +34,7 @@ async function cli(args: string[]) {
     taskName = command
   }
 
-  const tasks = new TaskGraph({
-    config: await getConfig(),
-    endTasks: [taskName],
-    repoDetails: getRepoDetails(),
-  })
-
-  if (tasks.sortedTaskKeys.length === 0) {
-    log.fail(`No tasks found called '${taskName}'`)
-  }
-
-  await tasks.runAllTasks()
-
-  if (Object.entries(tasks.allTasks).every(([_, task]) => task.status === 'success:lazy')) {
-    console.log(rainbow('>>> FULL LAZY'))
-  }
+  await run([taskName])
 }
 
 async function main() {
