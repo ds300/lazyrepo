@@ -57,7 +57,7 @@ export class TaskGraph {
     let nextColorIndex = 0
 
     /**
-     * @param {{ task: import('./types.js').Task, taskName: string, dir: string, packageDetails: import('./types.js').PackageDetails | null }} arg
+     * @param {{ task: import('./types.js').TaskConfig, taskName: string, dir: string, packageDetails: import('./types.js').PackageDetails | null }} arg
      * @returns
      */
     const visit = ({ task, taskName, dir, packageDetails }) => {
@@ -73,7 +73,7 @@ export class TaskGraph {
         dependencies: [],
         terminalPrefix: colors[nextColorIndex++ % colors.length](key),
         inputManifestCacheKey: null,
-        packageDetails
+        packageDetails,
       }
       const result = this.allTasks[key]
 
