@@ -1,6 +1,5 @@
 import k from 'kleur'
 
-const { cyan, bold, red, green } = k
 
 export type Change = {
 	type: 'addition' | 'removal' | 'modification'
@@ -48,10 +47,10 @@ export function compareManifests({
 export function renderChange({ type, value }: Change): string {
 	switch (type) {
 		case 'addition':
-			return green(`${bold(value)} was added`)
+			return k.bold().green('+') + ' added ' + value
 		case 'modification':
-			return cyan(`${bold(value)} is different`)
+			return k.bold().yellow('±') + ' modified ' + value
 		case 'removal':
-			return red(`${bold(value)} was removed`)
+			return k.bold().red('-') + ' removed ' + value
 	}
 }

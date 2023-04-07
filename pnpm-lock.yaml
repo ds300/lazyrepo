@@ -8,6 +8,7 @@ specifiers:
   kleur: ^4.1.5
   prettier: ^2.8.7
   prettier-plugin-organize-imports: ^3.2.2
+  strip-ansi: ^7.0.1
   tsx: ^3.12.6
   typescript: ^5.0.3
   vitest: ^0.29.8
@@ -17,6 +18,7 @@ dependencies:
   fast-glob: 3.2.12
   fast-json-stable-stringify: 2.1.0
   kleur: 4.1.5
+  strip-ansi: 7.0.1
   tsx: 3.12.6
 
 devDependencies:
@@ -325,7 +327,6 @@ packages:
   /ansi-regex/6.0.1:
     resolution: {integrity: sha512-n5M855fKb2SsfMIiFFoVrABHJC8QtHwVx+mHWP3QcEqBHYienj5dHSgjbxtC0WEZXYt4wcD6zrQElDPhFuZgfA==}
     engines: {node: '>=12'}
-    dev: true
 
   /ansi-styles/5.2.0:
     resolution: {integrity: sha512-Cxwpt2SfTzTtXcfOlzGEee8O+c+MmUgGrNiBcXnuWxuFJHe6a5Hz7qwhwe5OgaSYI0IJvkLqWX1ASG+cJOkEiA==}
@@ -752,7 +753,6 @@ packages:
     engines: {node: '>=12'}
     dependencies:
       ansi-regex: 6.0.1
-    dev: true
 
   /strip-literal/1.0.1:
     resolution: {integrity: sha512-QZTsipNpa2Ppr6v1AmJHESqJ3Uz247MUS0OjrnnZjFAvEoWqxuyFuXn2xLgMtRnijJShAa1HL0gtJyUs7u7n3Q==}

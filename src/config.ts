@@ -70,7 +70,7 @@ export interface Task {
 	/**
 	 * The configuration for the input + output caches.
 	 *
-	 * Set to `none` to disable caching. This means the task will always run fully when invoked.
+	 * Set to `"none"` to disable caching. This means the task will always run fully when invoked.
 	 *
 	 * @default { inputs: ["**\/*"] }
 	 */
@@ -128,6 +128,10 @@ export async function getTask({ taskName }: { taskName: string }) {
 }
 
 export function getManifestPath({ taskName, cwd }: { taskName: string; cwd: string }) {
-	const dir = path.join(cwd, 'node_modules', '.cache', 'lazy', 'manifests')
+	const dir = path.join(cwd, '.lazy', 'manifests')
+	return path.join(dir, slugify(taskName))
+}
+export function getDiffPath({ taskName, cwd }: { taskName: string; cwd: string }) {
+	const dir = path.join(cwd, '.lazy', 'diffs')
 	return path.join(dir, slugify(taskName))
 }

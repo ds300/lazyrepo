@@ -26,6 +26,10 @@ async function cli(args: string[]) {
 		repoDetails: getRepoDetails(),
 	})
 
+	if (tasks.sortedTaskKeys.length === 0) {
+		log.fail(`No tasks found for '${taskName}'`)
+	}
+
 	while (await tasks.startNextTask()) {}
 
 	if (Object.entries(tasks.allTasks).every(([_, task]) => task.status === 'success:lazy')) {

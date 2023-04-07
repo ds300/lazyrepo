@@ -1,7 +1,9 @@
 import fs from 'fs'
 
 import kleur from 'kleur'
-import { getManifestPath } from '../config'
+import path from 'path'
+import stripAnsi from 'strip-ansi'
+import { getDiffPath, getManifestPath } from '../config'
 import { log } from '../log'
 import { compareManifests, renderChange } from '../manifest/compareManifests'
 import { writeManifest } from '../manifest/writeManifest'
@@ -47,9 +49,17 @@ export async function runIfNeeded({
 		})
 
 		if (diff.length) {
-			log.log()
-			diff.map(renderChange).forEach(log.substep)
-			log.log()
+			const allLines = diff.map(renderChange)
+			const diffPath = getDiffPath({ taskName, cwd })
+			if (!fs.existsSync(path.dirname(diffPath))) {
+				fs.mkdirSync(path.dirname(diffPath), { recursive: true })
+			}
+			fs.writeFileSync(diffPath, stripAnsi(allLines.join('\n')))
+			log.substep('Cache miss, changes since last run:')
+			allLines.slice(0, 10).forEach(log.substep)
+			if (allLines.length > 10) {
+				log.substep(`... and ${allLines.length - 10} more. See ${diffPath} for full diff.`)
+			}
 
 			await runCommand({ taskName, cwd })
 			didRunCommand = true
