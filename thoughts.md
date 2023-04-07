@@ -2,7 +2,7 @@
 
 - do less allocation when creating/comparing manifests getNextManifest(prev, files, evnVars): [diff, next]
 - handle failure gracefully
-- Add concurrency
+- interleave stdout gracefully
 - cache outputs
 - feed outputs into inputs, and inputs into inputs
 - make sure other config options are satisfied
