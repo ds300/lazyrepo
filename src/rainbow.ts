@@ -4,7 +4,7 @@
 
 // SPDX-License-Identifier: MIT
 function rgb(i: number): [number, number, number] {
-	const f = 0.245
+	const f = 0.345
 
 	return [
 		Math.floor(Math.sin(f * i + (4 * Math.PI) / 3) * 127 + 128),

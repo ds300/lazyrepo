@@ -42,17 +42,25 @@ function extractGlobPattern(glob: GlobConfig | null | undefined) {
 }
 
 export async function getInputFiles({ taskName, cwd }: { taskName: string; cwd: string }) {
-	const { inputs } = await getTask({ taskName })
+	const { cache } = (await getTask({ taskName })) ?? {}
+
+	if (cache === 'none') {
+		return null
+	}
+
 	const files = new Set<string>()
 
-	const { include, exclude } = extractGlobPattern(inputs)
+	const { include, exclude } = extractGlobPattern(cache?.inputs)
 
 	const includes = getIncludes(include)
 	const excludes = getExcludes(exclude)
 
 	for (const pattern of includes) {
 		await log.timedStep('Finding files ' + pattern, () => {
-			for (const file of glob.sync(pattern, { cwd, ignore: ['**/node_modules/**', ...excludes] })) {
+			for (const file of glob.sync(pattern, {
+				cwd,
+				ignore: ['**/node_modules/**', '.git', ...excludes],
+			})) {
 				const fullPath = path.join(cwd, file)
 				if (fs.statSync(fullPath).isDirectory()) {
 					visitAllFiles(fullPath, (filePath) => files.add(filePath))

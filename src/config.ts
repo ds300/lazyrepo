@@ -5,6 +5,41 @@ import { log } from './log'
 
 export type GlobConfig = string[] | { include?: string[]; exclude?: string[] }
 
+export type CacheConfig =
+	| 'none'
+	| {
+			/**
+			 * Globs of files that this task depends on.
+			 *
+			 * If none are specified, all files in the package will be used.
+			 */
+			inputs?: GlobConfig
+			/**
+			 * Globs of files that this task produces.
+			 *
+			 * If none are specified, none will be tracked.
+			 */
+			outputs?: GlobConfig
+			/**
+			 * Any environment variables that this task uses
+			 */
+			env?: string[]
+			/**
+			 * If this task is not independent, this controls whether or not the output created by
+			 * upstream packages running this task counts towards the input for the current package.
+			 *
+			 * @default true
+			 */
+			usesOutputFromDependencies?: boolean
+			/**
+			 * If this task is not independent, this controls whether or not the inputs used by
+			 * upstream packages running this task counts towards the input for the current package.
+			 *
+			 * @default true
+			 */
+			usesInputFromDependencies?: boolean
+	  }
+
 export interface Task {
 	/**
 	 * Run the task in the root directory only.
@@ -17,34 +52,30 @@ export interface Task {
 		[taskName: string]: {
 			/**
 			 * Whether or not this task uses the files created by the named task.
-			 * If true, they will be included as inputs.
+			 * If true, they will be included as cache inputs.
 			 *
 			 * @default true
 			 */
 			usesOutput?: boolean
 			/**
 			 * Whether or not the input files of the named task should contribute to the
-			 * input files of this task.
+			 * cache inputs of this task.
 			 *
 			 * @default false
 			 */
 			inheritsInput?: boolean
 		}
 	}
+
 	/**
-	 * Globs of files that this task depends on.
+	 * The configuration for the input + output caches.
 	 *
-	 * If none are specified, all files in the package will be used.
-	 */
-	inputs?: GlobConfig
-	/**
-	 * Globs of files that this task produces.
+	 * Set to `none` to disable caching. This means the task will always run fully when invoked.
 	 *
-	 * If none are specified, none will be tracked.
+	 * @default { inputs: ["**\/*"] }
 	 */
-	outputs?: GlobConfig
-	/** Any environment variables that this task uses */
-	env?: string[]
+	cache?: CacheConfig
+
 	/**
 	 * Whether or not the task must be executed in dependency order.
 	 *
@@ -54,24 +85,13 @@ export interface Task {
 	 * @default false
 	 */
 	independent?: boolean
+
 	/**
-	 * If this task is not independent, this controls whether or not the output created by
-	 * upstream packages running this task counts towards the input for the current package.
+	 * Whether this task can be safely executed in parallel with other instances of the same task.
 	 *
 	 * @default true
 	 */
-	usesOutputFromDependencies?: boolean
-	/**
-	 * If this task is not independent, this controls whether or not the inputs used by
-	 * upstream packages running this task counts towards the input for the current package.
-	 *
-	 * @default true
-	 */
-	usesInputFromDependencies?: boolean
-	/**
-	 * Whether this task can be executed in parallel.
-	 */
-	singleThreaded?: boolean
+	parallel?: boolean
 }
 
 export interface LazyConfig {
@@ -79,7 +99,7 @@ export interface LazyConfig {
 	globalDependencies?: string[]
 	/** Globs of any files that should _never_ contribute to the cache key for all steps. These cannot be overridden. */
 	globalExcludes?: string[]
-	tasks: { [taskName: string]: Task }
+	tasks?: { [taskName: string]: Task }
 }
 
 let _config: LazyConfig | null = null
@@ -104,7 +124,7 @@ export async function getConfig(): Promise<LazyConfig> {
 }
 
 export async function getTask({ taskName }: { taskName: string }) {
-	return (await getConfig()).tasks[taskName] ?? log.fail(`No step called '${taskName}'`)
+	return (await getConfig()).tasks?.[taskName] ?? {}
 }
 
 export function getManifestPath({ taskName, cwd }: { taskName: string; cwd: string }) {

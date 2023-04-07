@@ -2,7 +2,7 @@ import { runIfNeeded } from './commands/run-if-needed'
 import { LazyConfig, Task } from './config'
 import { PackageDetails, RepoDetails } from './workspace'
 
-type TaskStatus = 'pending' | 'running' | 'success' | 'failure'
+type TaskStatus = 'pending' | 'running' | 'success:eager' | 'success:lazy' | 'failure'
 
 interface ScheduledTask {
 	taskName: string
@@ -84,10 +84,7 @@ export class TaskGraph {
 		}
 
 		const enqueueTask = (taskName: string, dependencies?: string[]) => {
-			const task = this.config.tasks[taskName]
-			if (!task) {
-				throw new Error(`Task ${taskName} not found`)
-			}
+			const task = this.config.tasks?.[taskName] ?? {}
 			if (task.topLevel && !filteredPackages) {
 				dependencies?.push(taskKey({ taskName, cwd: './' }))
 				visit({
@@ -121,9 +118,15 @@ export class TaskGraph {
 	async startNextTask() {
 		const nextTask = this.sortedTaskKeys.find((key) => this.allTasks[key].status === 'pending')
 		if (nextTask) {
-			this.allTasks[nextTask].status = 'running'
-			await runIfNeeded(this.allTasks[nextTask])
-			return true
+			try {
+				this.allTasks[nextTask].status = 'running'
+				const didNeedToRun = await runIfNeeded(this.allTasks[nextTask])
+				this.allTasks[nextTask].status = didNeedToRun ? 'success:eager' : 'success:lazy'
+				return true
+			} catch (e) {
+				this.allTasks[nextTask].status = 'failure'
+				throw e
+			}
 		}
 		return false
 	}

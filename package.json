@@ -11,7 +11,8 @@
 	"bin": {
 		"lazy": "./bin"
 	},
-	"license": "ISC",
+	"license": "MIT",
+	"types": "index.d.ts",
 	"dependencies": {
 		"@sindresorhus/slugify": "^2.2.0",
 		"fast-glob": "^3.2.12",

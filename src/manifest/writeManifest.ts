@@ -17,9 +17,16 @@ export async function writeManifest({
 	if (!fs.existsSync(path.dirname(outputPath))) {
 		fs.mkdirSync(path.dirname(outputPath), { recursive: true })
 	}
+
+	const manifest = await getManifest({ taskName, cwd, prevManifest })
+	if (!manifest) {
+		log.substep(`Cache disabled for ${taskName}`)
+		return
+	}
+
 	const out = fs.createWriteStream(outputPath)
 
-	for (const line of await getManifest({ taskName, cwd, prevManifest })) {
+	for (const line of manifest) {
 		out.write(line)
 		out.write('\n')
 	}

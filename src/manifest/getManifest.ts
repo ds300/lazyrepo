@@ -15,15 +15,19 @@ export async function getManifest({
 }) {
 	const result: string[] = []
 
-	const step = await getTask({ taskName })
+	const task = await getTask({ taskName })
 
-	for (const envVar of step.env ?? []) {
+	if (task.cache === 'none') return null
+
+	for (const envVar of task.cache?.env ?? []) {
 		result.push(`env ${envVar} \t${hashString(process.env[envVar] ?? '')}`)
 	}
 
 	let numSkipped = 0
 	let numHashed = 0
-	for (const file of await getInputFiles({ taskName, cwd })) {
+	const files = await getInputFiles({ taskName, cwd })
+	if (!files) return null
+	for (const file of files) {
 		const prev = prevManifest?.[file]
 		const stat = statSync(file)
 		if (prev && prev[1] === stat.mtime.getTime()) {

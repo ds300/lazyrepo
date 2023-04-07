@@ -27,12 +27,16 @@ async function cli(args: string[]) {
 	})
 
 	while (await tasks.startNextTask()) {}
+
+	if (Object.entries(tasks.allTasks).every(([_, task]) => task.status === 'success:lazy')) {
+		console.log(rainbow('>>> FULL LAZY'))
+	}
 }
 
 async function main() {
 	const done = log.timedTask(kleur.bold().bgGreen(' lazyrepo '))
 	await cli(process.argv.slice(2))
-	done(rainbow('>>> FULL LAZY 🐢'))
+	done('Done')
 }
 
 main()

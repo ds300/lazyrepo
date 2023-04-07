@@ -7,7 +7,13 @@ import { compareManifests, renderChange } from '../manifest/compareManifests'
 import { writeManifest } from '../manifest/writeManifest'
 import { runCommand } from '../runCommand'
 
-export async function runIfNeeded({ taskName, cwd }: { taskName: string; cwd: string }) {
+export async function runIfNeeded({
+	taskName,
+	cwd,
+}: {
+	taskName: string
+	cwd: string
+}): Promise<boolean> {
 	const currentManifestPath = getManifestPath({ taskName, cwd })
 	const previousManifestPath = currentManifestPath + '.prev'
 
@@ -56,4 +62,6 @@ export async function runIfNeeded({ taskName, cwd }: { taskName: string; cwd: st
 	if (!didRunCommand) {
 		log.step(`Cache hit! 🎉\n`)
 	}
+
+	return didRunCommand
 }
