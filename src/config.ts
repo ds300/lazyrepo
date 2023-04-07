@@ -33,11 +33,11 @@ export type CacheConfig =
       usesOutputFromDependencies?: boolean
       /**
        * If this task is not independent, this controls whether or not the inputs used by
-       * upstream packages running this task counts towards the input for the current package.
+       * upstream packages running this task count towards the input for the current package.
        *
        * @default true
        */
-      usesInputFromDependencies?: boolean
+      inheritsInputFromDependencies?: boolean
     }
 
 export interface Task {
