@@ -1,4 +1,6 @@
-# LAZYREPO
+<div alt style="text-align: center; transform: scale(.5);">
+  <img alt="LAZYREPO" src="https://github.com/ds300/lazyrepo/raw/main/assets/lazyrepo.png" />
+</div>
 
 > 💡 Currently in early alpha!
 
