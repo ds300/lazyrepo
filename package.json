@@ -1,6 +1,6 @@
 {
   "name": "lazyrepo",
-  "version": "0.0.0-alpha.0",
+  "version": "0.0.0-alpha.1",
   "description": "lazyrepo is a caching task runner for npm/yarn/pnpm monorepos",
   "repository": {
     "type": "git",
