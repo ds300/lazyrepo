@@ -1,30 +1,30 @@
 import { spawn } from 'child_process'
 import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'fs'
-import { cyan, gray, green } from 'kleur'
-import { getDiffPath, getManifestPath } from './config'
-import { log } from './log'
-
 import kleur from 'kleur'
+import { getDiffPath, getManifestPath } from './config.js'
+import { log } from './log.js'
+
 import path from 'path'
 import stripAnsi from 'strip-ansi'
-import { compareManifests, renderChange } from './manifest/compareManifests'
-import { writeManifest } from './manifest/writeManifest'
+import { compareManifests, renderChange } from './manifest/compareManifests.js'
+import { writeManifest } from './manifest/writeManifest.js'
 
-export async function runIfNeeded({
-  taskName,
-  cwd,
-}: {
-  taskName: string
-  cwd: string
-}): Promise<boolean> {
-  const currentManifestPath = getManifestPath({ taskName, cwd })
+/**
+ * @param {import('./types.js').ScheduledTask} task
+ * @returns {Promise<boolean>}
+ */
+export async function runIfNeeded(task) {
+  const currentManifestPath = getManifestPath(task)
   const previousManifestPath = currentManifestPath + '.prev'
 
-  log.log(`${kleur.bold(taskName)} 🎁 ${kleur.red(path.relative(process.cwd(), cwd))}`)
+  log.log(`${kleur.bold(task.taskName)} 🎁 ${kleur.red(path.relative(process.cwd(), task.cwd))}`)
 
   const didHaveManifest = existsSync(currentManifestPath)
 
-  let prevManifest: Record<string, [hash: string, lastModified: number]> | undefined
+  /**
+   * @type {Record<string, [hash: string, lastModified: number]> | undefined}
+   */
+  let prevManifest
 
   if (didHaveManifest) {
     renameSync(currentManifestPath, previousManifestPath)
@@ -39,19 +39,19 @@ export async function runIfNeeded({
     }
   }
 
-  await writeManifest({ taskName, cwd, prevManifest })
+  await writeManifest({ ...task, prevManifest })
 
   let didRunCommand = false
 
   if (didHaveManifest) {
-    const diff = compareManifests({
-      currentManifest: readFileSync(currentManifestPath).toString(),
-      previousManifest: readFileSync(previousManifestPath).toString(),
-    })
+    const diff = compareManifests(
+      readFileSync(previousManifestPath).toString(),
+      readFileSync(currentManifestPath).toString(),
+    )
 
     if (diff.length) {
       const allLines = diff.map(renderChange)
-      const diffPath = getDiffPath({ taskName, cwd })
+      const diffPath = getDiffPath(task)
       if (!existsSync(path.dirname(diffPath))) {
         mkdirSync(path.dirname(diffPath), { recursive: true })
       }
@@ -62,11 +62,11 @@ export async function runIfNeeded({
         log.substep(`... and ${allLines.length - 10} more. See ${diffPath} for full diff.`)
       }
 
-      await runCommand({ taskName, cwd })
+      await runCommand(task)
       didRunCommand = true
     }
   } else {
-    await runCommand({ taskName, cwd })
+    await runCommand(task)
     didRunCommand = true
   }
 
@@ -77,19 +77,24 @@ export async function runIfNeeded({
   return didRunCommand
 }
 
-export async function runCommand({ taskName, cwd }: { taskName: string; cwd: string }) {
-  const packageJson = JSON.parse(readFileSync(`${cwd}/package.json`, 'utf8'))
-  const command = packageJson.scripts[taskName.startsWith('//#') ? taskName.slice(3) : taskName]
+/**
+ * @param {import('./types.js').ScheduledTask} task
+ * @returns {Promise<void>}
+ */
+export async function runCommand(task) {
+  const packageJson = JSON.parse(readFileSync(`${task.cwd}/package.json`, 'utf8'))
+  const command =
+    packageJson.scripts[task.taskName.startsWith('//#') ? task.taskName.slice(3) : task.taskName]
 
   const extraArgs = process.argv.slice(3)
-  const color = log.step(green().bold(command))
+  const color = log.step(kleur.green().bold(command))
   const start = Date.now()
   try {
     await new Promise((resolve, reject) => {
       const proc = spawn(command + ' ' + extraArgs.join(' '), {
         stdio: 'inherit',
         shell: true,
-        cwd,
+        cwd: task.cwd,
         env: {
           ...process.env,
           PATH: `${process.env.PATH}:./node_modules/.bin:${process.cwd()}/node_modules/.bin`,
@@ -105,13 +110,13 @@ export async function runCommand({ taskName, cwd }: { taskName: string; cwd: str
       })
     })
   } catch (e) {
-    const manifestPath = getManifestPath({ taskName, cwd })
+    const manifestPath = getManifestPath(task)
     if (existsSync(manifestPath)) {
       unlinkSync(manifestPath)
     }
     throw e
   }
 
-  log.log(gray(`\n              ∙  ∙  ∙\n`))
-  log.step(`Done in ${cyan(((Date.now() - start) / 1000).toFixed(2) + 's')}`)
+  log.log(kleur.gray(`\n              ∙  ∙  ∙\n`))
+  log.step(`Done in ${kleur.cyan(((Date.now() - start) / 1000).toFixed(2) + 's')}`)
 }

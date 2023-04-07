@@ -1,10 +1,13 @@
 import { writeFileSync } from 'fs'
 import kleur from 'kleur'
-import { help } from './commands/help'
-import { run } from './commands/run'
-import { log } from './log'
+import { help } from './commands/help.js'
+import { run } from './commands/run.js'
+import { log } from './log.js'
 
-async function cli(args: string[]) {
+/**
+ * @param {string[]} args
+ */
+async function cli(args) {
   let [command, taskName] = args
   if (!command) {
     help(true)
@@ -12,12 +15,8 @@ async function cli(args: string[]) {
   }
 
   if (command === 'init') {
-    writeFileSync(
-      'lazy.config.ts',
-      `import { LazyConfig } from 'lazyrepo'\n\nexport default {} satisfies LazyConfig`,
-    )
-    log.success('Created lazy.config.ts')
-    process.exit(1)
+
+    process.exit(0)
   }
 
   if (command === 'help') {

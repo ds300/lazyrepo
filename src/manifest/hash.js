@@ -5,7 +5,13 @@ const bufferSize = 1024
 
 const buffer = Buffer.alloc(bufferSize)
 
-export function hashFile(filePath: string, fileSize: number) {
+/**
+ *
+ * @param {string} filePath
+ * @param {number} fileSize
+ * @returns
+ */
+export function hashFile(filePath, fileSize) {
   const sha = crypto.createHash('sha256')
   const fileDescriptor = fs.openSync(filePath, 'r')
   let totalBytesRead = 0
@@ -27,7 +33,11 @@ export function hashFile(filePath: string, fileSize: number) {
   return sha.digest('hex')
 }
 
-export function hashString(string: string | Buffer) {
+/**
+ * @param {string | Buffer} string
+ * @returns
+ */
+export function hashString(string) {
   const sha = crypto.createHash('sha256')
   sha.update(string)
   return sha.digest('hex')

@@ -1,19 +1,19 @@
 import { statSync } from 'fs'
-import { getTask } from '../config'
-import { log } from '../log'
-import { getInputFiles } from './getInputFiles'
-import { hashFile, hashString } from './hash'
+import { getTask } from '../config.js'
+import { log } from '../log.js'
+import { getInputFiles } from './getInputFiles.js'
+import { hashFile, hashString } from './hash.js'
 
-export async function getManifest({
-  taskName,
-  cwd,
-  prevManifest,
-}: {
-  taskName: string
-  cwd: string
-  prevManifest?: Record<string, [hash: string, lastModified: number]>
-}) {
-  const result: string[] = []
+/**
+ *
+ * @param {{ taskName: string, cwd: string, prevManifest?: Record<string, [hash: string, lastModified: number]> }} param0
+ * @returns
+ */
+export async function getManifest({ taskName, cwd, prevManifest }) {
+  /**
+   * @type {string[]}
+   */
+  const result = []
 
   const task = await getTask({ taskName })
 

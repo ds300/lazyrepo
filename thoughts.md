@@ -1,5 +1,6 @@
 # urgent
 
+- do less allocation when creating/comparing manifests getNextManifest(prev, files, evnVars): [diff, next]
 - handle failure gracefully
 - Add concurrency
 - cache outputs
@@ -9,6 +10,7 @@
 
 # features
 
+- validate config with zod?
 - print version on launch
 - add --runInBand mode
 - support json schema and .ts config files

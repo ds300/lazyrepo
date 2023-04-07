@@ -3,26 +3,12 @@ import { existsSync, readFileSync } from 'fs'
 import path from 'path'
 import yaml from 'yaml'
 
-export type PackageDetails = {
-  name: string
-  dir: string
-  localDeps: string[]
-  version: string
-  scripts: Record<string, string>
-}
-
-export type RepoDetails = {
-  packagesByName: Record<string, PackageDetails>
-  packagesInTopologicalOrder: PackageDetails[]
-}
-
-function getPackageDetails({
-  dir,
-  allLocalPackageNames,
-}: {
-  dir: string
-  allLocalPackageNames: string[]
-}): PackageDetails | null {
+/**
+ *
+ * @param {{ dir: string, allLocalPackageNames: string[] }} param
+ * @returns {import('./types.js').PackageDetails | null}
+ */
+function getPackageDetails({ dir, allLocalPackageNames }) {
   const packageJsonPath = path.join(dir, 'package.json')
   if (!existsSync(packageJsonPath)) {
     return null
@@ -39,16 +25,21 @@ function getPackageDetails({
   }
 }
 
-let _repoDetails: RepoDetails | null = null
+/**
+ * @type {import('./types.js').RepoDetails | null}
+ */
+let _repoDetails = null
 
-function getWorkspaceGlobs(): Array<string> {
+/**
+ *
+ * @returns {string[]}
+ */
+function getWorkspaceGlobs() {
   const workspaceRoot = process.cwd()
   try {
     const pnpmWorkspaceYamlPath = path.join(workspaceRoot, 'pnpm-workspace.yaml')
     if (existsSync(pnpmWorkspaceYamlPath)) {
-      const workspaceConfig = yaml.parse(
-        readFileSync(pnpmWorkspaceYamlPath, 'utf8').toString(),
-      ) as Record<'packages', Array<string>>
+      const workspaceConfig = yaml.parse(readFileSync(pnpmWorkspaceYamlPath, 'utf8').toString())
 
       return workspaceConfig?.packages || []
     } else {
@@ -69,7 +60,10 @@ function getPackageJsonPaths() {
   return workspacePaths
 }
 
-export function getRepoDetails(): RepoDetails {
+/**
+ * @returns {import('./types.js').RepoDetails}
+ */
+export function getRepoDetails() {
   if (_repoDetails) {
     return _repoDetails
   }
@@ -77,9 +71,7 @@ export function getRepoDetails(): RepoDetails {
   const rootDir = process.cwd()
 
   const packageJsonPaths = getPackageJsonPaths()
-  const packageJsonObjects = packageJsonPaths.map((path: string) =>
-    JSON.parse(readFileSync(path, 'utf8')),
-  )
+  const packageJsonObjects = packageJsonPaths.map((path) => JSON.parse(readFileSync(path, 'utf8')))
 
   const allLocalPackageNames = packageJsonObjects.map((packageJson) => packageJson.name)
 
@@ -99,11 +91,29 @@ export function getRepoDetails(): RepoDetails {
   return _repoDetails
 }
 
-export function topologicalSortPackages(packages: Record<string, PackageDetails>) {
-  const sorted: PackageDetails[] = []
-  const visited = new Set<string>()
+/**
+ *
+ * @param {Record<string, import('./types.js').PackageDetails>} packages
+ * @returns {import('./types.js').PackageDetails[]}
+ */
 
-  function visit(packageName: string, path: string[]) {
+export function topologicalSortPackages(packages) {
+  /**
+   * @type {import('./types.js').PackageDetails[]}
+   */
+  const sorted = []
+  /**
+   * @type {Set<string>}
+   */
+  const visited = new Set()
+
+  /**
+   *
+   * @param {string} packageName
+   * @param {string[]} path
+   * @returns
+   */
+  function visit(packageName, path) {
     if (visited.has(packageName)) {
       return
     }

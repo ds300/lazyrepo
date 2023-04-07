@@ -1,10 +1,14 @@
 import glob from 'fast-glob'
 import fs from 'fs'
 import path from 'path'
-import { getTask, GlobConfig } from '../config'
-import { log } from '../log'
+import { getTask } from '../config.js'
+import { log } from '../log.js'
 
-function getIncludes(includes: string[] | undefined): string[] {
+/**
+ * @param {string[] | undefined} includes
+ * @returns {string[]}
+ */
+function getIncludes(includes) {
   if (!includes) {
     return ['**/*']
   }
@@ -14,7 +18,11 @@ function getIncludes(includes: string[] | undefined): string[] {
   return includes
 }
 
-function getExcludes(excludes: string[] | undefined): string[] {
+/**
+ * @param {string[] | undefined} excludes
+ * @returns {string[]}
+ */
+function getExcludes(excludes) {
   if (!excludes) {
     return []
   }
@@ -24,7 +32,12 @@ function getExcludes(excludes: string[] | undefined): string[] {
   return excludes
 }
 
-function extractGlobPattern(glob: GlobConfig | null | undefined) {
+/**
+ *
+ * @param {import('../types.js').GlobConfig | null | undefined} glob
+ * @returns
+ */
+function extractGlobPattern(glob) {
   if (!glob) {
     return {
       include: ['**/*'],
@@ -41,14 +54,22 @@ function extractGlobPattern(glob: GlobConfig | null | undefined) {
   return glob
 }
 
-export async function getInputFiles({ taskName, cwd }: { taskName: string; cwd: string }) {
+/**
+ *
+ * @param {{taskName: string, cwd: string}} arg
+ * @returns
+ */
+export async function getInputFiles({ taskName, cwd }) {
   const { cache } = (await getTask({ taskName })) ?? {}
 
   if (cache === 'none') {
     return null
   }
 
-  const files = new Set<string>()
+  /**
+   * @type {Set<string>}
+   */
+  const files = new Set()
 
   const { include, exclude } = extractGlobPattern(cache?.inputs)
 
@@ -75,7 +96,12 @@ export async function getInputFiles({ taskName, cwd }: { taskName: string; cwd: 
   return [...files].sort()
 }
 
-function visitAllFiles(dir: string, visit: (filePath: string) => void) {
+/**
+ *
+ * @param {string} dir
+ * @param {(filePath: string) => void} visit
+ */
+function visitAllFiles(dir, visit) {
   for (const fileName of fs.readdirSync(dir)) {
     const fullPath = path.join(dir, fileName)
     if (fs.statSync(fullPath).isDirectory()) {

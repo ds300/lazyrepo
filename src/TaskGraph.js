@@ -1,42 +1,46 @@
-import { LazyConfig, Task } from './config'
-import { runIfNeeded } from './runCommand'
-import { PackageDetails, RepoDetails } from './workspace'
+import { cpus } from 'os'
+import { runIfNeeded } from './runCommand.js'
 
-type TaskStatus = 'pending' | 'running' | 'success:eager' | 'success:lazy' | 'failure'
-
-interface ScheduledTask {
-  taskName: string
-  cwd: string
-  status: TaskStatus
-  outputFiles: string[]
-  dependencies: string[]
-}
-
-function taskKey({ taskName, cwd }: { taskName: string; cwd: string }) {
+/**
+ *
+ * @param {string} cwd
+ * @param {string} taskName
+ * @returns {string}
+ */
+function taskKey(cwd, taskName) {
   return `${cwd}:${taskName}`
 }
 
-const numCpus = require('os').cpus().length
+const numCpus = cpus().length
 
 const maxConcurrentTasks = Math.max(1, numCpus - 1)
 
 export class TaskGraph {
-  readonly repoDetails: RepoDetails
-  readonly config: LazyConfig
-  readonly allTasks: Record<string, ScheduledTask> = {}
-  readonly sortedTaskKeys: string[] = []
+  /**
+   * @readonly
+   * @type {import('./types.js').RepoDetails}
+   */
+  repoDetails
+  /**
+   * @readonly
+   * @type {import('../index.js').LazyConfig}
+   */
+  config
+  /**
+   * @readonly
+   * @type {Record<string, import('./types.js').ScheduledTask>}
+   */
+  allTasks = {}
+  /**
+   * @readonly
+   * @type {string[]}
+   */
+  sortedTaskKeys = []
 
-  constructor({
-    config,
-    repoDetails,
-    endTasks,
-    filteredPackages,
-  }: {
-    config: LazyConfig
-    repoDetails: RepoDetails
-    endTasks: string[]
-    filteredPackages?: string[]
-  }) {
+  /**
+   * @param {{ config: import('../index.js').LazyConfig, repoDetails: import('./types.js').RepoDetails, endTasks: string[], filteredPackages?: string[] }} arg
+   */
+  constructor({ config, repoDetails, endTasks, filteredPackages }) {
     this.config = config
     this.repoDetails = repoDetails
 
@@ -44,28 +48,23 @@ export class TaskGraph {
       filteredPackages = undefined
     }
 
-    const visit = ({
-      task,
-      taskName,
-      dir,
-      packageDetails,
-    }: {
-      task: Task
-      taskName: string
-      dir: string
-      packageDetails: PackageDetails | null
-    }) => {
-      const key = taskKey({ taskName, cwd: dir })
+    /**
+     * @param {{ task: import('./types.js').Task, taskName: string, dir: string, packageDetails: import('./types.js').PackageDetails | null }} arg
+     * @returns
+     */
+    const visit = ({ task, taskName, dir, packageDetails }) => {
+      const key = taskKey(dir, taskName)
       if (this.allTasks[key]) {
         return
       }
-      const result = (this.allTasks[key] = {
+      this.allTasks[key] = {
         taskName,
         cwd: dir,
         status: 'pending',
         outputFiles: [],
-        dependencies: [] as string[],
-      })
+        dependencies: [],
+      }
+      const result = this.allTasks[key]
 
       for (const depTaskName of Object.keys(task.dependsOn ?? {})) {
         enqueueTask(depTaskName, result.dependencies)
@@ -74,7 +73,7 @@ export class TaskGraph {
       for (const packageName of packageDetails?.localDeps ?? []) {
         const pkg = this.repoDetails.packagesByName[packageName]
         if (pkg.scripts?.[taskName]) {
-          result.dependencies.push(taskKey({ taskName, cwd: pkg.dir }))
+          result.dependencies.push(taskKey(pkg.dir, taskName))
           visit({
             task,
             taskName,
@@ -87,10 +86,16 @@ export class TaskGraph {
       this.sortedTaskKeys.push(key)
     }
 
-    const enqueueTask = (taskName: string, dependencies?: string[]) => {
+    /**
+     *
+     * @param {string} taskName
+     * @param {string[]} [dependencies]
+     * @returns
+     */
+    const enqueueTask = (taskName, dependencies) => {
       const task = this.config.tasks?.[taskName] ?? {}
       if (task.topLevel && !filteredPackages) {
-        dependencies?.push(taskKey({ taskName, cwd: './' }))
+        dependencies?.push(taskKey('./', taskName))
         visit({
           task,
           taskName,
@@ -103,7 +108,7 @@ export class TaskGraph {
       for (const packageName of filteredPackages ?? Object.keys(this.repoDetails.packagesByName)) {
         const pkg = this.repoDetails.packagesByName[packageName]
         if (pkg.scripts?.[taskName]) {
-          dependencies?.push(taskKey({ taskName, cwd: pkg.dir }))
+          dependencies?.push(taskKey(pkg.dir, taskName))
           visit({
             task,
             taskName,
@@ -119,7 +124,11 @@ export class TaskGraph {
     }
   }
 
-  isTaskReady(key: string) {
+  /**
+   * @param {string} key
+   * @returns
+   */
+  isTaskReady(key) {
     const task = this.allTasks[key]
     return (
       task.status === 'pending' &&
@@ -152,11 +161,17 @@ export class TaskGraph {
   }
 
   async runAllTasks() {
-    let resolve: () => any = () => {}
-    let reject: (e: any) => any = () => {}
-    const promise = new Promise<void>((res, rej) => {
-      resolve = res as any
-      reject = rej as any
+    /**
+     * @type {(val: any) => any}
+     */
+    let resolve = () => {}
+    /**
+     * @type {(err: any) => any}
+     */
+    let reject = () => {}
+    const promise = new Promise((res, rej) => {
+      resolve = res
+      reject = rej
     })
 
     const tick = () => {
@@ -165,7 +180,7 @@ export class TaskGraph {
       const failedTasks = this.allFailedTasks()
 
       if (runningTasks.length === 0 && readyTasks.length === 0 && failedTasks.length === 0) {
-        return resolve()
+        return resolve(null)
       }
 
       if (failedTasks.length > 0 && runningTasks.length === 0) {
@@ -198,7 +213,10 @@ export class TaskGraph {
 
       return true
     }
-    const runTask = async (taskKey: string) => {
+    /**
+     * @param {string} taskKey
+     */
+    const runTask = async (taskKey) => {
       const didNeedToRun = await runIfNeeded(this.allTasks[taskKey])
       this.allTasks[taskKey].status = didNeedToRun ? 'success:eager' : 'success:lazy'
       tick()

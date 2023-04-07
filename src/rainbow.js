@@ -3,7 +3,11 @@
 // Source: https://github.com/raphamorim/go-rainbow
 
 // SPDX-License-Identifier: MIT
-function rgb(i: number): [number, number, number] {
+/**
+ * @param {number} i
+ * @returns {[number, number, number]}
+ */
+function rgb(i) {
   const f = 0.345
 
   return [
@@ -13,10 +17,18 @@ function rgb(i: number): [number, number, number] {
   ]
 }
 
-const char = (c: string, [r, g, b]: readonly [number, number, number]): string =>
-  `\x1b[1m\x1b[38;2;${r};${g};${b}m${c}\x1b[0m\x1b[0;1m`
+/**
+ * @param {string} c
+ * @param {[number, number, number]} param1
+ * @returns {string}
+ */
+const char = (c, [r, g, b]) => `\x1b[1m\x1b[38;2;${r};${g};${b}m${c}\x1b[0m\x1b[0;1m`
 
-export function rainbow(text: string): string {
+/**
+ * @param {string} text
+ * @returns {string}
+ */
+export function rainbow(text) {
   let rainbowStr = ''
 
   let i = 0

@@ -1,18 +1,14 @@
 import fs from 'fs'
 import path from 'path'
-import { getManifestPath } from '../config'
-import { log } from '../log'
-import { getManifest } from './getManifest'
+import { getManifestPath } from '../config.js'
+import { log } from '../log.js'
+import { getManifest } from './getManifest.js'
 
-export async function writeManifest({
-  taskName,
-  cwd,
-  prevManifest,
-}: {
-  taskName: string
-  cwd: string
-  prevManifest?: Record<string, [hash: string, lastModified: number]>
-}) {
+/**
+ * @param {{ taskName: string, cwd: string, prevManifest?: Record<string, [hash: string, lastModified: number]> }} param0
+ * @returns
+ */
+export async function writeManifest({ taskName, cwd, prevManifest }) {
   const outputPath = getManifestPath({ taskName, cwd })
   if (!fs.existsSync(path.dirname(outputPath))) {
     fs.mkdirSync(path.dirname(outputPath), { recursive: true })

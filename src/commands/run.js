@@ -1,10 +1,13 @@
-import { getConfig } from '../config'
-import { log } from '../log'
-import { rainbow } from '../rainbow'
-import { TaskGraph } from '../TaskGraph'
-import { getRepoDetails } from '../workspace'
+import { getConfig } from '../config.js'
+import { log } from '../log.js'
+import { rainbow } from '../rainbow.js'
+import { TaskGraph } from '../TaskGraph.js'
+import { getRepoDetails } from '../workspace.js'
 
-export async function run(taskNames: string[]) {
+/**
+ * @param {string[]} taskNames
+ */
+export async function run(taskNames) {
   const tasks = new TaskGraph({
     config: await getConfig(),
     endTasks: taskNames,

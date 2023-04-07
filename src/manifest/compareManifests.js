@@ -1,18 +1,16 @@
 import k from 'kleur'
 
-export type Change = {
-  type: 'addition' | 'removal' | 'modification'
-  value: string
-}
-
-export function compareManifests({
-  currentManifest,
-  previousManifest,
-}: {
-  currentManifest: string
-  previousManifest: string
-}) {
-  const changes: Change[] = []
+/**
+ *
+ * @param {string} currentManifest
+ *  @param {string} previousManifest
+ * @returns
+ */
+export function compareManifests(previousManifest, currentManifest) {
+  /**
+   * @type {import('../types.js').ManifestChange[]}
+   */
+  const changes = []
   const previousLines = previousManifest.trim().split('\n')
   const currentLines = currentManifest.trim().split('\n')
 
@@ -43,7 +41,12 @@ export function compareManifests({
   return changes
 }
 
-export function renderChange({ type, value }: Change): string {
+/**
+ *
+ * @param {import('../types.js').ManifestChange} change
+ * @returns {string}
+ */
+export function renderChange({ type, value }) {
   switch (type) {
     case 'addition':
       return k.bold().green('+') + ' added ' + value

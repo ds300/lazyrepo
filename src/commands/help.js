@@ -2,11 +2,18 @@ import kleur from 'kleur'
 
 const { bold, gray } = kleur
 
-function required(name: string) {
+/**
+ * @param {string} name
+ * @returns
+ */
+function required(name) {
   return gray('<') + name + gray('>')
 }
 
-export function help(error?: boolean) {
+/**
+ * @param {boolean} [error]
+ */
+export function help(error) {
   // eslint-disable-next-line no-console
   console[error ? 'error' : 'log'](`USAGE
 
