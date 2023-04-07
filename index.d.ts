@@ -43,7 +43,7 @@ export interface Task {
    */
   topLevel?: boolean
   /** The other commands that must be completed before this one can run. */
-  dependsOn?: {
+  runsAfter?: {
     [taskName: string]: {
       /**
        * Whether or not this task uses the files created by the named task.

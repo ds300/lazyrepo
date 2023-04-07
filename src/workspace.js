@@ -19,9 +19,10 @@ function getPackageDetails({ dir, allLocalPackageNames }) {
     dir,
     version: packageJson.version,
     scripts: packageJson.scripts ?? {},
-    localDeps: Object.keys(packageJson.dependencies ?? {}).filter((dep) =>
-      allLocalPackageNames.includes(dep),
-    ),
+    localDeps: Object.keys(packageJson.dependencies ?? {})
+      .filter((dep) => allLocalPackageNames.includes(dep))
+      // TODO: This sort is depended upon, test it!!!
+      .sort(),
   }
 }
 

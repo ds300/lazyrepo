@@ -7,6 +7,8 @@ export interface ScheduledTask {
   outputFiles: string[]
   dependencies: string[]
   terminalPrefix: string
+  inputManifestCacheKey: string | null
+  packageDetails: PackageDetails | null
 }
 
 export type PackageDetails = {

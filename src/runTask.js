@@ -11,9 +11,10 @@ import { writeManifest } from './manifest/writeManifest.js'
 
 /**
  * @param {import('./types.js').ScheduledTask} task
+ * @param {import('./TaskGraph.js').TaskGraph} tasks
  * @returns {Promise<boolean>}
  */
-export async function runIfNeeded(task) {
+export async function runTaskIfNeeded(task, tasks) {
   const currentManifestPath = getManifestPath(task)
   const previousManifestPath = currentManifestPath + '.prev'
 
@@ -42,9 +43,9 @@ export async function runIfNeeded(task) {
     }
   }
 
-  await writeManifest({ task, prevManifest })
+  await writeManifest({ task, tasks, prevManifest })
 
-  let didRunCommand = false
+  let didRunTask = false
 
   if (didHaveManifest) {
     const diff = compareManifests(
@@ -65,28 +66,28 @@ export async function runIfNeeded(task) {
         print(kleur.gray(`... and ${allLines.length - 10} more. See ${diffPath} for full diff.`))
       }
 
-      await runCommand(task)
-      didRunCommand = true
+      await runTask(task)
+      didRunTask = true
     }
   } else {
-    await runCommand(task)
-    didRunCommand = true
+    await runTask(task)
+    didRunTask = true
   }
 
   print(kleur.gray('input manifest saved: ' + path.relative(process.cwd(), currentManifestPath)))
 
-  if (!didRunCommand) {
+  if (!didRunTask) {
     print(`cache hit ⚡️`)
   }
 
-  return didRunCommand
+  return didRunTask
 }
 
 /**
  * @param {import('./types.js').ScheduledTask} task
  * @returns {Promise<void>}
  */
-async function runCommand(task) {
+async function runTask(task) {
   const packageJson = JSON.parse(readFileSync(`${task.cwd}/package.json`, 'utf8'))
   const command = packageJson.scripts[task.taskName]
 
@@ -110,7 +111,7 @@ async function runCommand(task) {
       // save stdout to buffer
 
       proc.stdout.on('data', (data) => {
-        console.log("stdout")
+        console.log('stdout')
         outData += data
         const lastLineFeed = outData.lastIndexOf('\n')
         if (lastLineFeed === -1) {

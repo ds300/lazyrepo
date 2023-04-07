@@ -1,7 +1,7 @@
 import kleur from 'kleur'
 import { cpus } from 'os'
 import { relative } from 'path'
-import { runIfNeeded } from './runCommand.js'
+import { runTaskIfNeeded } from './runTask.js'
 
 /**
  *
@@ -9,7 +9,7 @@ import { runIfNeeded } from './runCommand.js'
  * @param {string} taskName
  * @returns {string}
  */
-function taskKey(cwd, taskName) {
+export function taskKey(cwd, taskName) {
   return `${relative(process.cwd(), cwd)}:${taskName}`
 }
 
@@ -72,10 +72,12 @@ export class TaskGraph {
         outputFiles: [],
         dependencies: [],
         terminalPrefix: colors[nextColorIndex++ % colors.length](key),
+        inputManifestCacheKey: null,
+        packageDetails
       }
       const result = this.allTasks[key]
 
-      for (const depTaskName of Object.keys(task.dependsOn ?? {})) {
+      for (const depTaskName of Object.keys(task.runsAfter ?? {})) {
         enqueueTask(depTaskName, result.dependencies)
       }
 
@@ -226,7 +228,7 @@ export class TaskGraph {
      * @param {string} taskKey
      */
     const runTask = async (taskKey) => {
-      const didNeedToRun = await runIfNeeded(this.allTasks[taskKey])
+      const didNeedToRun = await runTaskIfNeeded(this.allTasks[taskKey], this)
       this.allTasks[taskKey].status = didNeedToRun ? 'success:eager' : 'success:lazy'
       tick()
     }
