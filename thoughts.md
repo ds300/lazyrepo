@@ -5,7 +5,7 @@
 - make sure other config options are satisfied
 - add --force mode
 - test
-- add --runInBand mode
+- add --concurrency option
 - more docs in readme
 
 # not urgent
