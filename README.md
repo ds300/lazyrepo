@@ -49,8 +49,8 @@ Let's say you have two packages `app` and `utils`. `app` depends on `utils` and 
 The empty `lazy.config.js` file looks like this:
 
 ```ts
-import type { LazyConfig } from 'lazyrepo'
-export default {} satisfies LazyConfig
+/** @type {import('lazyrepo').LazyConfig} */
+export default {}
 ```
 
 - `utils`'s tests will be executed before `app`'s. If `utils`'s tests fail `app`'s tests will not run. This is because if something breaks in `utils` it could lead to false negatives in `app`'s test suite.
@@ -60,7 +60,7 @@ export default {} satisfies LazyConfig
 An explicit version of the default task config would look like
 
 ```ts
-import type { LazyConfig } from 'lazyrepo'
+/** @type {import('lazyrepo').LazyConfig} */
 export default {
   tasks: {
     test: {
@@ -71,10 +71,8 @@ export default {
       },
     },
   },
-} satisfies LazyConfig
+}
 ```
-
-## Debugging
 
 ## Migrating from turborepo
 
