@@ -1,6 +1,6 @@
+import { spawn } from 'child_process'
 import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'fs'
 import kleur from 'kleur'
-import { spawn } from 'node-pty'
 import { getDiffPath, getManifestPath } from './config.js'
 import { log } from './log.js'
 
@@ -105,31 +105,59 @@ async function runCommand(task) {
         },
       })
       // forward all output to the terminal without losing color
-      let buf = ''
-      proc.onData((data) => {
-        buf += data
-        const lastCarriageReturn = buf.lastIndexOf('\n')
-        if (lastCarriageReturn === -1) {
+      let outData = ''
+
+      // save stdout to buffer
+
+      proc.stdout.on('data', (data) => {
+        console.log("stdout")
+        outData += data
+        const lastLineFeed = outData.lastIndexOf('\n')
+        if (lastLineFeed === -1) {
           return
         }
 
-        const lines = buf.split('\n')
-        buf = lines.pop() || ''
+        const lines = outData.replaceAll('\r', '').split('\n')
+        outData = lines.pop() || ''
 
         for (const line of lines) {
           process.stdout.write(task.terminalPrefix + ' ' + line + '\n')
         }
       })
 
-      proc.onExit(({ exitCode }) => {
-        if (buf) {
-          process.stdout.write(task.terminalPrefix + ' ' + buf + '\n')
+      let errData = ''
+
+      proc.stderr.on('data', (data) => {
+        errData += data
+        const lastLineFeed = errData.lastIndexOf('\n')
+        if (lastLineFeed === -1) {
+          return
         }
-        if (exitCode === 0) {
+
+        const lines = errData.replaceAll('\r', '').split('\n')
+        errData = lines.pop() || ''
+
+        for (const line of lines) {
+          process.stderr.write(task.terminalPrefix + ' ' + line + '\n')
+        }
+      })
+
+      proc.on('exit', (code) => {
+        if (outData) {
+          process.stdout.write(task.terminalPrefix + ' ' + outData + '\n')
+        }
+        if (errData) {
+          process.stderr.write(task.terminalPrefix + ' ' + errData + '\n')
+        }
+        if (code === 0) {
           resolve(null)
         } else {
-          reject(new Error(`Command '${command}' exited with code ${exitCode}`))
+          reject(new Error(`Command '${command}' exited with code ${code}`))
         }
+      })
+
+      proc.on('error', (err) => {
+        reject(err)
       })
     })
   } catch (e) {

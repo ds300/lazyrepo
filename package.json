@@ -24,7 +24,6 @@
     "fast-glob": "^3.2.12",
     "fast-json-stable-stringify": "^2.1.0",
     "kleur": "^4.1.5",
-    "node-pty": "^0.10.1",
     "strip-ansi": "^7.0.1",
     "yaml": "^2.2.1"
   },

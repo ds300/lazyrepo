@@ -7,7 +7,6 @@ specifiers:
   fast-json-stable-stringify: ^2.1.0
   kleur: ^4.1.5
   node-gyp: ^9.3.1
-  node-pty: ^0.10.1
   prettier: ^2.8.7
   prettier-plugin-organize-imports: ^3.2.2
   strip-ansi: ^7.0.1
@@ -20,7 +19,6 @@ dependencies:
   fast-glob: 3.2.12
   fast-json-stable-stringify: 2.1.0
   kleur: 4.1.5
-  node-pty: 0.10.1
   strip-ansi: 7.0.1
   yaml: 2.2.1
 
@@ -1000,10 +998,6 @@ packages:
     resolution: {integrity: sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==}
     dev: true
 
-  /nan/2.17.0:
-    resolution: {integrity: sha512-2ZTgtl0nJsO0KQCjEpxcIr5D+Yv90plTitZt9JBfQvVJDS5seMl3FOvsh3+9CoYWXf/1l5OaZzzF6nDm4cagaQ==}
-    dev: false
-
   /nanoid/3.3.6:
     resolution: {integrity: sha512-BGcqMMJuToF7i1rt+2PWSNVnWIkGCU78jBG3RxO/bZlnZPK2Cmi2QaffxGO/2RvWi9sL+FAiRiXMgsyxQ1DIDA==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
@@ -1034,13 +1028,6 @@ packages:
       - bluebird
       - supports-color
     dev: true
-
-  /node-pty/0.10.1:
-    resolution: {integrity: sha512-JTdtUS0Im/yRsWJSx7yiW9rtpfmxqxolrtnyKwPLI+6XqTAPW/O2MjS8FYL4I5TsMbH2lVgDb2VMjp+9LoQGNg==}
-    requiresBuild: true
-    dependencies:
-      nan: 2.17.0
-    dev: false
 
   /nopt/6.0.0:
     resolution: {integrity: sha512-ZwLpbTgdhuZUnZzjd7nb1ZV+4DoiC6/sfiVKok72ym/4Tlf+DFdlHYmT2JPmcNNWV6Pi3SDf1kT+A4r9RTuT9g==}

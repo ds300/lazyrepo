@@ -83,7 +83,7 @@ export async function getInputFiles(task) {
       cwd: task.cwd,
       ignore: ['node_modules', '**/node_modules', ...excludes],
     })) {
-      const fullPath = path.join(task.cwd, file)
+      const fullPath = path.relative(process.cwd(), path.join(task.cwd, file))
       if (fs.statSync(fullPath).isDirectory()) {
         visitAllFiles(fullPath, (filePath) => files.add(filePath))
       } else {
