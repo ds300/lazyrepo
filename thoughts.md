@@ -1,5 +1,6 @@
 # urgent
 
+- zero-config should be an option
 - rearchitect to avoid prop drilling
 - consistent way to set defaults. we need a TaskConfig vs Task and so on.
 - do less allocation when creating/comparing manifests getNextManifest(prev, files, evnVars): [diff, next] THIS IS ACTUALLY CRITICAL FOR MAKING DIFFS MINIMAL
