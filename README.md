@@ -10,11 +10,11 @@ It fits right into the slot that `turborepo` carved out: making your `"scripts"`
 
 `lazyrepo` is scary fast, despite being implemented with _(yawn)_ [TypeScript](https://typescriptlang.org), rather than a young handsome witty systems language.
 
-It has a human-friendly config format, and the sensible defaults will make you wish there was a `:chefs-kiss:` emoji.
+It has a human-friendly config format, and the defaults are profoundly sensible.
 
 Best of all, it gives you helpful concise feedback so you can quickly debug when things aren't working quite how you'd expect.
 
-**No more long sad afternoons**. Guaranteed. Or your money back.
+Trust me, the whole package is so delightful it will make you wish there was a `:chefs-kiss:` emoji.
 
 ## Installation
 
