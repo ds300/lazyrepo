@@ -79,7 +79,7 @@ export interface LazyConfig {
 	globalDependencies?: string[]
 	/** Globs of any files that should _never_ contribute to the cache key for all steps. These cannot be overridden. */
 	globalExcludes?: string[]
-	pipeline: { [taskName: string]: Task }
+	tasks: { [taskName: string]: Task }
 }
 
 let _config: LazyConfig | null = null
@@ -104,7 +104,7 @@ export async function getConfig(): Promise<LazyConfig> {
 }
 
 export async function getTask({ taskName }: { taskName: string }) {
-	return (await getConfig()).pipeline[taskName] ?? log.fail(`No step called '${taskName}'`)
+	return (await getConfig()).tasks[taskName] ?? log.fail(`No step called '${taskName}'`)
 }
 
 export function getManifestPath({ taskName, cwd }: { taskName: string; cwd: string }) {

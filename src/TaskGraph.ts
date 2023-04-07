@@ -84,7 +84,7 @@ export class TaskGraph {
 		}
 
 		const enqueueTask = (taskName: string, dependencies?: string[]) => {
-			const task = this.config.pipeline[taskName]
+			const task = this.config.tasks[taskName]
 			if (!task) {
 				throw new Error(`Task ${taskName} not found`)
 			}
