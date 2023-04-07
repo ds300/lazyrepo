@@ -4,17 +4,20 @@
 - feed outputs into inputs, and inputs into inputs
 - make sure other config options are satisfied
 - add --force mode
+- test
+- add --runInBand mode
+- more docs in readme
 
 # not urgent
 
 - log levels
+- --filter
+- general cli args parsing improvement
 - do less allocation when creating/comparing manifests getNextManifest(prev, files, evnVars): [diff, next]
 - handle failure gracefully
-- validate config with zod?
+- validate config
 - print version on launch
-- add --runInBand mode
 - support json schema and .ts config files
-- init script
 - Add turbo.json migrator
 - Add 'watch' mode with inactivity timeout to wait for things to bootstrap.
 - Allow packages to override their own task definitions
