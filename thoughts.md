@@ -5,9 +5,11 @@
 - Add concurrency
 - cache outputs
 - feed outputs into inputs, and inputs into inputs
+- update bin to use local lazyrepo if found
 
 # features
 
+- print version on launch
 - support json schema and .ts config files
 - init script
 - Add turbo.json migrator

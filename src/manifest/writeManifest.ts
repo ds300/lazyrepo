@@ -33,7 +33,7 @@ export async function writeManifest({
 
 	return new Promise((resolve) => {
 		out.on('close', resolve)
-		log.substep(`Wrote manifest to ${outputPath}`)
+		log.substep(`Wrote input manifest to ${outputPath}`)
 		out.close()
 	})
 }

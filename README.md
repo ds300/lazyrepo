@@ -4,18 +4,30 @@
 that `turborepo` carved out: making your `package.json` `"scripts"` scale better without having to
 opt in to an industrial-strength build system like `nx`, `bazel`, `rush`, or `buck`.
 
-## Usage
+## Installation
 
-Install with one of
+Install lazyrepo globally
 
-- `pnpm install lazyrepo --save-dev` 
+- `pnpm install lazyrepo --global`
+- `yarn add lazyrepo --global`
+- `npm install lazyrepo --global`
+
+And also as a dev dependency for your project
+
+- `pnpm install lazyrepo --save-dev`
 - `yarn add lazyrepo --dev`
 - `npm install lazyrepo --save-dev`
 
-Default task behavior is optimized for 'test' scripts. Let's say you have two packages `app` and
-`utils`. `app` depends on `utils` and they both have `"test"` scripts.
+Then `lazy init` to create a config file.
 
-The `lazy.config.ts` file looks like this:
+## Usage
+
+Run tasks defined in workspace packages using `lazy run <task>`
+
+The default caching/ordering behavior is optimized for 'test'-style scripts. Let's say you have two
+packages `app` and `utils`. `app` depends on `utils` and they both have `"test"` scripts.
+
+The empty `lazy.config.ts` file looks like this:
 
 ```ts
 import type { LazyConfig } from 'lazyrepo'
@@ -27,6 +39,27 @@ export default {} satisfies LazyConfig
   test suite.
 - If I change a source file in `app`, only `app`'s tests needs to run again.
 - If I change a source file in `utils`, both `utils` and `app` need to be retested.
+
+If we want to have explicit config for this it would look like
+
+```ts
+import type { LazyConfig } from 'lazyrepo'
+export default {
+	tasks: {
+		test: {
+			cache: {
+				inputs: ['**/*'],
+				outputs: [],
+				usesOutputFromDependencies: true,
+			},
+		},
+	},
+} satisfies LazyConfig
+```
+
+## Migrating from turborepo
+
+TODO
 
 ## Why not use/improve turborepo?
 

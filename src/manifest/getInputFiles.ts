@@ -56,10 +56,11 @@ export async function getInputFiles({ taskName, cwd }: { taskName: string; cwd: 
 	const excludes = getExcludes(exclude)
 
 	for (const pattern of includes) {
-		await log.timedStep('Finding files ' + pattern, () => {
+		await log.timedStep('Finding inputs ' + pattern, () => {
 			for (const file of glob.sync(pattern, {
 				cwd,
-				ignore: ['**/node_modules/**', '.git', ...excludes],
+				ignore: ['node_modules', '.git', '.lazy', ...excludes],
+				dot: true,
 			})) {
 				const fullPath = path.join(cwd, file)
 				if (fs.statSync(fullPath).isDirectory()) {
