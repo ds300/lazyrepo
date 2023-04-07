@@ -36,7 +36,7 @@ And finally add `.lazy` to your .gitignore
 
 ## Usage + Configuration
 
-Run tasks defined in workspace packages using `lazy run <task>`, or just `lazy <task>` if you're feeling frisky.
+Run tasks defined in workspace packages using `lazy run <task>`, or just `lazy <task>` if you're into the whole brevity thing.
 
 ### Task ordering + caching
 
