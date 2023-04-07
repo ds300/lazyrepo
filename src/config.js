@@ -31,12 +31,18 @@ export async function getConfig() {
       detail: `Remove all but one of the following files: ${files.join(', ')}`,
     })
   }
+  const file = files[0]
+  if (file.endsWith('.json')) {
+    _config = (await import(file, { assert: { type: 'json' } })).default
+  } else {
+    _config = (await import(files[0])).default
+  }
 
-  const config = (await import(files[0])).default
+  if (!_config) {
+    throw new Error(`Invalid config file '${file}'`)
+  }
 
-  _config = config
-
-  return config
+  return _config
 }
 
 /**
