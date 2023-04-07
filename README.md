@@ -40,7 +40,7 @@ Run tasks defined in workspace packages using `lazy run <task>`, or just `lazy <
 
 ### Task ordering + caching
 
-The default behavior is optimized for 'test'-style scripts, where:
+The default behavior is optimized for `"test"`-style scripts, where:
 
 - The order of execution matters if there are dependencies between packages.
 - Changes to files should trigger runs for any dependent (downstream) packages.
@@ -48,27 +48,24 @@ The default behavior is optimized for 'test'-style scripts, where:
 
 Let's say you have two packages `app` and `utils`. `app` depends on `utils` and they both have `"test"` scripts.
 
-The empty `lazy.config.js` file looks like this:
-
-```ts
-/** @type {import('lazyrepo').LazyConfig} */
-export default {}
-```
+With an empty config file, when you run `lazy test`
 
 - `utils`'s tests will be executed before `app`'s. If `utils`'s tests fail `app`'s tests will not run. This is because if something breaks in `utils` it could lead to false negatives in `app`'s test suite.
 - If I change a source file in `app`, only `app`'s tests needs to run again.
 - If I change a source file in `utils`, both `utils` and `app` need to be retested.
 
-An explicit version of the default task config would look like
+To explicitly configure this default behavior for the `"test"` scripts, your config file would look like this:
 
 ```ts
-/** @type {import('lazyrepo').LazyConfig} */
 export default {
   tasks: {
     test: {
       cache: {
+        // by default we consider all files in the package directory
         inputs: ['**/*'],
+        // there are no outputs
         outputs: [],
+        // a test invocation depends on the input files of any upstream packages
         inheritsInputFromDependencies: true,
       },
     },
