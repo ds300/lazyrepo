@@ -18,7 +18,7 @@ export type CacheConfig =
       /**
        * Any environment variables that this task uses
        */
-      env?: string[]
+      inputEnvVars?: string[]
       /**
        * If this task is not independent, this controls whether or not the output created by
        * upstream packages running this task counts towards the input for the current package.

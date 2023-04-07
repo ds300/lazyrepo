@@ -39,7 +39,7 @@ export async function getManifest({ tasks, task, prevManifest }) {
     }
   }
 
-  for (const envVar of taskConfig.cache?.env?.sort() ?? []) {
+  for (const envVar of taskConfig.cache?.inputEnvVars?.sort() ?? []) {
     const hash = hashString(process.env[envVar] ?? '')
     sumHash.update(hash)
     result.push(`env ${envVar} \t${hash}`)
