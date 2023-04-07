@@ -58,9 +58,10 @@ function extractGlobPattern(glob) {
 /**
  *
  * @param {import('../types.js').ScheduledTask} task
+ * @param {string[]} extraFiles
  * @returns
  */
-export async function getInputFiles(task) {
+export async function getInputFiles(task, extraFiles) {
   const { cache } = (await getTask({ taskName: task.taskName })) ?? {}
 
   if (cache === 'none') {
@@ -70,7 +71,7 @@ export async function getInputFiles(task) {
   /**
    * @type {Set<string>}
    */
-  const files = new Set()
+  const files = new Set(extraFiles)
 
   const { include, exclude } = extractGlobPattern(cache?.inputs)
 

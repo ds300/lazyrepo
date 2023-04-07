@@ -23,6 +23,31 @@ export async function getManifest({ tasks, task, prevManifest }) {
 
   if (taskConfig.cache === 'none') return null
 
+  const extraFiles = []
+
+  for (const [otherTaskName, depConfig] of Object.entries(taskConfig.runsAfter ?? {})) {
+    if (!depConfig.inheritsInput && depConfig.usesOutput === false) continue
+    const isTopLevel = (await getTaskConfig({ taskName: otherTaskName })).topLevel
+
+    const key = taskKey(isTopLevel ? './' : task.cwd, otherTaskName)
+    const depTask = tasks.allTasks[key]
+    if (isTopLevel && !depTask) throw new Error(`Missing task: ${key}.`)
+    if (!depTask) continue
+
+    if (depConfig.inheritsInput) {
+      if (!depTask.inputManifestCacheKey) {
+        throw new Error(`Missing inputManifestCacheKey for task: ${key}.`)
+      }
+
+      sumHash.update(key)
+      sumHash.update(depTask.inputManifestCacheKey)
+      result.push(`task inputs for ${key} \t${depTask.inputManifestCacheKey}`)
+    }
+    if (depConfig.usesOutput !== false) {
+      extraFiles.push(depTask.outputFiles)
+    }
+  }
+
   if (taskConfig.cache?.inheritsInputFromDependencies ?? true) {
     // TODO: test that localDeps is always sorted
     for (const packageName of task.packageDetails?.localDeps ?? []) {
@@ -34,6 +59,7 @@ export async function getManifest({ tasks, task, prevManifest }) {
         throw new Error(`Missing inputManifestCacheKey for task: ${key}.`)
       }
 
+      sumHash.update(key)
       sumHash.update(depTask.inputManifestCacheKey)
       result.push(`task inputs for ${key} \t${depTask.inputManifestCacheKey}`)
     }
@@ -41,22 +67,23 @@ export async function getManifest({ tasks, task, prevManifest }) {
 
   for (const envVar of taskConfig.cache?.inputEnvVars?.sort() ?? []) {
     const hash = hashString(process.env[envVar] ?? '')
+    sumHash.update(envVar)
     sumHash.update(hash)
     result.push(`env ${envVar} \t${hash}`)
   }
 
   let numSkipped = 0
   let numHashed = 0
-  const files = await getInputFiles(task)
+  const files = await getInputFiles(task, extraFiles.flat())
   if (!files) return null
 
   const start = Date.now()
 
-  files?.sort()
   for (const file of files) {
     const prev = prevManifest?.[file]
     const stat = statSync(file)
     if (prev && prev[1] === stat.mtime.getTime()) {
+      sumHash.update(file)
       sumHash.update(prev[0])
       result.push(`file ${file}\t${prev[0]}\t${prev[1]}`)
       numSkipped++
@@ -65,6 +92,7 @@ export async function getManifest({ tasks, task, prevManifest }) {
 
     numHashed++
     const hash = hashFile(file, stat.size)
+    sumHash.update(file)
     sumHash.update(hash)
     result.push(`file ${file}\t${hash}\t${stat.mtime.getTime()}`)
   }
