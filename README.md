@@ -4,7 +4,7 @@
 
 `lazyrepo` is a caching task runner for npm/pnpm/yarn monorepos. It aims to fit right into the slot that `turborepo` carved out: making your `package.json` `"scripts"` scale better without having to opt in to an industrial-strength build system like `nx`, `bazel`, `rush`, or `buck`.
 
-`lazyrepo` is scary fast, despite being implemented with _(yawn)_ TypeScript and not a handsome new superfast systems language.
+`lazyrepo` is scary fast, despite being implemented with _(yawn)_ TypeScript, instead of a young handsome clever funny systems language.
 
 Although it is actually written in `.js` files with JSDoc-based TypeScript annotations, which makes it profoundly debuggable, [patch](https://github.com/ds300/patch-package)-able, and _pull-request_-able.
 
