@@ -76,17 +76,17 @@ export function getRepoDetails(): RepoDetails {
 
   const rootDir = process.cwd()
 
-  const packageJsonsPaths = getPackageJsonPaths()
-  const packageJsons = packageJsonsPaths.map((path: string) =>
+  const packageJsonPaths = getPackageJsonPaths()
+  const packageJsonObjects = packageJsonPaths.map((path: string) =>
     JSON.parse(readFileSync(path, 'utf8')),
   )
 
-  const allLocalPackageNames = packageJsons.map((packageJson) => packageJson.name)
+  const allLocalPackageNames = packageJsonObjects.map((packageJson) => packageJson.name)
 
   const packages = Object.fromEntries(
-    packageJsonsPaths
+    packageJsonPaths
       .map((path, i) => [
-        packageJsons[i].name,
+        packageJsonObjects[i].name,
         getPackageDetails({ dir: path.replace('/package.json', ''), allLocalPackageNames }),
       ])
       .filter(([, result]) => result !== null),

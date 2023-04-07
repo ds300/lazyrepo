@@ -47,7 +47,7 @@ async function cli(args: string[]) {
     log.fail(`No tasks found called '${taskName}'`)
   }
 
-  while (await tasks.startNextTask()) {}
+  await tasks.runAllTasks()
 
   if (Object.entries(tasks.allTasks).every(([_, task]) => task.status === 'success:lazy')) {
     console.log(rainbow('>>> FULL LAZY'))

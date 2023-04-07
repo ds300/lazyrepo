@@ -19,7 +19,7 @@ export async function runIfNeeded({
   const currentManifestPath = getManifestPath({ taskName, cwd })
   const previousManifestPath = currentManifestPath + '.prev'
 
-  log.log(`${kleur.bold(taskName)} 🎁 ${kleur.red(cwd)}`)
+  log.log(`${kleur.bold(taskName)} 🎁 ${kleur.red(path.relative(process.cwd(), cwd))}`)
 
   const didHaveManifest = fs.existsSync(currentManifestPath)
 

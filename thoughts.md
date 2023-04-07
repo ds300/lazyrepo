@@ -4,6 +4,7 @@
 - Add concurrency
 - cache outputs
 - feed outputs into inputs, and inputs into inputs
+- make sure other config options are satisfied
 
 # features
 

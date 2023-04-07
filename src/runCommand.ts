@@ -1,4 +1,4 @@
-import { spawnSync } from 'child_process'
+import { spawn } from 'child_process'
 import { existsSync, readFileSync, unlinkSync } from 'fs'
 import k from 'kleur'
 import { getManifestPath } from './config'
@@ -14,29 +14,34 @@ export async function runCommand({ taskName, cwd }: { taskName: string; cwd: str
 
   log.step(green().bold(command))
   const start = Date.now()
-  const result = spawnSync(command + ' ' + extraArgs.join(' '), {
-    stdio: 'inherit',
-    shell: true,
-    cwd,
-    env: {
-      ...process.env,
-      PATH: `${process.env.PATH}:./node_modules/.bin:${process.cwd()}/node_modules/.bin`,
-    },
-  })
-  if (result.status != 0) {
+  try {
+    await new Promise((resolve, reject) => {
+      const proc = spawn(command + ' ' + extraArgs.join(' '), {
+        stdio: 'inherit',
+        shell: true,
+        cwd,
+        env: {
+          ...process.env,
+          PATH: `${process.env.PATH}:./node_modules/.bin:${process.cwd()}/node_modules/.bin`,
+        },
+      })
+      proc.on('error', reject)
+      proc.on('exit', (code) => {
+        if (code === 0) {
+          resolve(null)
+        } else {
+          reject(new Error(`Command '${command}' exited with code ${code}`))
+        }
+      })
+    })
+  } catch (e) {
     const manifestPath = getManifestPath({ taskName, cwd })
     if (existsSync(manifestPath)) {
       unlinkSync(manifestPath)
     }
-    log.fail(
-      `Command '${command}' failed${
-        result.status != null ? ` with exit code ${result.status}` : ''
-      }`,
-      {
-        error: result.error,
-      },
-    )
+    throw e
   }
+
   log.log(gray(`\n              ∙  ∙  ∙\n`))
   log.step(`Done in ${cyan(((Date.now() - start) / 1000).toFixed(2) + 's')}`)
 }
