@@ -1,6 +1,7 @@
 import glob from 'fast-glob'
 import { existsSync, readFileSync } from 'fs'
 import path from 'path'
+import yaml from 'yaml'
 
 export type PackageDetails = {
   name: string
@@ -40,23 +41,45 @@ function getPackageDetails({
 
 let _repoDetails: RepoDetails | null = null
 
+function getWorkspaceGlobs(): Array<string> {
+  const workspaceRoot = process.cwd()
+  try {
+    const pnpmWorkspaceYamlPath = path.join(workspaceRoot, 'pnpm-workspace.yaml')
+    if (existsSync(pnpmWorkspaceYamlPath)) {
+      const workspaceConfig = yaml.parse(
+        readFileSync(pnpmWorkspaceYamlPath, 'utf8').toString(),
+      ) as Record<'packages', Array<string>>
+
+      return workspaceConfig?.packages || []
+    } else {
+      const packageJson = JSON.parse(readFileSync(path.join(workspaceRoot, 'package.json'), 'utf8'))
+      return packageJson?.workspaces || []
+    }
+  } catch (e) {
+    return []
+  }
+}
+
+function getPackageJsonPaths() {
+  const workspaceRoot = process.cwd()
+  const workspaceGlobs = getWorkspaceGlobs()
+  const workspacePaths = workspaceGlobs.flatMap((pattern) => {
+    return glob.sync(path.join(workspaceRoot, pattern, 'package.json'))
+  })
+  return workspacePaths
+}
+
 export function getRepoDetails(): RepoDetails {
   if (_repoDetails) {
     return _repoDetails
   }
 
   const rootDir = process.cwd()
-  const packageJson = JSON.parse(readFileSync(path.join(rootDir, 'package.json'), 'utf8'))
 
-  const packageJsonsPaths: string[] = packageJson.workspaces
-    ? packageJson.workspaces.flatMap((workspace: string) =>
-        glob.sync(path.join(workspace, 'package.json')),
-      )
-    : ['./package.json']
-
-  const packageJsons = packageJson.workspaces
-    ? packageJsonsPaths.map((path: string) => JSON.parse(readFileSync(path, 'utf8')))
-    : [packageJson]
+  const packageJsonsPaths = getPackageJsonPaths()
+  const packageJsons = packageJsonsPaths.map((path: string) =>
+    JSON.parse(readFileSync(path, 'utf8')),
+  )
 
   const allLocalPackageNames = packageJsons.map((packageJson) => packageJson.name)
 

@@ -1,7 +1,6 @@
 # urgent
 
 - handle failure gracefully
-- add pnpm support
 - Add concurrency
 - cache outputs
 - feed outputs into inputs, and inputs into inputs
