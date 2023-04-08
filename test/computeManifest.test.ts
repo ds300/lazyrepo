@@ -46,7 +46,10 @@ describe('ManifestConstructor', () => {
     expect(didChange).toBe(true)
     expect(manifestWriter.value).toEqual(`file\tpackages/core/src/index.ts\thash1\n`)
 
-    expect(diffWriter.value).toEqual(`+ added\tfile\tpackages/core/src/index.ts\n`)
+    expect(diffWriter.value).toMatchInlineSnapshot(`
+      "+ added file packages/core/src/index.ts
+      "
+    `)
   })
 
   const simpleTestManifest = [`file\tpackages/core/src/index.ts\thash1`].join('\n') + '\n'
@@ -84,7 +87,10 @@ describe('ManifestConstructor', () => {
     )
     expect(didChange).toBe(true)
     expect(manifestWriter.value).toEqual(`file\tpackages/core/src/index.ts\thash2\n`)
-    expect(diffWriter.value).toEqual(`± changed\tfile\tpackages/core/src/index.ts\n`)
+    expect(diffWriter.value).toMatchInlineSnapshot(`
+      "± changed file packages/core/src/index.ts
+      "
+    `)
   })
 
   it('should allow things to be removed', () => {
@@ -99,7 +105,7 @@ describe('ManifestConstructor', () => {
     )
     expect(didChange).toBe(true)
     expect(manifestWriter.value).toEqual(``)
-    expect(diffWriter.value).toEqual(`- removed\tfile\tpackages/core/src/index.ts\n`)
+    expect(diffWriter.value).toMatchInlineSnapshot(`"- removed file packages/core/src/index.ts"`)
   })
 
   it('should complain if things are added in non alphabetical order', () => {

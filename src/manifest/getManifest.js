@@ -7,6 +7,30 @@ import { ManifestConstructor } from './computeManifest.js'
 import { getInputFiles } from './getInputFiles.js'
 import { hashFile, hashString } from './hash.js'
 
+const types = {
+  uptreamTaskInputs: 'upstream task inputs',
+  dependencyTaskInputs: 'dependency task inputs',
+  envVar: 'env var',
+  file: 'file',
+}
+
+const order = [types.uptreamTaskInputs, types.dependencyTaskInputs, types.envVar, types.file]
+
+/**
+ *
+ * @param {string} a
+ * @param {string} b
+ * @returns
+ */
+export const compareManifestTypes = (a, b) => {
+  const aIndex = order.indexOf(a)
+  const bIndex = order.indexOf(b)
+  if (aIndex === bIndex) {
+    return 0
+  }
+  return aIndex < bIndex ? -1 : 1
+}
+
 /**
  * @param {{ task: import('../types.js').ScheduledTask, tasks: TaskGraph, manifestConstructor: ManifestConstructor }} param0
  * @returns

@@ -1,19 +1,8 @@
 import { createHash } from 'crypto'
+import { compareManifestTypes } from './getManifest.js'
 
 const TAB = '\t'
 const LF = '\n'
-
-/**
- * @typedef {Object} ComputeManifestArgs
- *
- * @property {string} cwd
- * @property {import("../types.js").ScheduledTask} task
- */
-
-/**
- * @param {ComputeManifestArgs} args
- */
-export function computeManifest(args) {}
 
 /**
  * @typedef {Object} Writable
@@ -82,7 +71,7 @@ export class ManifestConstructor {
    * @returns {boolean}
    */
   copyLineOverIfMetaIsSame(type, id, meta) {
-    if (type < this.prevType) {
+    if (type !== this.prevType && compareManifestTypes(type, this.prevType) < 0) {
       throw new Error(`Invalid type order: ${type} < ${this.prevType}`)
     }
     if (type === this.prevType && id < this.prevId) {
@@ -123,12 +112,19 @@ export class ManifestConstructor {
     }
 
     const nextLineOffset = this.previousManifestSource.indexOf(LF, this.lineOffset + 1)
+    if (nextLineOffset === -1) {
+      // if it comes before, that means it wasn't there in the previous one
+      this.didChange = true
+      this.diffOutStream.write('+ added ' + type + ' ' + id + LF)
+      return
+    }
     const line = this.previousManifestSource.slice(this.lineOffset, nextLineOffset)
 
     const parts = line.split(TAB)
 
     if (parts[0] !== type) {
       // unexpected new type, so the previous one was removed
+      this.didChange = true
       this.diffOutStream.write('- removed ' + type + ' ' + id + LF)
       return
     }
@@ -166,7 +162,7 @@ export class ManifestConstructor {
    * @param {string} [meta]
    */
   update(type, id, hash, meta) {
-    if (type < this.prevType) {
+    if (type !== this.prevType && compareManifestTypes(type, this.prevType) < 0) {
       throw new Error(`Invalid type order: ${type} < ${this.prevType}`)
     }
     if (type === this.prevType && id < this.prevId) {
