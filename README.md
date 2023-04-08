@@ -6,7 +6,7 @@
 
 `lazyrepo` is a zero-config caching task runner for npm/pnpm/yarn monorepos.
 
-It fits right into the slot that `turborepo` carved out: making your `"scripts"` commands scale better without having to opt in to an industrial-strength build system like `nx`, `bazel`, `rush`, or `buck`.
+It fits neatly into the slot that `turborepo` carved out: making `"scripts"` scale without adopting an industrial-strength build system like `nx`, `bazel`, `rush`, or `buck`.
 
 `lazyrepo` is scary fast, a lot faster than `turborepo`. And this is despite being written in TypeScript instead of some young handsome clever funny systems language.
 
@@ -16,43 +16,49 @@ Trust me, the whole situation is so delightful it will make you wish there was a
 
 ## Installation
 
-Install lazyrepo globally
+Install `lazyrepo` globally
 
-- `pnpm install lazyrepo --global`
-- `yarn add lazyrepo --global`
-- `npm install lazyrepo --global`
+    npm install lazyrepo --global
 
-And also as a dev dependency for your project
+And also as a dev dependency in the root of your repo
 
-- `pnpm install lazyrepo --workspace-root --save-dev`
-- `yarn add lazyrepo --dev`
-- `npm install lazyrepo --save-dev`
+    npm install lazyrepo --save-dev
 
 And finally add `.lazy` to your .gitignore
 
     echo "\n\n#lazyrepo\n.lazy" >> .gitignore
 
-## Usage + Configuration
+## Basic Usage
 
-Run tasks defined in workspace packages using `lazy run <task>`, or just `lazy <task>` if you're into the whole brevity thing.
+Run tasks defined in workspace packages' `"scripts"` using:
 
-### Task ordering + caching
+lazy run <task>
 
-The default behavior is optimized for `"test"`-style scripts, where:
+Or just `lazy <task>` if you're into the whole brevity thing.
 
-- The order of execution matters if there are dependencies between packages.
-- Changes to files should trigger runs for any dependent (downstream) packages.
-- There are no output artifacts.
+The default behavior is optimized for `"test"` scripts, where the order of execution matters if your packages depend on each other.
 
-Let's say you have two packages `app` and `utils`. `app` depends on `utils` and they both have `"test"` scripts.
+Let's say you have three packages: `core`, `utils`, and `primitives`. `core` depends on `utils` and `primitives` and they all have `"test"` scripts.
 
-With no config, when you run `lazy test`
+```mermaid
+graph TD
+    A[packages/core] -->|depends on| B[packages/utils]
+    A -->|depends on| C[packages/primitives]
+```
 
-- `utils`'s tests will be executed before `app`'s. If `utils`'s tests fail `app`'s tests will not run. This is because if something breaks in `utils` it could lead to false negatives in `app`'s test suite.
-- If you change a source file in `app`, only `app`'s tests needs to run again.
-- If you change a source file in `utils`, both `utils` and `app` need to be retested.
+With no config, when you run `lazy test` in the project root:
 
-To explicitly configure this default behavior for the `"test"` scripts, your config file would look like this:
+- The tests for `utils` and `primitives` will begin concurrently. The tests for `core` will only be started if both `utils` and `primitives` finish successfully.
+- If you change a source file in `core` and run `lazy test` again, only `core`'s tests will be executed.
+- If you change a source file in `utils` and run `lazy test` again, both `utils` and `core`'s tests will be executed, in that order.
+
+## Configuration
+
+`lazyrepo` may be configured by creating a file called `lazy.config.js` or `lazy.config.json`
+
+To create a `.js` config file, in your project root run:
+
+    lazy :init
 
 ```ts
 export default {
