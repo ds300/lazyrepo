@@ -30,11 +30,9 @@ And finally add `.lazy` to your .gitignore
 
 ## Basic Usage
 
-Run tasks defined in workspace packages' `"scripts"` using:
+Run tasks defined in your workspace packages' `"scripts"` using:
 
-lazy run <task>
-
-Or just `lazy <task>` if you're into the whole brevity thing.
+     lazy <script-name>
 
 The default behavior is optimized for `"test"` scripts, where the order of execution matters if your packages depend on each other.
 
