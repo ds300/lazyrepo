@@ -14,7 +14,7 @@ But the most important thing `lazyrepo` gets right is DX:
 
 - A human-friendly config format
 - Palpably sensible defaults
-- Helpful concise feedback to aid tweaking/debugging your builds
+- Concise feedback to aid tweaking/debugging your builds
 
 Trust me, the whole situation is so delightful it will make you wish there was a `:chefs-kiss:` emoji.
 
