@@ -4,6 +4,7 @@ import { readFileSync } from 'fs'
 import kleur from 'kleur'
 import path from 'path'
 import { log } from './log.js'
+import { workspaceRoot } from './workspaceRoot.js'
 
 /**
  * @typedef {import('../index.js').LazyConfig} LazyConfig
@@ -22,7 +23,7 @@ export async function getConfig() {
     return _config
   }
 
-  const files = glob.sync('lazy.config.{js,cjs,mjs,json}', { absolute: true })
+  const files = glob.sync('lazy.config.{js,cjs,mjs,json}', { absolute: true, cwd: workspaceRoot })
   if (files.length > 1) {
     log.fail(`Found multiple lazy config files in dir '${process.cwd()}'.`, {
       detail: `Remove all but one of the following files: ${files.join(', ')}`,

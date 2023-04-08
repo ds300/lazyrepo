@@ -1,7 +1,7 @@
 import { spawn } from 'child_process'
 import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'fs'
 import kleur from 'kleur'
-import { getDiffPath, getManifestPath } from './config.js'
+import { getDiffPath, getManifestPath, getTask } from './config.js'
 import { log } from './log.js'
 
 import path from 'path'
@@ -89,7 +89,19 @@ export async function runTaskIfNeeded(task, tasks) {
  */
 async function runTask(task) {
   const packageJson = JSON.parse(readFileSync(`${task.cwd}/package.json`, 'utf8'))
-  const command = packageJson.scripts[task.taskName]
+  let command = packageJson.scripts[task.taskName]
+  if (command.startsWith('lazy :inherit')) {
+    const { defaultCommand } = await getTask({ taskName: task.taskName })
+    if (!defaultCommand) {
+      // TODO: evaluate this stuff ahead-of-time
+      log.fail(
+        `Encountered 'lazy :inherit' for scripts#${task.taskName} in ${task.cwd}/package.json, but there is defaultCommand configured for the task '${task.taskName}'`,
+      )
+      process.exit(1)
+    }
+    command = defaultCommand + ' ' + command.slice('lazy :inherit'.length)
+    command = command.trim()
+  }
 
   const extraArgs = process.argv.slice(3)
   const start = Date.now()
@@ -97,8 +109,9 @@ async function runTask(task) {
   console.log(task.terminalPrefix + kleur.bold(' RUN ') + kleur.green().bold(command))
   try {
     await new Promise((resolve, reject) => {
-      const proc = spawn('/usr/bin/env', ['sh', '-c', command + ' ' + extraArgs.join(' ')], {
+      const proc = spawn(command, extraArgs, {
         cwd: task.cwd,
+        shell: true,
         env: {
           ...process.env,
           PATH: `${process.env.PATH}:./node_modules/.bin:${process.cwd()}/node_modules/.bin`,

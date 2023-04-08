@@ -4,7 +4,7 @@
 
 > 💡 Currently in early alpha!
 
-`lazyrepo` is a zero-config caching task runner for npm/pnpm/yarn monorepos.
+`lazyrepo` is a zero-config caching task runner for `npm`/`pnpm`/`yarn` monorepos.
 
 It fits neatly into the slot that `turborepo` carved out: making package.json `"scripts"` scale without adopting an industrial-strength build system like `nx`, `bazel`, `rush`, or `buck`.
 
@@ -38,7 +38,11 @@ And finally add `.lazy` to your .gitignore
 
 Run tasks defined in `"scripts"` entries using:
 
-     lazy <script-name>
+    lazy <script-name>
+
+Anything that comes after the script name will be forwarded to the script itself, so you can do stuff like:
+
+    lazy test --runInBand
 
 The default behavior is optimized for `"test"` scripts, where the order of execution matters if your packages depend on each other.
 
@@ -61,12 +65,55 @@ With no config, when you run `lazy test` in the project root:
 These are prefixed with a colon (`:`) to help avoid conflicts with your script names.
 
 - `lazy :init`
-  
+
   Creates a config file.
 
 - `lazy :clean`
-  
+
   Deletes all local cache data.
+
+- `lazy :inherit`
+
+  In larger projects, you often end up with the same `"script"` entries duplicated in lots of package.json files. Keeping them in sync can be troublesome.
+
+  `lazyrepo` lets you specify the command just once.
+
+  Replace the scripts entries with `lazy :inherit`:
+
+  ```diff
+   "scripts": {
+  -  "test": "jest --runInBand --noCache --coverage",
+  +  "test": "lazy :inherit"
+   }
+  ```
+
+  Then add this in your lazy config file:
+
+  ```diff
+   "tasks": {
+     "test": {
+  +    "defaultCommand": "jest --runInBand --noCache --coverage"
+     }
+   }
+  ```
+
+  Now when you run `npm test`, or whatever, in one of your package directories, it will look up the actual command to run from your lazy config file and run that.
+
+- `lazy :run <task> [...<filter-paths>] [-- <forward-args>]`
+
+  Runs the given task in all packages specified by `<paths>`
+
+  e.g. to test only packages that end in `-utils`
+
+      lazy :run test packages/*-utils
+
+  To forward args to the script in `:run` mode, append the args after `--`, e.g.
+
+      lazy :run test packages/core -- --runInBand
+
+  You can add more `:run` invocations at the end.
+
+      lazy :run test :run packages/core -- --watch
 
 ## Configuration
 

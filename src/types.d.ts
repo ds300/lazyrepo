@@ -113,6 +113,11 @@ export interface TaskConfig {
    * @default true
    */
   parallel?: boolean
+
+  /**
+   * The default command to run for this task if the scripts entry uses `lazy :inherit`
+   */
+  defaultCommand?: string
 }
 
 export interface LazyConfig {

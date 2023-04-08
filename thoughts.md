@@ -1,5 +1,6 @@
 # urgent
 
+- do new cli format
 - use `:init` and `:clean` style for lazy commands
 - rearchitect to avoid prop drilling
 - consistent way to set defaults. we need a TaskConfig vs Task and so on.
@@ -14,6 +15,7 @@
 
 # not urgent
 
+- move config file discovery logs to avoid noise for :inherit
 - log levels
 - --filter
 - general cli args parsing improvement (add --help)

@@ -111,6 +111,7 @@ export const log = {
   /**
    * @param {string} headline
    * @param {{ error?: Error, detail?: string }} [more]
+   * @returns {never}
    */
   fail(headline, more) {
     console.error('\n\n' + red().bold('∙ ERROR ∙'), red(headline))
