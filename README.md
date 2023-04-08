@@ -1,5 +1,5 @@
 <div alt style="text-align: center; transform: scale(.5);">
-  <img alt="LAZYREPO" src="https://github.com/ds300/lazyrepo/raw/main/assets/lazyrepo.png" />
+  <img alt="LAZYREPO" src="https://github.com/ds300/lazyrepo/raw/main/assets/lazyrepo.svg" />
 </div>
 
 > 💡 Currently in early alpha!
