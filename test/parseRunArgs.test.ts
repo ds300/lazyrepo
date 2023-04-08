@@ -76,5 +76,38 @@ describe('parseRunArgs', () => {
         { extraArgs: ['--concurrency=3'], filterPaths: ['src'], taskName: 'test' },
       ],
     )
+
+    test(
+      [
+        ':run',
+        'build',
+        'src',
+        'test',
+        '--',
+        '--watch',
+        ':run',
+        'test',
+        'src',
+        '--',
+        '--concurrency=3',
+        ':run',
+        'fetch-assets',
+        'packages/banana',
+        'packages/apple',
+        'packages/friend',
+        '--',
+        '--concurrency=3',
+        '--runInBand',
+      ],
+      [
+        { extraArgs: ['--watch'], filterPaths: ['src', 'test'], taskName: 'build' },
+        { extraArgs: ['--concurrency=3'], filterPaths: ['src'], taskName: 'test' },
+        {
+          extraArgs: ['--concurrency=3', '--runInBand'],
+          filterPaths: ['packages/banana', 'packages/apple', 'packages/friend'],
+          taskName: 'fetch-assets',
+        },
+      ],
+    )
   })
 })
