@@ -56,11 +56,7 @@ describe('parseRunArgs', () => {
     )
 
     test(
-      [':run', 'build', 'src', '--force'],
-      [{ extraArgs: [], filterPaths: ['src'], taskName: 'build', force: true }],
-    )
-    test(
-      [':run', '--force', 'build', 'src'],
+      [':force', 'build', 'src'],
       [{ extraArgs: [], filterPaths: ['src'], taskName: 'build', force: true }],
     )
   })

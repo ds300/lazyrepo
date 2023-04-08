@@ -19,6 +19,37 @@ function splitArray(array, item) {
 }
 
 /**
+ *
+ * @param {string[]} array
+ * @param {(s: string) => boolean} predicate
+ * @returns {string[][]}
+ */
+function partitionBy(array, predicate) {
+  const result = []
+  /** @type {string[] | null} */
+  let current = null
+  /** @type {boolean | null} */
+  let currentFlag = null
+  for (const item of array) {
+    const flag = predicate(item)
+    if (current === null) {
+      current = [item]
+      currentFlag = flag
+    } else if (flag !== currentFlag) {
+      result.push(current)
+      current = [item]
+      currentFlag = flag
+    } else {
+      current.push(item)
+    }
+  }
+  if (current !== null) {
+    result.push(current)
+  }
+  return result
+}
+
+/**
  * @param {string[]} args
  */
 export function parseRunArgs(args) {
@@ -27,17 +58,17 @@ export function parseRunArgs(args) {
    */
   const taskDescriptors = []
 
-  if (args[0] === ':run') {
-    const sections = splitArray(args.slice(1), ':run')
-    for (const section of sections) {
-      const force = section.includes('--force')
-      const [taskName, ...rest] = section.filter((arg) => arg !== '--force')
+  if (args[0] === ':run' || args[0] === ':force') {
+    const sections = partitionBy(args, (arg) => arg === ':run' || arg === ':force')
+    for (let i = 0; i < sections.length; i += 2) {
+      const [type] = sections[i]
+      const [taskName, ...rest] = sections[i + 1]
       const [filterPaths, extraArgs] = splitArray(rest, '--')
       taskDescriptors.push({
         taskName,
         extraArgs: extraArgs ?? [],
         filterPaths,
-        force,
+        force: type === ':force',
       })
     }
   } else {

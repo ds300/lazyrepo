@@ -1,9 +1,13 @@
+import glob from 'fast-glob'
+import { existsSync, readdirSync, rmdirSync, statSync, unlinkSync } from 'fs'
 import kleur from 'kleur'
+import path from 'path'
 import { help } from './commands/help.js'
 import { inherit } from './commands/inherit.js'
 import { init } from './commands/init.js'
 import { run } from './commands/run.js'
 import { log } from './log.js'
+import { workspaceRoot } from './workspaceRoot.js'
 
 /**
  * @param {string[]} args
@@ -20,9 +24,41 @@ async function cli(args) {
     process.exit(0)
   }
 
-  if (command === ':help') {
+  if (command === ':help' || command === '-h' || command === '--help') {
     help()
     process.exit(0)
+  }
+
+  if (command === ':clean') {
+    const cacheDirs = glob.sync('**/*/.lazy', {
+      ignore: ['**/node_modules/**'],
+      absolute: true,
+      onlyDirectories: true,
+      cwd: workspaceRoot,
+    })
+
+    /**
+     * @param {string} dir
+     */
+    const rimraf = (dir) => {
+      if (!existsSync(dir)) return
+      const files = readdirSync(dir)
+      for (const file of files) {
+        const fullPath = path.join(dir, file)
+        const isDir = statSync(fullPath).isDirectory()
+        if (isDir) {
+          rimraf(fullPath)
+        } else {
+          unlinkSync(fullPath)
+        }
+      }
+      rmdirSync(dir)
+    }
+
+    console.log(`Cleaning ${cacheDirs.length} cache directories...`)
+    cacheDirs.forEach(rimraf)
+    console.log('Done')
+    return
   }
 
   await run(args)

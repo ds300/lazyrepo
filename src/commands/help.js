@@ -19,9 +19,9 @@ export function help(error) {
 
 Running tasks:
 
-  ${bold('lazy run')} ${required('task')} [...args]
+  ${bold('lazy <script-name>')} [...args]
 
-Creating a blank config file
+Creating a blank config file:
 
   ${bold('lazy init')} ${required('task')} [...args]
 

@@ -1,5 +1,6 @@
 # urgent
 
+- audit usages of process.cwd
 - add stuff to global cache key
 - add commands + package deps to cache key
 - add extra args to cache key
@@ -19,8 +20,9 @@
 
 # not urgent
 
+- flesh out help
 - add flake detection mode
-- add hard-link outputs as an option. could we also 
+- add hard-link outputs as an option. could we also
 - move config file discovery logs to avoid noise for :inherit
 - log levels
 - --filter
