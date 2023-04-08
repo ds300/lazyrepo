@@ -13,9 +13,11 @@
 - test
 - add --concurrency option
 - more docs in readme
+- should peer deps, dev deps, and optional deps count towards the dep graph?
 
 # not urgent
 
+- add hard-link outputs as an option.
 - move config file discovery logs to avoid noise for :inherit
 - log levels
 - --filter
@@ -30,7 +32,7 @@
 
 # questions
 
+- what is a hard link vs a soft link?
 - allow globbing on upstream (both task and package) inputs/outputs?
 - does npm need --workspace-root equivalent?
-- should peer deps, dev deps, and optional deps count towards the dep graph?
 - Look at turbo's api, cli options, behavior & make explicit decisions about what to keep/drop/modify.
