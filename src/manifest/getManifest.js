@@ -1,24 +1,17 @@
-import crypto from 'crypto'
 import { statSync } from 'fs'
 import kleur from 'kleur'
 import { TaskGraph, taskKey } from '../TaskGraph.js'
 import { getTask as getTaskConfig } from '../config.js'
 import { timeSince } from '../log.js'
+import { ManifestConstructor } from './computeManifest.js'
 import { getInputFiles } from './getInputFiles.js'
 import { hashFile, hashString } from './hash.js'
 
 /**
- * @param {{ task: import('../types.js').ScheduledTask, tasks: TaskGraph, prevManifest?: Record<string, [hash: string, lastModified: number]> }} param0
+ * @param {{ task: import('../types.js').ScheduledTask, tasks: TaskGraph, manifestConstructor: ManifestConstructor }} param0
  * @returns
  */
-export async function getManifest({ tasks, task, prevManifest }) {
-  /**
-   * @type {string[]}
-   */
-  const result = []
-
-  const sumHash = crypto.createHash('sha256')
-
+export async function getManifest({ tasks, task, manifestConstructor }) {
   const taskConfig = await getTaskConfig({ taskName: task.taskName })
 
   if (taskConfig.cache === 'none') return null
@@ -39,9 +32,7 @@ export async function getManifest({ tasks, task, prevManifest }) {
         throw new Error(`Missing inputManifestCacheKey for task: ${key}.`)
       }
 
-      sumHash.update(key)
-      sumHash.update(depTask.inputManifestCacheKey)
-      result.push(`task inputs for ${key} \t${depTask.inputManifestCacheKey}`)
+      manifestConstructor.update('upstream task inputs', key, depTask.inputManifestCacheKey)
     }
     if (depConfig.usesOutput !== false) {
       extraFiles.push(depTask.outputFiles)
@@ -62,17 +53,13 @@ export async function getManifest({ tasks, task, prevManifest }) {
         throw new Error(`Missing inputManifestCacheKey for task: ${key}.`)
       }
 
-      sumHash.update(key)
-      sumHash.update(depTask.inputManifestCacheKey)
-      result.push(`task inputs for ${key} \t${depTask.inputManifestCacheKey}`)
+      manifestConstructor.update('upstream package inputs', key, depTask.inputManifestCacheKey)
     }
   }
 
   for (const envVar of taskConfig.cache?.inputEnvVars?.sort() ?? []) {
     const hash = hashString(process.env[envVar] ?? '')
-    sumHash.update(envVar)
-    sumHash.update(hash)
-    result.push(`env ${envVar} \t${hash}`)
+    manifestConstructor.update('env var', envVar, hash)
   }
 
   let numSkipped = 0
@@ -82,23 +69,21 @@ export async function getManifest({ tasks, task, prevManifest }) {
 
   const start = Date.now()
 
-  for (const file of files) {
-    const prev = prevManifest?.[file]
+  for (const file of files.sort()) {
     const stat = statSync(file)
-    if (prev && prev[1] === stat.mtime.getTime()) {
-      sumHash.update(file)
-      sumHash.update(prev[0])
-      result.push(`file ${file}\t${prev[0]}\t${prev[1]}`)
+    const timestamp = String(stat.mtimeMs)
+
+    if (manifestConstructor.copyLineOverIfMetaIsSame('file', file, timestamp)) {
       numSkipped++
       continue
     }
 
     numHashed++
     const hash = hashFile(file, stat.size)
-    sumHash.update(file)
-    sumHash.update(hash)
-    result.push(`file ${file}\t${hash}\t${stat.mtime.getTime()}`)
+    manifestConstructor.update('file', file, hash, timestamp)
   }
+
+  const { didChange, hash } = manifestConstructor.end()
 
   // todo: always log this if verbose
   if (Date.now() - start > 100) {
@@ -110,7 +95,7 @@ export async function getManifest({ tasks, task, prevManifest }) {
     )
   }
 
-  task.inputManifestCacheKey = sumHash.digest('hex')
+  task.inputManifestCacheKey = hash
 
-  return result
+  return didChange
 }

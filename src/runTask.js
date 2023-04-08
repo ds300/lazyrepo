@@ -6,7 +6,6 @@ import { log } from './log.js'
 
 import path from 'path'
 import stripAnsi from 'strip-ansi'
-import { compareManifests, renderChange } from './manifest/compareManifests.js'
 import { writeManifest } from './manifest/writeManifest.js'
 
 /**
@@ -25,36 +24,27 @@ export async function runTaskIfNeeded(task, tasks) {
 
   const didHaveManifest = existsSync(currentManifestPath)
 
-  /**
-   * @type {Record<string, [hash: string, lastModified: number]> | undefined}
-   */
-  let prevManifest
-
   if (didHaveManifest) {
     renameSync(currentManifestPath, previousManifestPath)
-    const prevManifestString = readFileSync(previousManifestPath, 'utf-8').toString()
-    prevManifest = {}
-    for (const line of prevManifestString.split('\n')) {
-      const [thing, hash, lastModified] = line.split('\t')
-      if (thing.startsWith('file ')) {
-        const filePath = thing.slice('file '.length)
-        prevManifest[filePath] = [hash, Number(lastModified)]
-      }
-    }
   }
 
-  await writeManifest({ task, tasks, prevManifest })
+  const diffPath = getDiffPath(task)
+  if (existsSync(diffPath)) {
+    unlinkSync(diffPath)
+  }
+
+  await writeManifest({
+    task,
+    tasks,
+    prevManifest: didHaveManifest ? readFileSync(previousManifestPath, 'utf-8').toString() : null,
+  })
 
   let didRunTask = false
 
   if (didHaveManifest) {
-    const diff = compareManifests(
-      readFileSync(previousManifestPath).toString(),
-      readFileSync(currentManifestPath).toString(),
-    )
-
+    const diff = readFileSync(diffPath, 'utf-8').toString()
     if (diff.length) {
-      const allLines = diff.map(renderChange)
+      const allLines = diff.split('\n')
       const diffPath = getDiffPath(task)
       if (!existsSync(path.dirname(diffPath))) {
         mkdirSync(path.dirname(diffPath), { recursive: true })
@@ -125,7 +115,6 @@ async function runTask(task) {
       // save stdout to buffer
 
       proc.stdout.on('data', (data) => {
-        console.log('stdout')
         outData += data
         const lastLineFeed = outData.lastIndexOf('\n')
         if (lastLineFeed === -1) {

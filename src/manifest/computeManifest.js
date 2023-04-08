@@ -76,31 +76,39 @@ export class ManifestConstructor {
   prevId = ''
 
   /**
+   * @param {string} type
+   * @param {string} id
    * @param {string} meta
    * @returns {boolean}
    */
-  isMetaSameAsPreviously(meta) {
+  copyLineOverIfMetaIsSame(type, id, meta) {
+    if (type < this.prevType) {
+      throw new Error(`Invalid type order: ${type} < ${this.prevType}`)
+    }
+    if (type === this.prevType && id < this.prevId) {
+      throw new Error(`Invalid id order: ${id} < ${this.prevId}`)
+    }
+
     if (this.previousManifestSource === null) {
       return false
     }
     const nextLineOffset = this.previousManifestSource.indexOf(LF, this.lineOffset + 1)
-    const idOffset = this.previousManifestSource.indexOf(TAB, this.lineOffset)
-    const hashOffset = this.previousManifestSource.indexOf(TAB, idOffset + 1)
-    const metaOffset = this.previousManifestSource.indexOf(TAB, hashOffset + 1)
-    if (metaOffset === -1 || metaOffset > nextLineOffset) {
+    const line = this.previousManifestSource.slice(this.lineOffset, nextLineOffset)
+
+    const parts = line.split(TAB)
+
+    if (parts[0] === type && parts[1] === id && parts[3] === meta) {
+      this.globalHash.update(parts[0])
+      this.globalHash.update(parts[1])
+      this.globalHash.update(parts[2])
+      this.manifestOutStream.write(line + LF)
+      this.lineOffset = nextLineOffset + 1
+      this.prevId = id
+      this.prevType = type
+      return true
+    } else {
       return false
     }
-
-    let i = 0
-    while (i < meta.length && this.previousManifestSource[metaOffset + i] === meta[i]) {
-      i++
-    }
-
-    if (i === meta.length && this.previousManifestSource[metaOffset + i] === LF) {
-      return true
-    }
-
-    return false
   }
 
   /**
@@ -113,75 +121,39 @@ export class ManifestConstructor {
     if (this.previousManifestSource === null || this.diffOutStream === null) {
       return
     }
-    if (this.lineOffset === -1 || this.lineOffset >= this.previousManifestSource.length) {
-      this.didChange = true
-      this.diffOutStream.write('+ added\t' + type + TAB + id + LF)
-      return
-    }
-    const typeOffset = this.lineOffset
-    let typeIndex = 0
-    while (
-      typeIndex < type.length &&
-      this.previousManifestSource[typeOffset + typeIndex] === type[typeIndex]
-    ) {
-      typeIndex++
-    }
-    if (typeIndex !== type.length || this.previousManifestSource[typeOffset + typeIndex] !== TAB) {
-      // type changed unexpectedly, so the current one must have been deleted
-      const firstTabIndex = this.previousManifestSource.indexOf(TAB, typeOffset)
-      const secondTabIndex = this.previousManifestSource.indexOf(TAB, firstTabIndex + 1)
-      this.didChange = true
-      this.diffOutStream.write(
-        '- removed\t' + this.previousManifestSource.slice(typeOffset, secondTabIndex) + LF,
-      )
+
+    const nextLineOffset = this.previousManifestSource.indexOf(LF, this.lineOffset + 1)
+    const line = this.previousManifestSource.slice(this.lineOffset, nextLineOffset)
+
+    const parts = line.split(TAB)
+
+    if (parts[0] !== type) {
+      // unexpected new type, so the previous one was removed
+      this.diffOutStream.write('- removed ' + type + ' ' + id + LF)
       return
     }
     // types are the same, so check id
-
-    const idOffset = typeOffset + typeIndex + 1
-    let idIndex = 0
-    while (idIndex < id.length && this.previousManifestSource[idOffset + idIndex] === id[idIndex]) {
-      idIndex++
-    }
-
-    if (idIndex !== id.length || this.previousManifestSource[idOffset + idIndex] !== TAB) {
+    if (parts[1] !== id) {
       // id changed unexpectedly, should it be before or after than the previous one?
-      const comesBeforePrevious = this.previousManifestSource[idOffset + idIndex] > id[idIndex]
+      const comesBeforePrevious = parts[1] > id
 
       if (comesBeforePrevious) {
         // if it comes before, that means it wasn't there in the previous one
         this.didChange = true
-        this.diffOutStream.write('+ added\t' + type + TAB + id + LF)
-        return
+        this.diffOutStream.write('+ added ' + type + ' ' + id + LF)
       } else {
         // if it comes after, that means the previous one was deleted
-        const endIndex = this.previousManifestSource.indexOf(TAB, idOffset)
         this.didChange = true
-        this.diffOutStream.write(
-          '- removed\t' + this.previousManifestSource.slice(typeOffset, endIndex) + LF,
-        )
+        this.diffOutStream.write('- removed ' + type + ' ' + parts[1] + LF)
       }
+      return
     }
+    // types and ids are the same, so check hash
 
-    // id is the same, so check hash
-
-    const hashOffset = idOffset + idIndex + 1
-    let hashIndex = 0
-    while (
-      hashIndex < hash.length &&
-      this.previousManifestSource[hashOffset + hashIndex] === hash[hashIndex]
-    ) {
-      hashIndex++
-    }
-
-    const didEndOnControlChar =
-      this.previousManifestSource[hashOffset + hashIndex] === TAB ||
-      this.previousManifestSource[hashOffset + hashIndex] === LF
-
-    if (hashIndex !== hash.length || !didEndOnControlChar) {
+    if (hash !== parts[2]) {
       // hash changed
       this.didChange = true
-      this.diffOutStream.write('± changed\t' + type + TAB + id + LF)
+      this.diffOutStream.write('± changed ' + type + ' ' + id + LF)
       return
     }
   }
@@ -197,13 +169,13 @@ export class ManifestConstructor {
     if (type < this.prevType) {
       throw new Error(`Invalid type order: ${type} < ${this.prevType}`)
     }
-    if (id < this.prevId) {
+    if (type === this.prevType && id < this.prevId) {
       throw new Error(`Invalid id order: ${id} < ${this.prevId}`)
     }
 
     if (this.previousManifestSource !== null && this.diffOutStream) {
       this.compareWithPreviousLine(type, id, hash)
-      this.lineOffset = this.previousManifestSource.indexOf(LF, this.lineOffset + 1)
+      this.lineOffset = this.previousManifestSource.indexOf(LF, this.lineOffset + 1) + 1
     }
 
     this.globalHash.update(type)
@@ -220,15 +192,14 @@ export class ManifestConstructor {
       while (this.lineOffset >= 0 && this.lineOffset < this.previousManifestSource.length - 1) {
         const nextLineOffset = this.previousManifestSource.indexOf(LF, this.lineOffset + 1)
 
-        const idOffset = this.previousManifestSource.indexOf(TAB, this.lineOffset)
-        const hashOffset = this.previousManifestSource.indexOf(TAB, idOffset + 1)
+        const [type, id] = this.previousManifestSource
+          .slice(this.lineOffset, nextLineOffset)
+          .split(TAB)
 
         this.didChange = true
-        this.diffOutStream.write(
-          `- removed\t${this.previousManifestSource.slice(this.lineOffset, hashOffset)}\n`,
-        )
+        this.diffOutStream.write(`- removed ${type} ${id}`)
 
-        this.lineOffset = nextLineOffset
+        this.lineOffset = nextLineOffset + 1
       }
     }
     this.diffOutStream?.end()

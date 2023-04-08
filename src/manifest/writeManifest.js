@@ -1,12 +1,13 @@
 import fs from 'fs'
 import path from 'path'
 import { TaskGraph } from '../TaskGraph.js'
-import { getManifestPath } from '../config.js'
+import { getDiffPath, getManifestPath } from '../config.js'
 import { log } from '../log.js'
+import { ManifestConstructor } from './computeManifest.js'
 import { getManifest } from './getManifest.js'
 
 /**
- * @param {{ task: import('../types.js').ScheduledTask, tasks: TaskGraph,  prevManifest?: Record<string, [hash: string, lastModified: number]> }} param0
+ * @param {{ task: import('../types.js').ScheduledTask, tasks: TaskGraph,  prevManifest: string | null }} param0
  * @returns
  */
 export async function writeManifest({ task, tasks, prevManifest }) {
@@ -16,25 +17,41 @@ export async function writeManifest({ task, tasks, prevManifest }) {
   const print = (msg) => log.log(task.terminalPrefix, msg)
 
   const outputPath = getManifestPath(task)
+  const diffPath = prevManifest !== null ? getDiffPath(task) : null
+
   if (!fs.existsSync(path.dirname(outputPath))) {
     fs.mkdirSync(path.dirname(outputPath), { recursive: true })
   }
+  if (diffPath && !fs.existsSync(path.dirname(diffPath))) {
+    fs.mkdirSync(path.dirname(diffPath), { recursive: true })
+  }
 
-  const manifest = await getManifest({ task, tasks, prevManifest })
-  if (!manifest) {
+  const manifestOutStream = fs.createWriteStream(outputPath)
+  const diffOutStream = diffPath ? fs.createWriteStream(diffPath) : null
+
+  const manifestConstructor = new ManifestConstructor(
+    prevManifest,
+    manifestOutStream,
+    diffOutStream,
+  )
+
+  const didChange = await getManifest({ task, tasks, manifestConstructor })
+  if (didChange === null) {
     print('cache disabled')
     return
   }
 
-  const out = fs.createWriteStream(outputPath)
+  return Promise.all([
+    new Promise((resolve) => {
+      manifestOutStream.on('close', resolve)
+      manifestOutStream.close()
+    }),
 
-  for (const line of manifest) {
-    out.write(line)
-    out.write('\n')
-  }
-
-  return new Promise((resolve) => {
-    out.on('close', resolve)
-    out.close()
-  })
+    diffOutStream
+      ? new Promise((resolve) => {
+          diffOutStream.on('close', resolve)
+          diffOutStream.close()
+        })
+      : Promise.resolve(),
+  ])
 }
