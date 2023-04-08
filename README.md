@@ -6,11 +6,15 @@
 
 `lazyrepo` is a zero-config caching task runner for npm/pnpm/yarn monorepos.
 
-It fits neatly into the slot that `turborepo` carved out: making `"scripts"` scale without adopting an industrial-strength build system like `nx`, `bazel`, `rush`, or `buck`.
+It fits neatly into the slot that `turborepo` carved out: making package.json `"scripts"` scale without adopting an industrial-strength build system like `nx`, `bazel`, `rush`, or `buck`.
 
 `lazyrepo` is scary fast, a lot faster than `turborepo`. And this is despite being written in TypeScript instead of some young handsome clever funny systems language.
 
-`lazyrepo` has a human-friendly config format, and the defaults are profoundly sensible. Best of all, it gives you helpful concise feedback so you can quickly debug when things aren't working quite how you'd expect.
+But the most important thing `lazyrepo` gets right is DX:
+
+- A human-friendly config format
+- Palpably sensible defaults
+- Helpful concise feedback to aid tweaking/debugging your builds
 
 Trust me, the whole situation is so delightful it will make you wish there was a `:chefs-kiss:` emoji.
 
@@ -30,7 +34,9 @@ And finally add `.lazy` to your .gitignore
 
 ## Basic Usage
 
-Run tasks defined in your workspace packages' `"scripts"` using:
+### Running Tasks
+
+Run tasks defined in `"scripts"` entries using:
 
      lazy <script-name>
 
@@ -50,9 +56,21 @@ With no config, when you run `lazy test` in the project root:
 - If you change a source file in `core` and run `lazy test` again, only `core`'s tests will be executed.
 - If you change a source file in `utils` and run `lazy test` again, both `utils` and `core`'s tests will be executed, in that order.
 
+### Other commands
+
+These are prefixed with a colon (`:`) to help avoid conflicts with your script names.
+
+- `lazy :init`
+  
+  Creates a config file.
+
+- `lazy :clean`
+  
+  Deletes all local cache data.
+
 ## Configuration
 
-`lazyrepo` may be configured by creating a file called `lazy.config.js` or `lazy.config.json`
+Create a file called `lazy.config.js` or `lazy.config.json`
 
 To create a `.js` config file, in your project root run:
 
