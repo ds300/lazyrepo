@@ -46,7 +46,7 @@ Anything that comes after the script name will be forwarded to the script itself
 
 The default behavior is optimized for `"test"` scripts, where the order of execution matters if your packages depend on each other.
 
-Let's say you have three packages: `core`, `utils`, and `primitives`. `core` depends on `utils` and `primitives` and they all have `"test"` scripts.
+Let's say you have three packages: `core`, `utils`, and `primitives`. The `core` package depends on both `utils` and `primitives`, and they all have `"test"` scripts in their package.json files.
 
 ```mermaid
 graph TD
