@@ -1,5 +1,6 @@
 # urgent
 
+- add extra args to cache key
 - do new cli format
 - use `:init` and `:clean` style for lazy commands
 - rearchitect to avoid prop drilling
