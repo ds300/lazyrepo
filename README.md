@@ -15,7 +15,7 @@ Besides perf, `lazyrepo` comes with some big quality-of-life improvements:
 - A human-friendly config format.
 - Palpably sensible defaults.
 - Concise and timely feedback to help you debug your build pipelines.
-- Script definition hoisting, so you don't end up manually duplicating changes all the time.
+- You don't need to learn Rust to contribute.
 
 
 Trust me, the whole situation is so delightful it will make you reach for the `:chefs-kiss:` emoji. And then you'll realize that there is no such emoji, but you'll want it so badly that you'll draft a proposal to the Unicode Consortium, lobbying for its introducton.
