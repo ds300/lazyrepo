@@ -1,5 +1,7 @@
 # urgent
 
+- add stuff to global cache key
+- add commands + package deps to cache key
 - add extra args to cache key
 - do new cli format
 - use `:init` and `:clean` style for lazy commands
@@ -17,7 +19,8 @@
 
 # not urgent
 
-- add hard-link outputs as an option.
+- add flake detection mode
+- add hard-link outputs as an option. could we also 
 - move config file discovery logs to avoid noise for :inherit
 - log levels
 - --filter
