@@ -6,17 +6,19 @@
 
 `lazyrepo` is a zero-config caching task runner for `npm`/`pnpm`/`yarn` monorepos.
 
-It fits neatly into the slot that `turborepo` carved out: making package.json `"scripts"` scale without adopting an industrial-strength build system like `nx`, `bazel`, `rush`, or `buck`.
+It fits right into the niche that `turborepo` carved out: making package.json `"scripts"` scale without adopting a big industrial-strength build system like `nx`, `bazel`, `rush`, or `buck`.
 
 `lazyrepo` is scary fast. It's a lot faster than `turborepo` despite being written in TypeScript rather than some young handsome clever funny systems language.
 
-But the most important thing `lazyrepo` gets right is DX:
+Besides perf, `lazyrepo` comes with some big quality-of-life improvements:
 
-- A human-friendly config format
-- Palpably sensible defaults
-- Concise feedback to aid tweaking/debugging your builds
+- A human-friendly config format.
+- Palpably sensible defaults.
+- Concise and timely feedback to help you debug your build pipelines.
+- Script definition hoisting, so you don't end up manually duplicating changes all the time.
 
-Trust me, the whole situation is so delightful it will make you wish there was a `:chefs-kiss:` emoji.
+
+Trust me, the whole situation is so delightful it will make you reach for the `:chefs-kiss:` emoji. And then you'll realize that there is no such emoji, but you'll want it so badly that you'll draft a proposal to the Unicode Consortium, lobbying for its introducton.
 
 ## Installation
 
