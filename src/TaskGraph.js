@@ -79,6 +79,7 @@ export class TaskGraph {
         taskName: taskDescriptor.taskName,
         extraArgs: taskDescriptor.extraArgs,
         filterPaths: taskDescriptor.filterPaths,
+        force: taskDescriptor.force,
         cwd: dir,
         status: 'pending',
         outputFiles: [],
@@ -90,7 +91,10 @@ export class TaskGraph {
       const result = this.allTasks[key]
 
       for (const depTaskName of Object.keys(task.runsAfter ?? {})) {
-        enqueueTask({ taskName: depTaskName, extraArgs: [], filterPaths: [] }, result.dependencies)
+        enqueueTask(
+          { taskName: depTaskName, extraArgs: [], filterPaths: [], force: taskDescriptor.force },
+          result.dependencies,
+        )
       }
 
       if (task.independent !== true) {

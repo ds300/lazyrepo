@@ -5,6 +5,20 @@ import { TaskGraph } from '../TaskGraph.js'
 import { getRepoDetails } from '../workspace.js'
 
 /**
+ *
+ * @param {string[]} array
+ * @param {string} item
+ * @returns {string[][]}
+ */
+function splitArray(array, item) {
+  const index = array.indexOf(item)
+  if (index === -1) {
+    return [array]
+  }
+  return [array.slice(0, index)].concat(splitArray(array.slice(index + 1), item))
+}
+
+/**
  * @param {string[]} args
  */
 export function parseRunArgs(args) {
@@ -14,37 +28,25 @@ export function parseRunArgs(args) {
   const taskDescriptors = []
 
   if (args[0] === ':run') {
-    let i = 0
-    while (i < args.length) {
-      const arg = args[i]
-      if (arg === ':run') {
-        i++
-        const taskName = args[i]
-        i++
-        const filterPaths = []
-        const extraArgs = []
-        while (i < args.length && args[i] !== ':run' && args[i] !== '--') {
-          filterPaths.push(args[i])
-          i++
-        }
-        if (args[i] === '--') {
-          i++
-          while (i < args.length && args[i] !== ':run') {
-            extraArgs.push(args[i])
-            i++
-          }
-        }
-        taskDescriptors.push({
-          taskName,
-          extraArgs,
-          filterPaths,
-        })
-      } else {
-        log.fail(`Unexpected argument '${arg}'`)
-      }
+    const sections = splitArray(args.slice(1), ':run')
+    for (const section of sections) {
+      const force = section.includes('--force')
+      const [taskName, ...rest] = section.filter((arg) => arg !== '--force')
+      const [filterPaths, extraArgs] = splitArray(rest, '--')
+      taskDescriptors.push({
+        taskName,
+        extraArgs: extraArgs ?? [],
+        filterPaths,
+        force,
+      })
     }
   } else {
-    taskDescriptors.push({ taskName: args[0], extraArgs: args.slice(1), filterPaths: [] })
+    taskDescriptors.push({
+      taskName: args[0],
+      extraArgs: args.slice(1),
+      filterPaths: [],
+      force: false,
+    })
   }
 
   return taskDescriptors

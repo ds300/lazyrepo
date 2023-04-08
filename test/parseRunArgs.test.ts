@@ -6,41 +6,81 @@ function test(args: string[], expected: CLITaskDescription[]) {
 }
 describe('parseRunArgs', () => {
   it('parses a single task', () => {
-    test(['build'], [{ extraArgs: [], filterPaths: [], taskName: 'build' }])
-    test(['test'], [{ extraArgs: [], filterPaths: [], taskName: 'test' }])
-    test(['fetch-assets'], [{ extraArgs: [], filterPaths: [], taskName: 'fetch-assets' }])
+    test(['build'], [{ extraArgs: [], filterPaths: [], taskName: 'build', force: false }])
+    test(['test'], [{ extraArgs: [], filterPaths: [], taskName: 'test', force: false }])
+    test(
+      ['fetch-assets'],
+      [{ extraArgs: [], filterPaths: [], taskName: 'fetch-assets', force: false }],
+    )
   })
 
   it('parses a single task with args', () => {
-    test(['build', '--watch'], [{ extraArgs: ['--watch'], filterPaths: [], taskName: 'build' }])
+    test(
+      ['build', '--watch'],
+      [{ extraArgs: ['--watch'], filterPaths: [], taskName: 'build', force: false }],
+    )
     test(
       ['test', '--concurrency=3'],
-      [{ extraArgs: ['--concurrency=3'], filterPaths: [], taskName: 'test' }],
+      [{ extraArgs: ['--concurrency=3'], filterPaths: [], taskName: 'test', force: false }],
     )
     test(
       ['fetch-assets', '--url', 'https://banana.com'],
-      [{ extraArgs: ['--url', 'https://banana.com'], filterPaths: [], taskName: 'fetch-assets' }],
+      [
+        {
+          extraArgs: ['--url', 'https://banana.com'],
+          filterPaths: [],
+          taskName: 'fetch-assets',
+          force: false,
+        },
+      ],
+    )
+
+    test(
+      ['build', '--force'],
+      [{ extraArgs: ['--force'], filterPaths: [], taskName: 'build', force: false }],
     )
   })
 
   it('parses a :run task with paths', () => {
-    test([':run', 'build', 'src'], [{ extraArgs: [], filterPaths: ['src'], taskName: 'build' }])
-    test([':run', 'test', 'src'], [{ extraArgs: [], filterPaths: ['src'], taskName: 'test' }])
+    test(
+      [':run', 'build', 'src'],
+      [{ extraArgs: [], filterPaths: ['src'], taskName: 'build', force: false }],
+    )
+    test(
+      [':run', 'test', 'src'],
+      [{ extraArgs: [], filterPaths: ['src'], taskName: 'test', force: false }],
+    )
     test(
       [':run', 'fetch-assets', 'src'],
-      [{ extraArgs: [], filterPaths: ['src'], taskName: 'fetch-assets' }],
+      [{ extraArgs: [], filterPaths: ['src'], taskName: 'fetch-assets', force: false }],
+    )
+
+    test(
+      [':run', 'build', 'src', '--force'],
+      [{ extraArgs: [], filterPaths: ['src'], taskName: 'build', force: true }],
+    )
+    test(
+      [':run', '--force', 'build', 'src'],
+      [{ extraArgs: [], filterPaths: ['src'], taskName: 'build', force: true }],
     )
   })
 
   it('parses a :run task with paths and args', () => {
     test(
       [':run', 'build', 'src', 'test', '--', '--watch'],
-      [{ extraArgs: ['--watch'], filterPaths: ['src', 'test'], taskName: 'build' }],
+      [{ extraArgs: ['--watch'], filterPaths: ['src', 'test'], taskName: 'build', force: false }],
     )
 
     test(
       [':run', 'test', 'src', 'test', '--', '--concurrency=3'],
-      [{ extraArgs: ['--concurrency=3'], filterPaths: ['src', 'test'], taskName: 'test' }],
+      [
+        {
+          extraArgs: ['--concurrency=3'],
+          filterPaths: ['src', 'test'],
+          taskName: 'test',
+          force: false,
+        },
+      ],
     )
 
     test(
@@ -50,6 +90,7 @@ describe('parseRunArgs', () => {
           extraArgs: ['--url', 'https://banana.com'],
           filterPaths: ['src', 'test'],
           taskName: 'fetch-assets',
+          force: false,
         },
       ],
     )
@@ -71,8 +112,8 @@ describe('parseRunArgs', () => {
         '--concurrency=3',
       ],
       [
-        { extraArgs: ['--watch'], filterPaths: ['src', 'test'], taskName: 'build' },
-        { extraArgs: ['--concurrency=3'], filterPaths: ['src'], taskName: 'test' },
+        { extraArgs: ['--watch'], filterPaths: ['src', 'test'], taskName: 'build', force: false },
+        { extraArgs: ['--concurrency=3'], filterPaths: ['src'], taskName: 'test', force: false },
       ],
     )
 
@@ -99,12 +140,13 @@ describe('parseRunArgs', () => {
         '--runInBand',
       ],
       [
-        { extraArgs: ['--watch'], filterPaths: ['src', 'test'], taskName: 'build' },
-        { extraArgs: ['--concurrency=3'], filterPaths: ['src'], taskName: 'test' },
+        { extraArgs: ['--watch'], filterPaths: ['src', 'test'], taskName: 'build', force: false },
+        { extraArgs: ['--concurrency=3'], filterPaths: ['src'], taskName: 'test', force: false },
         {
           extraArgs: ['--concurrency=3', '--runInBand'],
           filterPaths: ['packages/banana', 'packages/apple', 'packages/friend'],
           taskName: 'fetch-assets',
+          force: false,
         },
       ],
     )

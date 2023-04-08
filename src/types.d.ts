@@ -6,6 +6,7 @@ export interface ScheduledTask {
   cwd: string
   status: TaskStatus
   filterPaths: string[]
+  force: boolean
   extraArgs: string[]
   outputFiles: string[]
   dependencies: string[]
@@ -140,4 +141,5 @@ export type CLITaskDescription = {
   taskName: string
   filterPaths: string[]
   extraArgs: string[]
+  force: boolean
 }

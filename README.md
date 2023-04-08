@@ -8,7 +8,7 @@
 
 It fits neatly into the slot that `turborepo` carved out: making package.json `"scripts"` scale without adopting an industrial-strength build system like `nx`, `bazel`, `rush`, or `buck`.
 
-`lazyrepo` is scary fast, a lot faster than `turborepo`. And this is despite being written in TypeScript instead of some young handsome clever funny systems language.
+`lazyrepo` is scary fast. It's a lot faster than `turborepo` despite being written in TypeScript rather than some young handsome clever funny systems language.
 
 But the most important thing `lazyrepo` gets right is DX:
 

@@ -41,7 +41,7 @@ export async function runTaskIfNeeded(task, tasks) {
 
   let didRunTask = false
 
-  if (didHaveManifest) {
+  if (didHaveManifest && !task.force) {
     const diff = readFileSync(diffPath, 'utf-8').toString()
     if (diff.length) {
       const allLines = diff.split('\n')
@@ -60,6 +60,12 @@ export async function runTaskIfNeeded(task, tasks) {
       didRunTask = true
     }
   } else {
+    if (task.force) {
+      print('cache miss, --force flag used')
+    } else {
+      print('cache miss, no previous cache found')
+    }
+
     await runTask(task)
     didRunTask = true
   }
