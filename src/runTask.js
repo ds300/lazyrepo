@@ -116,6 +116,7 @@ async function runTask(task) {
           ...process.env,
           PATH: `${process.env.PATH}:./node_modules/.bin:${process.cwd()}/node_modules/.bin`,
           FORCE_COLOR: '1',
+          npm_lifecycle_event: task.taskName,
         },
       })
       // forward all output to the terminal without losing color
