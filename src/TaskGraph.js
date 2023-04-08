@@ -17,6 +17,15 @@ const numCpus = cpus().length
 
 const maxConcurrentTasks = Math.max(1, numCpus - 1)
 
+/**
+ * @typedef {Object} TaskGraphProps
+ *
+ * @property {import('../index.js').LazyConfig} config
+ * @property {import('./types.js').RepoDetails} repoDetails
+ * @property {import('./types.js').CLITaskDescription[]} taskDescriptors
+ * @property {string[]} [filteredPackages]
+ */
+
 export class TaskGraph {
   /**
    * @readonly
@@ -40,9 +49,9 @@ export class TaskGraph {
   sortedTaskKeys = []
 
   /**
-   * @param {{ config: import('../index.js').LazyConfig, repoDetails: import('./types.js').RepoDetails, endTasks: string[], filteredPackages?: string[] }} arg
+   * @param {TaskGraphProps} arg
    */
-  constructor({ config, repoDetails, endTasks, filteredPackages }) {
+  constructor({ config, repoDetails, taskDescriptors, filteredPackages }) {
     this.config = config
     this.repoDetails = repoDetails
 
@@ -57,16 +66,19 @@ export class TaskGraph {
     let nextColorIndex = 0
 
     /**
-     * @param {{ task: import('./types.js').TaskConfig, taskName: string, dir: string, packageDetails: import('./types.js').PackageDetails | null }} arg
+     * @param {{ task: import('./types.js').TaskConfig, taskDescriptor: import('./types.js').CLITaskDescription, dir: string, packageDetails: import('./types.js').PackageDetails | null }} arg
      * @returns
      */
-    const visit = ({ task, taskName, dir, packageDetails }) => {
-      const key = taskKey(dir, taskName)
+    const visit = ({ task, taskDescriptor, dir, packageDetails }) => {
+      const key = taskKey(dir, taskDescriptor.taskName)
       if (this.allTasks[key]) {
         return
       }
       this.allTasks[key] = {
-        taskName,
+        key,
+        taskName: taskDescriptor.taskName,
+        extraArgs: taskDescriptor.extraArgs,
+        filterPaths: taskDescriptor.filterPaths,
         cwd: dir,
         status: 'pending',
         outputFiles: [],
@@ -78,17 +90,17 @@ export class TaskGraph {
       const result = this.allTasks[key]
 
       for (const depTaskName of Object.keys(task.runsAfter ?? {})) {
-        enqueueTask(depTaskName, result.dependencies)
+        enqueueTask({ taskName: depTaskName, extraArgs: [], filterPaths: [] }, result.dependencies)
       }
 
       if (task.independent !== true) {
         for (const packageName of packageDetails?.localDeps ?? []) {
           const pkg = this.repoDetails.packagesByName[packageName]
-          if (pkg.scripts?.[taskName]) {
-            result.dependencies.push(taskKey(pkg.dir, taskName))
+          if (pkg.scripts?.[taskDescriptor.taskName]) {
+            result.dependencies.push(taskKey(pkg.dir, taskDescriptor.taskName))
             visit({
               task,
-              taskName,
+              taskDescriptor,
               dir: pkg.dir,
               packageDetails: pkg,
             })
@@ -101,17 +113,17 @@ export class TaskGraph {
 
     /**
      *
-     * @param {string} taskName
+     * @param {import('./types.js').CLITaskDescription} taskDescriptor
      * @param {string[]} [dependencies]
      * @returns
      */
-    const enqueueTask = (taskName, dependencies) => {
-      const task = this.config.tasks?.[taskName] ?? {}
+    const enqueueTask = (taskDescriptor, dependencies) => {
+      const task = this.config.tasks?.[taskDescriptor.taskName] ?? {}
       if (task.topLevel && !filteredPackages) {
-        dependencies?.push(taskKey('./', taskName))
+        dependencies?.push(taskKey('./', taskDescriptor.taskName))
         visit({
           task,
-          taskName,
+          taskDescriptor,
           dir: './',
           packageDetails: null,
         })
@@ -120,11 +132,11 @@ export class TaskGraph {
 
       for (const packageName of filteredPackages ?? Object.keys(this.repoDetails.packagesByName)) {
         const pkg = this.repoDetails.packagesByName[packageName]
-        if (pkg.scripts?.[taskName]) {
-          dependencies?.push(taskKey(pkg.dir, taskName))
+        if (pkg.scripts?.[taskDescriptor.taskName]) {
+          dependencies?.push(taskKey(pkg.dir, taskDescriptor.taskName))
           visit({
             task,
-            taskName,
+            taskDescriptor,
             dir: pkg.dir,
             packageDetails: pkg,
           })
@@ -132,8 +144,8 @@ export class TaskGraph {
       }
     }
 
-    for (const taskName of endTasks) {
-      enqueueTask(taskName)
+    for (const taskDescriptor of taskDescriptors) {
+      enqueueTask(taskDescriptor)
     }
   }
 

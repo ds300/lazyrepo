@@ -12,6 +12,14 @@
     "test": "vitest",
     "format": "prettier --write ."
   },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "bin.js",
+    "src",
+    "assets",
+    "LICENSE"
+  ],
   "keywords": [],
   "author": "David Sheldrick",
   "bin": {

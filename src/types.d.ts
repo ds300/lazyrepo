@@ -1,9 +1,12 @@
 export type TaskStatus = 'pending' | 'running' | 'success:eager' | 'success:lazy' | 'failure'
 
 export interface ScheduledTask {
+  key: string
   taskName: string
   cwd: string
   status: TaskStatus
+  filterPaths: string[]
+  extraArgs: string[]
   outputFiles: string[]
   dependencies: string[]
   terminalPrefix: string
@@ -131,4 +134,10 @@ export interface LazyConfig {
 export type ManifestChange = {
   type: 'addition' | 'removal' | 'modification'
   value: string
+}
+
+export type CLITaskDescription = {
+  taskName: string
+  filterPaths: string[]
+  extraArgs: string[]
 }

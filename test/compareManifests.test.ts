@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { ManifestChange } from '../types.js'
-import { compareManifests } from './compareManifests.js'
+import { compareManifests } from '../src/manifest/compareManifests.js'
+import { ManifestChange } from '../src/types.js'
 
 function changes(...changes: ManifestChange[]): ManifestChange[] {
   return changes

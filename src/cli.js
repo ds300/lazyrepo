@@ -9,32 +9,23 @@ import { log } from './log.js'
  * @param {string[]} args
  */
 async function cli(args) {
-  let [command, taskName] = args
+  let [command] = args
   if (!command) {
     help(true)
     process.exit(1)
   }
 
-  if (command === 'init') {
+  if (command === ':init') {
     init()
     process.exit(0)
   }
 
-  if (command === 'help') {
+  if (command === ':help') {
     help()
     process.exit(0)
   }
 
-  if (command === 'run' && !taskName) {
-    help(true)
-    process.exit(1)
-  }
-
-  if (!taskName) {
-    taskName = command
-  }
-
-  await run([taskName])
+  await run(args)
 }
 
 async function main() {

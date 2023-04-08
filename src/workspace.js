@@ -2,6 +2,7 @@ import glob from 'fast-glob'
 import { existsSync, readFileSync } from 'fs'
 import path from 'path'
 import yaml from 'yaml'
+import { workspaceRoot } from './workspaceRoot.js'
 
 /**
  *
@@ -36,7 +37,6 @@ let _repoDetails = null
  * @returns {string[]}
  */
 function getWorkspaceGlobs() {
-  const workspaceRoot = process.cwd()
   try {
     const pnpmWorkspaceYamlPath = path.join(workspaceRoot, 'pnpm-workspace.yaml')
     if (existsSync(pnpmWorkspaceYamlPath)) {
@@ -53,7 +53,6 @@ function getWorkspaceGlobs() {
 }
 
 function getPackageJsonPaths() {
-  const workspaceRoot = process.cwd()
   const workspaceGlobs = getWorkspaceGlobs()
   const workspacePaths = workspaceGlobs.flatMap((pattern) => {
     return glob.sync(path.join(workspaceRoot, pattern, 'package.json'))
