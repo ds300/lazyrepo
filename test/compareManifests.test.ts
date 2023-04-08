@@ -1,4 +1,3 @@
-import { describe, expect, it } from 'vitest'
 import { compareManifests } from '../src/manifest/compareManifests.js'
 import { ManifestChange } from '../src/types.js'
 
