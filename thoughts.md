@@ -19,6 +19,7 @@
 - add --concurrency option
 - more docs in readme
 - should peer deps, dev deps, and optional deps count towards the dep graph?
+- glob dotfiles by default and copy wireit's list of ignores? https://github.com/google/wireit#default-excluded-paths
 
 # not urgent
 
