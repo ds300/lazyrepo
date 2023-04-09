@@ -23,6 +23,7 @@
 # not urgent
 
 - flesh out help
+- add eslint
 - add flake detection mode
 - add hard-link outputs as an option. could we also
 - move config file discovery logs to avoid noise for :inherit
