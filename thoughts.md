@@ -8,6 +8,11 @@
 - rearchitect to avoid prop drilling
 - consistent way to set defaults. we need a TaskConfig vs Task and so on.
 - cache outputs
+- computeManifest optimization
+  - use static buffer to avoid allocating a string for each manifest
+  - use buffer.compare to compare type, id, key
+    - will require ordering the types alphabetically. maybe try doing this first anyway
+  - only open write streams if there is a diff
 - make sure other config options are satisfied
 - test
 - add --concurrency option
