@@ -13,5 +13,5 @@ export function init() {
 /** @type {import('lazyrepo').LazyConfig} */
 export default {}\n`,
   )
-  log.success('Created lazy.config.ts')
+  log.success(`Created config file at '${configPath}'`)
 }
