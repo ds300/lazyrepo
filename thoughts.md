@@ -13,6 +13,7 @@
   - use buffer.compare to compare type, id, key
     - will require ordering the types alphabetically. maybe try doing this first anyway
   - only open write streams if there is a diff
+- make cwd be a path filter if lazy is invoked in non-root dir
 - make sure other config options are satisfied
 - test
 - add --concurrency option
