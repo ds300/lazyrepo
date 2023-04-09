@@ -17,7 +17,6 @@ Aside from perf, `lazyrepo` comes with some big quality-of-life improvements:
 - Concise and timely feedback to help you tweak and debug your build pipelines.
 - You don't need to learn Rust to contribute.
 
-
 Trust me, the whole situation is so delightful it will make you reach for the `:chefs-kiss:` emoji. And then you'll realize that there is no such emoji, but you'll want it so badly that you'll draft a proposal to the Unicode Consortium to lobby for its introduction.
 
 ## Installation
