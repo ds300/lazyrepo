@@ -6,6 +6,7 @@ import { help } from './commands/help.js'
 import { inherit } from './commands/inherit.js'
 import { init } from './commands/init.js'
 import { run } from './commands/run.js'
+import { VERSION } from './constants.js'
 import { log } from './log.js'
 import { workspaceRoot } from './workspaceRoot.js'
 
@@ -69,7 +70,7 @@ async function main() {
     await inherit()
     return
   }
-  const done = log.timedTask(kleur.bold().bgGreen(' lazyrepo '))
+  const done = log.timedTask(kleur.bold().bgGreen(` lazyrepo v${VERSION}`))
   await cli(process.argv.slice(2))
   done('Done')
 }
