@@ -1,6 +1,6 @@
 import slugify from '@sindresorhus/slugify'
 import glob from 'fast-glob'
-import { readFileSync } from 'fs'
+import { readFileSync, unlinkSync, writeFileSync } from 'fs'
 import kleur from 'kleur'
 import path from 'path'
 import { log } from './log.js'
@@ -23,7 +23,10 @@ export async function getConfig() {
     return _config
   }
 
-  const files = glob.sync('lazy.config.{js,cjs,mjs,json}', { absolute: true, cwd: workspaceRoot })
+  const files = glob.sync('lazy.config.{js,cjs,mjs,ts,cts,mts,json}', {
+    absolute: true,
+    cwd: workspaceRoot,
+  })
   if (files.length > 1) {
     log.fail(`Found multiple lazy config files in dir '${workspaceRoot}'.`, {
       detail: `Remove all but one of the following files: ${files.join(', ')}`,
@@ -35,11 +38,7 @@ export async function getConfig() {
   } else {
     const file = files[0]
     console.log(kleur.gray(`Using config file: ${file}`))
-    if (file.endsWith('.json')) {
-      _config = JSON.parse(readFileSync(file, 'utf8'))
-    } else {
-      _config = (await import(file)).default
-    }
+    _config = await loadConfigFromFile(file)
 
     if (!_config) {
       throw new Error(`Invalid config file '${file}'`)
@@ -47,6 +46,40 @@ export async function getConfig() {
   }
 
   return _config
+}
+
+/**
+ * @param {string} file
+ * @returns {Promise<LazyConfig>}
+ */
+async function loadConfigFromFile(file) {
+  if (file.endsWith('.json')) {
+    return JSON.parse(readFileSync(file, 'utf8'))
+  } else if (file.endsWith('.ts') || file.endsWith('.mts') || file.endsWith('.cts')) {
+    const { build } = await import('esbuild')
+    const result = await build({
+      absWorkingDir: workspaceRoot,
+      entryPoints: [file],
+      outfile: 'out.js',
+      target: 'esnext',
+      platform: 'node',
+      format: 'esm',
+      write: false,
+    })
+    const { text } = result.outputFiles[0]
+
+    const fileBase = `${file}-${Date.now()}`
+    const fileNameTmp = `${fileBase}.mjs`
+    writeFileSync(fileNameTmp, text)
+
+    try {
+      return (await import(fileNameTmp)).default
+    } finally {
+      unlinkSync(fileNameTmp)
+    }
+  } else {
+    return (await import(file)).default
+  }
 }
 
 /**
