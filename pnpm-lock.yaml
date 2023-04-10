@@ -24,9 +24,6 @@ devDependencies:
   '@types/jest':
     specifier: ^29.5.0
     version: 29.5.0
-  '@types/mock-fs':
-    specifier: ^4.13.1
-    version: 4.13.1
   '@types/node':
     specifier: ^18.15.11
     version: 18.15.11
@@ -51,9 +48,6 @@ devDependencies:
   lint-staged:
     specifier: ^13.2.1
     version: 13.2.1
-  mock-fs:
-    specifier: ^5.2.0
-    version: 5.2.0
   node-gyp:
     specifier: ^9.3.1
     version: 9.3.1
@@ -1116,12 +1110,6 @@ packages:
     dependencies:
       expect: 29.5.0
       pretty-format: 29.5.0
-    dev: true
-
-  /@types/mock-fs@4.13.1:
-    resolution: {integrity: sha512-m6nFAJ3lBSnqbvDZioawRvpLXSaPyn52Srf7OfzjubYbYX8MTUdIgDxQl0wEapm4m/pNYSd9TXocpQ0TvZFlYA==}
-    dependencies:
-      '@types/node': 18.15.11
     dev: true
 
   /@types/node@18.15.11:
@@ -3689,11 +3677,6 @@ packages:
     resolution: {integrity: sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==}
     engines: {node: '>=10'}
     hasBin: true
-    dev: true
-
-  /mock-fs@5.2.0:
-    resolution: {integrity: sha512-2dF2R6YMSZbpip1V1WHKGLNjr/k48uQClqMVb5H3MOvwc9qhYis3/IWbj02qIg/Y8MDXKFF4c5v0rxx2o6xTZw==}
-    engines: {node: '>=12.0.0'}
     dev: true
 
   /ms@2.0.0:
