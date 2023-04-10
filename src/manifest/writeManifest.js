@@ -1,13 +1,12 @@
 import fs from 'fs'
 import path from 'path'
-import { TaskGraph } from '../TaskGraph.js'
 import { getDiffPath, getManifestPath } from '../config.js'
 import { log } from '../log.js'
 import { ManifestConstructor } from './computeManifest.js'
 import { getManifest } from './getManifest.js'
 
 /**
- * @param {{ task: import('../types.js').ScheduledTask, tasks: TaskGraph,  prevManifest: string | null }} param0
+ * @param {{ task: import('../types.js').ScheduledTask, tasks: import('../TaskGraph.js').TaskGraph,  prevManifest: string | null }} param0
  * @returns
  */
 export async function writeManifest({ task, tasks, prevManifest }) {

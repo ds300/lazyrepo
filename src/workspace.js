@@ -68,8 +68,6 @@ export function getRepoDetails() {
     return _repoDetails
   }
 
-  const rootDir = process.cwd()
-
   const packageJsonPaths = getPackageJsonPaths()
   const packageJsonObjects = packageJsonPaths.map((path) => JSON.parse(readFileSync(path, 'utf8')))
 
