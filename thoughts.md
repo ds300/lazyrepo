@@ -35,7 +35,7 @@
 - handle failure gracefully
 - validate config, incl sanity checks for interdependent config options (caching + independence, e.g)
 - print version on launch
-- add :wtf <task-key> command to get lazyrepo to explain in plain english why a thing ran 
+- add :wtf <task-key> command to get lazyrepo to explain in plain english why a thing ran
 - support json schema and .ts config files
 - Add turbo.json migrator
 - Add 'watch' mode with inactivity timeout to wait for things to bootstrap.

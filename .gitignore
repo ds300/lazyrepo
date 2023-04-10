@@ -8,5 +8,8 @@ node_modules
 !.prettierrc
 !.prettierignore
 !.eslintrc.cjs
+!.husky
+!.github
+
 
 package
