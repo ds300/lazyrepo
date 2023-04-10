@@ -54,7 +54,7 @@ export async function runTaskIfNeeded(task, tasks) {
         print(kleur.gray(`... and ${allLines.length - 10} more. See ${diffPath} for full diff.`))
       }
     } else if (!didHaveManifest) {
-      print('cache miss, ')
+      print('cache miss, no previous manifest found')
     }
     await runTask(task)
     didRunTask = true
