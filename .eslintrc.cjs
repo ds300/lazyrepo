@@ -17,5 +17,7 @@ module.exports = {
     'no-extra-semi': 'off',
     eqeqeq: ['error', 'always'],
     'n/no-process-exit': 'off',
+    'n/no-unpublished-import': 'off',
+    'n/no-unpublished-require': 'off',
   },
 }
