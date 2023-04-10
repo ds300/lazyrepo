@@ -19,6 +19,7 @@
     "lint": "eslint .",
     "prepare": "husky install"
   },
+  "packageManager": "pnpm@latest",
   "lint-staged": {
     "*.{js,ts}": [
       "eslint --fix"
