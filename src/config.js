@@ -58,19 +58,19 @@ export async function getTask({ taskName }) {
 }
 
 /**
- * @param {{ taskName: string, cwd: string }} param0
+ * @param {{ taskName: string, taskDir: string }} param0
  * @returns
  */
-export function getManifestPath({ taskName, cwd }) {
-  const dir = path.join(cwd, '.lazy', 'manifests')
+export function getManifestPath({ taskName, taskDir }) {
+  const dir = path.join(taskDir, '.lazy', 'manifests')
   return path.join(dir, slugify(taskName))
 }
 
 /**
- * @param {{ taskName: string, cwd: string }} param0
+ * @param {{ taskName: string, taskDir: string }} param0
  * @returns
  */
-export function getDiffPath({ taskName, cwd }) {
-  const dir = path.join(cwd, '.lazy', 'diffs')
+export function getDiffPath({ taskName, taskDir }) {
+  const dir = path.join(taskDir, '.lazy', 'diffs')
   return path.join(dir, slugify(taskName))
 }

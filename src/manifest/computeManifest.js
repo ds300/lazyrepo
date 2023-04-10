@@ -60,7 +60,7 @@ export async function computeManifest({ tasks, task }) {
     if (!depConfig.inheritsInput && depConfig.usesOutput === false) continue
     const isTopLevel = (await getTaskConfig({ taskName: otherTaskName })).topLevel
 
-    const key = taskKey(isTopLevel ? workspaceRoot : task.cwd, otherTaskName)
+    const key = taskKey(isTopLevel ? workspaceRoot : task.taskDir, otherTaskName)
     const depTask = tasks.allTasks[key]
     if (isTopLevel && !depTask) throw new Error(`Missing task: ${key}.`)
     if (!depTask) continue

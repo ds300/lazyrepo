@@ -6,13 +6,13 @@ import { workspaceRoot } from './workspaceRoot.js'
 
 /**
  *
- * @param {string} cwd
+ * @param {string} taskDir
  * @param {string} taskName
  * @returns {string}
  */
-export function taskKey(cwd, taskName) {
-  if (!isAbsolute(cwd)) throw new Error(`taskKey: cwd must be absolute: ${cwd}`)
-  return `${relative(workspaceRoot, cwd)}:${taskName}`
+export function taskKey(taskDir, taskName) {
+  if (!isAbsolute(taskDir)) throw new Error(`taskKey: taskDir must be absolute: ${taskDir}`)
+  return `${relative(workspaceRoot, taskDir)}:${taskName}`
 }
 
 const numCpus = cpus().length
@@ -82,7 +82,7 @@ export class TaskGraph {
         extraArgs: taskDescriptor.extraArgs,
         filterPaths: taskDescriptor.filterPaths,
         force: taskDescriptor.force,
-        cwd: dir,
+        taskDir: dir,
         status: 'pending',
         outputFiles: [],
         dependencies: [],
