@@ -15,6 +15,7 @@
     "test": "jest",
     "clean": "rm -rf node_modules && pnpm install",
     "format": "prettier --write .",
+    "format:check": "prettier --list-different .",
     "lint": "eslint ."
   },
   "files": [
