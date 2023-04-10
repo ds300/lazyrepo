@@ -1,205 +1,140 @@
-import { createHash } from 'crypto'
-import { compareManifestTypes } from './getManifest.js'
+import { existsSync, mkdirSync, statSync } from 'fs'
+import kleur from 'kleur'
+import path from 'path'
+import { taskKey } from '../TaskGraph.js'
+import { getDiffPath, getManifestPath, getTask as getTaskConfig } from '../config.js'
+import { timeSince } from '../log.js'
+import { ManifestConstructor } from './ManifestConstructor.js'
+import { getInputFiles } from './getInputFiles.js'
+import { hashFile, hashString } from './hash.js'
 
-const TAB = '\t'
-const LF = '\n'
+const types = {
+  upstreamTaskInputs: 'upstream task inputs',
+  dependencyTaskInputs: 'dependency task inputs',
+  envVar: 'env var',
+  file: 'file',
+}
+
+const order = [types.upstreamTaskInputs, types.dependencyTaskInputs, types.envVar, types.file]
 
 /**
- * @typedef {Object} Writable
- * @property {(chunk: string) => void} write
- * @property {() => void} end
+ *
+ * @param {string} a
+ * @param {string} b
+ * @returns
  */
+export const compareManifestTypes = (a, b) => {
+  const aIndex = order.indexOf(a)
+  const bIndex = order.indexOf(b)
+  if (aIndex === bIndex) {
+    return 0
+  }
+  return aIndex < bIndex ? -1 : 1
+}
 
-export class ManifestConstructor {
-  globalHash = createHash('sha256')
+/**
+ * @param {{ task: import('../types.js').ScheduledTask, tasks: import('../TaskGraph.js').TaskGraph }} param0
+ * @returns
+ */
+export async function computeManifest({ tasks, task }) {
+  const taskConfig = await getTaskConfig({ taskName: task.taskName })
 
-  /**
-   * @readonly
-   * @private
-   * @type {string | null}
-   */
-  previousManifestSource
+  if (taskConfig.cache === 'none') return null
 
-  /**
-   * @private
-   */
-  lineOffset = 0
+  const manifestPath = getManifestPath(task)
+  const diffPath = getDiffPath(task)
 
-  /**
-   * @private
-   * @type {Writable}
-   */
-  manifestOutStream
-
-  /**
-   * @private
-   * @type {Writable | null}
-   */
-  diffOutStream
-
-  /**
-   * @param {string | null} previousManifestSource
-   * @param {Writable} manifestOutStream
-   * @param {Writable | null} diffOutStream
-   */
-  constructor(previousManifestSource, manifestOutStream, diffOutStream) {
-    this.previousManifestSource = previousManifestSource
-    this.manifestOutStream = manifestOutStream
-    this.diffOutStream = diffOutStream
-    if (!diffOutStream) {
-      this.didChange = true
-    }
+  if (!existsSync(path.dirname(manifestPath))) {
+    mkdirSync(path.dirname(manifestPath), { recursive: true })
+  }
+  if (diffPath && !existsSync(path.dirname(diffPath))) {
+    mkdirSync(path.dirname(diffPath), { recursive: true })
   }
 
-  /**
-   * @private
-   */
-  didChange = false
-  /**
-   * @private
-   */
-  prevType = ''
-  /**
-   * @private
-   */
-  prevId = ''
+  const manifestConstructor = new ManifestConstructor({ diffPath, manifestPath })
 
-  /**
-   * @param {string} type
-   * @param {string} id
-   * @param {string} meta
-   * @returns {boolean}
-   */
-  copyLineOverIfMetaIsSame(type, id, meta) {
-    if (type !== this.prevType && compareManifestTypes(type, this.prevType) < 0) {
-      throw new Error(`Invalid type order: ${type} < ${this.prevType}`)
-    }
-    if (type === this.prevType && id < this.prevId) {
-      throw new Error(`Invalid id order: ${id} < ${this.prevId}`)
-    }
+  const extraFiles = []
 
-    if (this.previousManifestSource === null) {
-      return false
-    }
-    const nextLineOffset = this.previousManifestSource.indexOf(LF, this.lineOffset + 1)
-    const line = this.previousManifestSource.slice(this.lineOffset, nextLineOffset)
+  for (const [otherTaskName, depConfig] of Object.entries(taskConfig.runsAfter ?? {})) {
+    if (!depConfig.inheritsInput && depConfig.usesOutput === false) continue
+    const isTopLevel = (await getTaskConfig({ taskName: otherTaskName })).topLevel
 
-    const parts = line.split(TAB)
+    const key = taskKey(isTopLevel ? './' : task.cwd, otherTaskName)
+    const depTask = tasks.allTasks[key]
+    if (isTopLevel && !depTask) throw new Error(`Missing task: ${key}.`)
+    if (!depTask) continue
 
-    if (parts[0] === type && parts[1] === id && parts[3] === meta) {
-      this.globalHash.update(parts[0])
-      this.globalHash.update(parts[1])
-      this.globalHash.update(parts[2])
-      this.manifestOutStream.write(line + LF)
-      this.lineOffset = nextLineOffset + 1
-      this.prevId = id
-      this.prevType = type
-      return true
-    } else {
-      return false
-    }
-  }
-
-  /**
-   * @private
-   * @param {string} type
-   * @param {string} id
-   * @param {string} hash
-   */
-  compareWithPreviousLine(type, id, hash) {
-    if (this.previousManifestSource === null || this.diffOutStream === null) {
-      return
-    }
-
-    const nextLineOffset = this.previousManifestSource.indexOf(LF, this.lineOffset + 1)
-    if (nextLineOffset === -1) {
-      // if it comes before, that means it wasn't there in the previous one
-      this.didChange = true
-      this.diffOutStream.write('+ added ' + type + ' ' + id + LF)
-      return
-    }
-    const line = this.previousManifestSource.slice(this.lineOffset, nextLineOffset)
-
-    const parts = line.split(TAB)
-
-    if (parts[0] !== type) {
-      // unexpected new type, so the previous one was removed
-      this.didChange = true
-      this.diffOutStream.write('- removed ' + type + ' ' + id + LF)
-      return
-    }
-    // types are the same, so check id
-    if (parts[1] !== id) {
-      // id changed unexpectedly, should it be before or after than the previous one?
-      const comesBeforePrevious = parts[1] > id
-
-      if (comesBeforePrevious) {
-        // if it comes before, that means it wasn't there in the previous one
-        this.didChange = true
-        this.diffOutStream.write('+ added ' + type + ' ' + id + LF)
-      } else {
-        // if it comes after, that means the previous one was deleted
-        this.didChange = true
-        this.diffOutStream.write('- removed ' + type + ' ' + parts[1] + LF)
+    if (depConfig.inheritsInput) {
+      if (!depTask.inputManifestCacheKey) {
+        throw new Error(`Missing inputManifestCacheKey for task: ${key}.`)
       }
-      return
-    }
-    // types and ids are the same, so check hash
 
-    if (hash !== parts[2]) {
-      // hash changed
-      this.didChange = true
-      this.diffOutStream.write('± changed ' + type + ' ' + id + LF)
-      return
+      manifestConstructor.update('upstream task inputs', key, depTask.inputManifestCacheKey)
+    }
+    if (depConfig.usesOutput !== false) {
+      extraFiles.push(depTask.outputFiles)
     }
   }
 
-  /**
-   *
-   * @param {string} type
-   * @param {string} id
-   * @param {string} hash
-   * @param {string} [meta]
-   */
-  update(type, id, hash, meta) {
-    if (type !== this.prevType && compareManifestTypes(type, this.prevType) < 0) {
-      throw new Error(`Invalid type order: ${type} < ${this.prevType}`)
-    }
-    if (type === this.prevType && id < this.prevId) {
-      throw new Error(`Invalid id order: ${id} < ${this.prevId}`)
-    }
-
-    if (this.previousManifestSource !== null && this.diffOutStream) {
-      this.compareWithPreviousLine(type, id, hash)
-      this.lineOffset = this.previousManifestSource.indexOf(LF, this.lineOffset + 1) + 1
-    }
-
-    this.globalHash.update(type)
-    this.globalHash.update(id)
-    this.globalHash.update(hash)
-    this.manifestOutStream?.write(type + TAB + id + TAB + hash + (meta ? TAB + meta + LF : LF))
-
-    this.prevType = type
-    this.prevId = id
-  }
-
-  end() {
-    if (this.diffOutStream !== null && this.previousManifestSource !== null) {
-      while (this.lineOffset >= 0 && this.lineOffset < this.previousManifestSource.length - 1) {
-        const nextLineOffset = this.previousManifestSource.indexOf(LF, this.lineOffset + 1)
-
-        const [type, id] = this.previousManifestSource
-          .slice(this.lineOffset, nextLineOffset)
-          .split(TAB)
-
-        this.didChange = true
-        this.diffOutStream.write(`- removed ${type} ${id}`)
-
-        this.lineOffset = nextLineOffset + 1
+  if (
+    taskConfig.independent !== true &&
+    (taskConfig.cache?.inheritsInputFromDependencies ?? true)
+  ) {
+    // TODO: test that localDeps is always sorted
+    for (const packageName of task.packageDetails?.localDeps ?? []) {
+      const depPackage = tasks.repoDetails.packagesByName[packageName]
+      const key = taskKey(depPackage.dir, task.taskName)
+      const depTask = tasks.allTasks[key]
+      if (!depTask) continue
+      if (!depTask.inputManifestCacheKey) {
+        throw new Error(`Missing inputManifestCacheKey for task: ${key}.`)
       }
+
+      manifestConstructor.update('upstream package inputs', key, depTask.inputManifestCacheKey)
     }
-    this.diffOutStream?.end()
-    this.manifestOutStream.end()
-    return { hash: this.globalHash.digest('hex'), didChange: this.didChange }
   }
+
+  for (const envVar of taskConfig.cache?.inputEnvVars?.sort() ?? []) {
+    const hash = hashString(process.env[envVar] ?? '')
+    manifestConstructor.update('env var', envVar, hash)
+  }
+
+  let numSkipped = 0
+  let numHashed = 0
+  // getInputFiles returns null for cache=none
+  // TODO: make it clearer that's what's happening. Result type or something
+  const files = await getInputFiles(task, extraFiles.flat())
+  if (!files) return null
+
+  const start = Date.now()
+
+  for (const file of files.sort()) {
+    const stat = statSync(file)
+    const timestamp = String(stat.mtimeMs)
+
+    if (manifestConstructor.copyLineOverIfMetaIsSame('file', file, timestamp)) {
+      numSkipped++
+      continue
+    }
+
+    numHashed++
+    const hash = hashFile(file, stat.size)
+    manifestConstructor.update('file', file, hash, timestamp)
+  }
+
+  const { didChange, hash } = await manifestConstructor.end()
+
+  // todo: always log this if verbose
+  if (Date.now() - start > 100) {
+    console.log(
+      task.terminalPrefix,
+      kleur.gray(
+        `Hashed ${numHashed}/${numSkipped + numHashed} files in ${kleur.cyan(timeSince(start))}`,
+      ),
+    )
+  }
+
+  task.inputManifestCacheKey = hash
+
+  return didChange
 }
