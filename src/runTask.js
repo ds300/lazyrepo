@@ -1,12 +1,12 @@
 import { spawn } from 'child_process'
-import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
 import kleur from 'kleur'
 import { getDiffPath, getManifestPath, getTask } from './config.js'
 import { log } from './log.js'
 
 import path from 'path'
 import stripAnsi from 'strip-ansi'
-import { writeManifest } from './manifest/writeManifest.js'
+import { computeManifest } from './manifest/computeManifest.js'
 
 /**
  * @param {import('./types.js').ScheduledTask} task
@@ -14,36 +14,38 @@ import { writeManifest } from './manifest/writeManifest.js'
  * @returns {Promise<boolean>}
  */
 export async function runTaskIfNeeded(task, tasks) {
-  const currentManifestPath = getManifestPath(task)
-  const previousManifestPath = currentManifestPath + '.prev'
+  const manifestPath = getManifestPath(task)
 
   /**
    * @param  {string} msg
    */
   const print = (msg) => console.log(task.terminalPrefix, msg)
 
-  const didHaveManifest = existsSync(currentManifestPath)
+  const didHaveManifest = existsSync(manifestPath)
 
-  if (didHaveManifest) {
-    renameSync(currentManifestPath, previousManifestPath)
-  }
-
-  const diffPath = getDiffPath(task)
-  if (existsSync(diffPath)) {
-    unlinkSync(diffPath)
-  }
-
-  await writeManifest({
+  const didChange = await computeManifest({
     task,
     tasks,
-    prevManifest: didHaveManifest ? readFileSync(previousManifestPath, 'utf-8').toString() : null,
   })
+
+  if (didChange === null) {
+    print('cache disabled')
+  }
 
   let didRunTask = false
 
-  if (didHaveManifest && !task.force) {
-    const diff = readFileSync(diffPath, 'utf-8').toString()
-    if (diff.length) {
+  if (task.force) {
+    print('cache miss, --force flag used')
+    await runTask(task)
+    didRunTask = true
+  } else if (didChange === null) {
+    print('cache disabled')
+    await runTask(task)
+    didRunTask = true
+  } else if (didChange) {
+    const diffPath = getDiffPath(task)
+    const diff = existsSync(diffPath) ? readFileSync(diffPath, 'utf-8').toString() : null
+    if (diff?.length) {
       const allLines = diff.split('\n')
       const diffPath = getDiffPath(task)
       if (!existsSync(path.dirname(diffPath))) {
@@ -55,26 +57,16 @@ export async function runTaskIfNeeded(task, tasks) {
       if (allLines.length > 10) {
         print(kleur.gray(`... and ${allLines.length - 10} more. See ${diffPath} for full diff.`))
       }
-
-      await runTask(task)
-      didRunTask = true
+    } else if (!didHaveManifest) {
+      print('cache miss, ')
     }
-  } else {
-    if (task.force) {
-      print('cache miss, --force flag used')
-    } else {
-      print('cache miss, no previous cache found')
-    }
-
     await runTask(task)
     didRunTask = true
-  }
-
-  print(kleur.gray('input manifest saved: ' + path.relative(process.cwd(), currentManifestPath)))
-
-  if (!didRunTask) {
+  } else {
     print(`cache hit ⚡️`)
   }
+
+  print(kleur.gray('input manifest saved: ' + path.relative(process.cwd(), manifestPath)))
 
   return didRunTask
 }

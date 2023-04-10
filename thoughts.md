@@ -9,7 +9,7 @@
 - consistent way to set defaults. we need a TaskConfig vs Task and so on.
 - cache outputs
 - computeManifest optimization
-  - use static buffer to avoid allocating a string for each manifest
+  - use static buffer & utf-32 to avoid allocating a string for each manifest
   - use buffer.compare to compare type, id, key
     - will require ordering the types alphabetically. maybe try doing this first anyway
   - only open write streams if there is a diff
@@ -25,6 +25,7 @@
 
 - flesh out help
 - add eslint
+- combine globs? you can pass multiple in at once
 - add flake detection mode
 - add hard-link outputs as an option. could we also
 - move config file discovery logs to avoid noise for :inherit
@@ -34,6 +35,7 @@
 - handle failure gracefully
 - validate config, incl sanity checks for interdependent config options (caching + independence, e.g)
 - print version on launch
+- add :wtf <task-key> command to get lazyrepo to explain in plain english why a thing ran 
 - support json schema and .ts config files
 - Add turbo.json migrator
 - Add 'watch' mode with inactivity timeout to wait for things to bootstrap.
