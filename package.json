@@ -16,7 +16,16 @@
     "clean": "rm -rf node_modules && pnpm install",
     "format": "prettier --write .",
     "format:check": "prettier --list-different .",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "prepare": "husky install"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "eslint --fix"
+    ],
+    "*.{js,ts,json,yml,yaml,md}": [
+      "prettier --write"
+    ]
   },
   "files": [
     "index.js",
@@ -49,7 +58,9 @@
     "esbuild-jest": "^0.5.0",
     "eslint": "^8.38.0",
     "eslint-plugin-n": "^15.7.0",
+    "husky": "^8.0.0",
     "jest": "^29.5.0",
+    "lint-staged": "^13.2.1",
     "mock-fs": "^5.2.0",
     "node-gyp": "^9.3.1",
     "prettier": "^2.8.7",
