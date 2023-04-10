@@ -4,6 +4,7 @@ import kleur from 'kleur'
 import path from 'path'
 import { getTask } from '../config.js'
 import { timeSince } from '../log.js'
+import { workspaceRoot } from '../workspaceRoot.js'
 
 /**
  * @param {string[] | undefined} includes
@@ -84,7 +85,7 @@ export async function getInputFiles(task, extraFiles) {
       cwd: task.cwd,
       ignore: ['node_modules', '**/node_modules', ...excludes],
     })) {
-      const fullPath = path.relative(process.cwd(), path.join(task.cwd, file))
+      const fullPath = path.relative(workspaceRoot, path.join(task.cwd, file))
       if (fs.statSync(fullPath).isDirectory()) {
         visitAllFiles(fullPath, (filePath) => files.add(filePath))
       } else {

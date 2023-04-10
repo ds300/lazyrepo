@@ -1,6 +1,5 @@
 # urgent
 
-- audit usages of process.cwd
 - add stuff to global cache key
 - add commands + package deps to cache key
 - add extra args to cache key

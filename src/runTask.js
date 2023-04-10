@@ -7,6 +7,7 @@ import { log } from './log.js'
 import path from 'path'
 import stripAnsi from 'strip-ansi'
 import { computeManifest } from './manifest/computeManifest.js'
+import { workspaceRoot } from './workspaceRoot.js'
 
 /**
  * @param {import('./types.js').ScheduledTask} task
@@ -62,7 +63,7 @@ export async function runTaskIfNeeded(task, tasks) {
     print(`cache hit ⚡️`)
   }
 
-  print(kleur.gray('input manifest saved: ' + path.relative(process.cwd(), manifestPath)))
+  print(kleur.gray('input manifest saved: ' + path.relative(workspaceRoot, manifestPath)))
 
   return didRunTask
 }
@@ -98,7 +99,7 @@ async function runTask(task) {
         shell: true,
         env: {
           ...process.env,
-          PATH: `${process.env.PATH}:./node_modules/.bin:${process.cwd()}/node_modules/.bin`,
+          PATH: `${process.env.PATH}:${workspaceRoot}/node_modules/.bin:./node_modules/.bin`,
           FORCE_COLOR: '1',
           npm_lifecycle_event: task.taskName,
         },

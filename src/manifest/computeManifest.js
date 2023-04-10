@@ -4,6 +4,7 @@ import path from 'path'
 import { taskKey } from '../TaskGraph.js'
 import { getDiffPath, getManifestPath, getTask as getTaskConfig } from '../config.js'
 import { timeSince } from '../log.js'
+import { workspaceRoot } from '../workspaceRoot.js'
 import { ManifestConstructor } from './ManifestConstructor.js'
 import { getInputFiles } from './getInputFiles.js'
 import { hashFile, hashString } from './hash.js'
@@ -59,7 +60,7 @@ export async function computeManifest({ tasks, task }) {
     if (!depConfig.inheritsInput && depConfig.usesOutput === false) continue
     const isTopLevel = (await getTaskConfig({ taskName: otherTaskName })).topLevel
 
-    const key = taskKey(isTopLevel ? './' : task.cwd, otherTaskName)
+    const key = taskKey(isTopLevel ? workspaceRoot : task.cwd, otherTaskName)
     const depTask = tasks.allTasks[key]
     if (isTopLevel && !depTask) throw new Error(`Missing task: ${key}.`)
     if (!depTask) continue

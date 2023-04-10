@@ -25,7 +25,7 @@ export async function getConfig() {
 
   const files = glob.sync('lazy.config.{js,cjs,mjs,json}', { absolute: true, cwd: workspaceRoot })
   if (files.length > 1) {
-    log.fail(`Found multiple lazy config files in dir '${process.cwd()}'.`, {
+    log.fail(`Found multiple lazy config files in dir '${workspaceRoot}'.`, {
       detail: `Remove all but one of the following files: ${files.join(', ')}`,
     })
   }

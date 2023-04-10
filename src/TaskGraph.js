@@ -1,7 +1,8 @@
 import kleur from 'kleur'
 import { cpus } from 'os'
-import { relative } from 'path'
+import { isAbsolute, relative } from 'path'
 import { runTaskIfNeeded } from './runTask.js'
+import { workspaceRoot } from './workspaceRoot.js'
 
 /**
  *
@@ -10,7 +11,8 @@ import { runTaskIfNeeded } from './runTask.js'
  * @returns {string}
  */
 export function taskKey(cwd, taskName) {
-  return `${relative(process.cwd(), cwd)}:${taskName}`
+  if (!isAbsolute(cwd)) throw new Error(`taskKey: cwd must be absolute: ${cwd}`)
+  return `${relative(workspaceRoot, cwd)}:${taskName}`
 }
 
 const numCpus = cpus().length
@@ -124,11 +126,11 @@ export class TaskGraph {
     const enqueueTask = (taskDescriptor, dependencies) => {
       const task = this.config.tasks?.[taskDescriptor.taskName] ?? {}
       if (task.topLevel && !filteredPackages) {
-        dependencies?.push(taskKey('./', taskDescriptor.taskName))
+        dependencies?.push(taskKey(workspaceRoot, taskDescriptor.taskName))
         visit({
           task,
           taskDescriptor,
-          dir: './',
+          dir: workspaceRoot,
           packageDetails: null,
         })
         return
