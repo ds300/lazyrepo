@@ -1,6 +1,6 @@
 import slugify from '@sindresorhus/slugify'
 import glob from 'fast-glob'
-import { readFileSync, unlinkSync, writeFileSync } from 'fs'
+import { readFileSync } from 'fs'
 import kleur from 'kleur'
 import path from 'path'
 import { log } from './log.js'
@@ -63,20 +63,15 @@ async function loadConfigFromFile(file) {
       outfile: 'out.js',
       target: 'esnext',
       platform: 'node',
+      sourcemap: 'inline',
       format: 'esm',
       write: false,
     })
     const { text } = result.outputFiles[0]
 
-    const fileBase = `${file}-${Date.now()}`
-    const fileNameTmp = `${fileBase}.mjs`
-    writeFileSync(fileNameTmp, text)
+    const dataUrl = `data:text/javascript;base64,${Buffer.from(text).toString('base64')}`
 
-    try {
-      return (await import(fileNameTmp)).default
-    } finally {
-      unlinkSync(fileNameTmp)
-    }
+    return (await import(dataUrl)).default
   } else {
     return (await import(file)).default
   }
