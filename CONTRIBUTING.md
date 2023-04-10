@@ -5,8 +5,8 @@
 Feel free to submit Issues for
 
 - Bug reports
-- Specific, fleshed out feature requests
-- Something does't work how you'd expect
+- Specific, detailed feature requests
+- Something doesn't work how you expect
 
 Also feel free to offer to work on any issues!
 
@@ -18,8 +18,8 @@ We use
 
 - `pnpm` for package management.
 - `prettier` for formatting.
-
-We should add eslint at some point soon, but it's not there at the time of writing.
+- `eslint` for linting
+- `jest` for tests
 
 ### Structure
 
