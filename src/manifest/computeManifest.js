@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, statSync } from 'fs'
 import kleur from 'kleur'
-import path from 'path'
+import path, { join } from 'path'
 import { taskKey } from '../TaskGraph.js'
 import { getDiffPath, getManifestPath, getTask as getTaskConfig } from '../config.js'
 import { timeSince } from '../log.js'
@@ -110,7 +110,8 @@ export async function computeManifest({ tasks, task }) {
   const start = Date.now()
 
   for (const file of files.sort()) {
-    const stat = statSync(file)
+    const fullPath = join(workspaceRoot, file)
+    const stat = statSync(fullPath)
     const timestamp = String(stat.mtimeMs)
 
     if (manifestConstructor.copyLineOverIfMetaIsSame('file', file, timestamp)) {
@@ -119,7 +120,7 @@ export async function computeManifest({ tasks, task }) {
     }
 
     numHashed++
-    const hash = hashFile(file, stat.size)
+    const hash = hashFile(fullPath, stat.size)
     manifestConstructor.update('file', file, hash, timestamp)
   }
 
