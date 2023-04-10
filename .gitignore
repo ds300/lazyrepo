@@ -9,6 +9,7 @@ node_modules
 !.prettierignore
 !.eslintrc.cjs
 !.husky
+!.github
 
 
 package
