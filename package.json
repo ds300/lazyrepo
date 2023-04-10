@@ -2,6 +2,9 @@
   "name": "lazyrepo",
   "version": "0.0.0-alpha.4",
   "description": "lazyrepo is a caching task runner for npm/yarn/pnpm monorepos",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/ds300/lazyrepo.git"
@@ -11,7 +14,8 @@
   "scripts": {
     "test": "jest",
     "clean": "rm -rf node_modules && pnpm install",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "lint": "eslint ."
   },
   "files": [
     "index.js",
@@ -41,6 +45,8 @@
     "@types/node": "^18.15.11",
     "esbuild": "^0.17.15",
     "esbuild-jest": "^0.5.0",
+    "eslint": "^8.38.0",
+    "eslint-plugin-n": "^15.7.0",
     "jest": "^29.5.0",
     "node-gyp": "^9.3.1",
     "prettier": "^2.8.7",
