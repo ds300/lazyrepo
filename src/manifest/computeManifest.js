@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, statSync } from 'fs'
 import kleur from 'kleur'
 import path from 'path'
-import { TaskGraph, taskKey } from '../TaskGraph.js'
+import { taskKey } from '../TaskGraph.js'
 import { getDiffPath, getManifestPath, getTask as getTaskConfig } from '../config.js'
 import { timeSince } from '../log.js'
 import { ManifestConstructor } from './ManifestConstructor.js'
@@ -33,7 +33,7 @@ export const compareManifestTypes = (a, b) => {
 }
 
 /**
- * @param {{ task: import('../types.js').ScheduledTask, tasks: TaskGraph }} param0
+ * @param {{ task: import('../types.js').ScheduledTask, tasks: import('../TaskGraph.js').TaskGraph }} param0
  * @returns
  */
 export async function computeManifest({ tasks, task }) {

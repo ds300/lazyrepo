@@ -7,7 +7,6 @@ import {
   renameSync,
   unlinkSync,
   writeFileSync,
-  WriteStream,
 } from 'fs'
 import { compareManifestTypes } from './computeManifest.js'
 
@@ -76,13 +75,13 @@ export class ManifestConstructor {
 
   /**
    * @private
-   * @type {WriteStream | null}
+   * @type {import('fs').WriteStream | null}
    */
   _manifestOutStream = null
 
   /**
    * @private
-   * @type {WriteStream | null}
+   * @type {import('fs').WriteStream | null}
    */
   _diffOutStream = null
 
@@ -216,7 +215,6 @@ export class ManifestConstructor {
    * @param {string} [meta]
    */
   update(type, id, hash, meta) {
-    debugger
     if (type !== this.prevType && compareManifestTypes(type, this.prevType) < 0) {
       throw new Error(`Invalid type order: ${type} < ${this.prevType}`)
     }
@@ -255,7 +253,6 @@ export class ManifestConstructor {
   }
 
   async end() {
-    debugger
     if (
       this.previousManifestSource !== null &&
       this.lineOffset < this.previousManifestSource.length - 1
@@ -302,7 +299,7 @@ export class ManifestConstructor {
 }
 
 /**
- * @param {WriteStream | null} stream
+ * @param {import('fs').WriteStream | null} stream
  */
 function close(stream) {
   return new Promise((resolve, reject) => {
