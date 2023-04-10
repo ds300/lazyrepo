@@ -82,10 +82,10 @@ export async function getInputFiles(task, extraFiles) {
   for (const pattern of includes) {
     const start = Date.now()
     for (const file of glob.sync(pattern, {
-      cwd: task.cwd,
+      cwd: task.taskDir,
       ignore: ['node_modules', '**/node_modules', ...excludes],
     })) {
-      const fullPath = path.relative(workspaceRoot, path.join(task.cwd, file))
+      const fullPath = path.relative(workspaceRoot, path.join(task.taskDir, file))
       if (fs.statSync(fullPath).isDirectory()) {
         visitAllFiles(fullPath, (filePath) => files.add(filePath))
       } else {

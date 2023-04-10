@@ -3,7 +3,7 @@ export type TaskStatus = 'pending' | 'running' | 'success:eager' | 'success:lazy
 export interface ScheduledTask {
   key: string
   taskName: string
-  cwd: string
+  taskDir: string
   status: TaskStatus
   filterPaths: string[]
   force: boolean
