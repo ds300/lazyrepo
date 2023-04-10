@@ -28,10 +28,6 @@ export async function runTaskIfNeeded(task, tasks) {
     tasks,
   })
 
-  if (didChange === null) {
-    print('cache disabled')
-  }
-
   let didRunTask = false
 
   if (task.force) {
