@@ -100,7 +100,7 @@ export async function run(args) {
 
   await tasks.runAllTasks()
 
-  if (Object.entries(tasks.allTasks).every(([_, task]) => task.status === 'success:lazy')) {
+  if (Object.entries(tasks.allTasks).every(([, task]) => task.status === 'success:lazy')) {
     console.log('\n' + rainbow('>>> MAXIMUM LAZY'))
   }
 }

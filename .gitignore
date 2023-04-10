@@ -7,5 +7,6 @@ node_modules
 !.gitignore
 !.prettierrc
 !.prettierignore
+!.eslintrc.cjs
 
 package
