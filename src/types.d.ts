@@ -46,9 +46,10 @@ export type CacheConfig =
        */
       outputs?: GlobConfig
       /**
-       * Any environment variables that this task uses
+       * The names of any environment variables that should contribute to the cache key of this task.
+       * Note that it will not control which env vars are passed to the task in any way.
        */
-      inputEnvVars?: string[]
+      envInputs?: string[]
       /**
        * If this task is not independent, this controls whether or not the output created by
        * upstream packages running this task counts towards the input for the current package.
@@ -125,10 +126,45 @@ export interface TaskConfig {
 }
 
 export interface LazyConfig {
-  /** Globs of any files that should contribute to the cache key for all steps. */
-  globalDependencies?: string[]
-  /** Globs of any files that should _never_ contribute to the cache key for all steps. These cannot be overridden. */
-  globalExcludes?: string[]
+  /**
+   * Cache configuration that will be applied to every task.
+   *
+   * Note that these glob patterns are evaluated in the task's directory, which is usually not the workspace root directory.
+   * If you want to specify a glob pattern that is relative to the root, prefix the pattern with `<rootDir>/`.
+   *
+   * @example
+   * commonCacheConfig: {
+   *   // Include the root package.json in every tasks' cache key
+   *   includes: ['<rootDir>/package.json'],
+   *   // Ignore dist folder in every package directory
+   *   excludes: ['dist/**\/*']
+   * }
+   *
+   * @default {includes: ['<rootDir>/{yarn.lock,pnpm-lock.yaml,package-lock.json}']}
+   */
+  commonCacheConfig?: {
+    /**
+     * Globs of files that should be included in every task's input manifest.
+     *
+     * Note that these glob patterns are evaluated in the task's directory, which is usually not the workspace root directory.
+     * If you want to specify a glob pattern that is relative to the root, prefix the pattern with `<rootDir>/`.
+     */
+    includes?: string[]
+    /**
+     * Globs of files that should be excluded from every task's input manifest.
+     *
+     * Note that these glob patterns are evaluated in the task's directory, which is usually not the workspace root directory.
+     * If you want to specify a glob pattern that is relative to the root, prefix the pattern with `<rootDir>/`.
+     */
+    excludes?: string[]
+    /**
+     * The names of any environment variables that should be included in every task's input manifest.
+     */
+    envInputs?: string[]
+  }
+  /**
+   * Custom configuration for any tasks defined in your package.json "scripts" entries.
+   */
   tasks?: { [taskName: string]: TaskConfig }
 }
 

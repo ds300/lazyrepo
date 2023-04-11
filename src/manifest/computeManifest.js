@@ -4,6 +4,7 @@ import path, { join } from 'path'
 import { taskKey } from '../TaskGraph.js'
 import { getDiffPath, getManifestPath, getTask as getTaskConfig } from '../config.js'
 import { timeSince } from '../log.js'
+import { uniq } from '../uniq.js'
 import { workspaceRoot } from '../workspaceRoot.js'
 import { ManifestConstructor } from './ManifestConstructor.js'
 import { getInputFiles } from './getInputFiles.js'
@@ -95,7 +96,11 @@ export async function computeManifest({ tasks, task }) {
     }
   }
 
-  for (const envVar of taskConfig.cache?.inputEnvVars?.sort() ?? []) {
+  const allEnvVars = uniq(
+    tasks.config.commonCacheConfig?.envInputs?.concat(taskConfig.cache?.envInputs ?? []) ?? [],
+  ).sort()
+
+  for (const envVar of allEnvVars) {
     const hash = hashString(process.env[envVar] ?? '')
     manifestConstructor.update('env var', envVar, hash)
   }
@@ -104,7 +109,7 @@ export async function computeManifest({ tasks, task }) {
   let numHashed = 0
   // getInputFiles returns null for cache=none
   // TODO: make it clearer that's what's happening. Result type or something
-  const files = await getInputFiles(task, extraFiles.flat())
+  const files = await getInputFiles(tasks, task, extraFiles.flat())
   if (!files) return null
 
   const start = Date.now()

@@ -178,8 +178,15 @@ export class ManifestConstructor {
 
     if (parts[0] !== type) {
       // unexpected new type, so the previous one was removed
-      this.getDiffOutStream().write('- removed ' + type + ' ' + id + LF)
-      return PREV_WAS_DELETED
+      const comesBeforePrevious = compareManifestTypes(type, parts[0]) < 0
+      if (comesBeforePrevious) {
+        // if it comes before, that means it wasn't there in the previous one
+        this.getDiffOutStream().write('+ added ' + type + ' ' + id + LF)
+        return WAS_ADDED
+      } else {
+        this.getDiffOutStream().write('- removed ' + type + ' ' + id + LF)
+        return PREV_WAS_DELETED
+      }
     }
     // types are the same, so check id
     if (parts[1] !== id) {
