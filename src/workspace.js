@@ -15,12 +15,18 @@ function getPackageDetails({ dir, allLocalPackageNames }) {
     return null
   }
   const packageJson = JSON.parse(readFileSync(path.join(dir, 'package.json'), 'utf8'))
+  const deps = {
+    ...packageJson.dependencies,
+    ...packageJson.devDependencies,
+    ...packageJson.peerDependencies,
+    ...packageJson.optionalDependencies,
+  }
   return {
     name: packageJson.name,
     dir,
     version: packageJson.version,
     scripts: packageJson.scripts ?? {},
-    localDeps: Object.keys(packageJson.dependencies ?? {})
+    localDeps: Object.keys(deps ?? {})
       .filter((dep) => allLocalPackageNames.includes(dep))
       // TODO: This sort is depended upon, test it!!!
       .sort(),
