@@ -483,8 +483,10 @@ it('should not complain if types are added in alphabetical order', async () => {
 
   const manifest = new ManifestConstructor({ previousManifestPath, nextManifestPath, diffPath })
 
-  manifest.update('env var', 'VERCEL_DEPLOY_KEY', 'hash2')
-  manifest.update('file', 'packages/core/src/index.ts', 'hash2')
+  expect(() => {
+    manifest.update('env var', 'VERCEL_DEPLOY_KEY', 'hash2')
+    manifest.update('file', 'packages/core/src/index.ts', 'hash2')
+  }).not.toThrow()
 
   manifest.end()
 })
