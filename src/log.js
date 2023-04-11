@@ -5,8 +5,9 @@ const { cyan, grey, red, green, bold } = k
 let stdout = process.stdout
 
 export function silence() {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-expect-error
-  stdout = { write() {} }
+  stdout = { write: () => {} }
 }
 
 /**

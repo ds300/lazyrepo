@@ -198,7 +198,10 @@ describe('with multiple files', () => {
     diffPath: string,
     manifest: ManifestConstructor
   beforeEach(() => {
-    ;({ previousManifestPath, nextManifestPath, diffPath } = setup())
+    const setupResult = setup()
+    nextManifestPath = setupResult.nextManifestPath
+    previousManifestPath = setupResult.previousManifestPath
+    diffPath = setupResult.diffPath
     writeFileSync(
       previousManifestPath,
       makeManifestString([
