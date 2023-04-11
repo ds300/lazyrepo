@@ -88,6 +88,7 @@ export function parseRunArgs(args) {
  */
 export async function run(args) {
   const taskDescriptors = parseRunArgs(args)
+
   const tasks = new TaskGraph({
     config: await getConfig(),
     taskDescriptors,
