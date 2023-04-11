@@ -1,8 +1,7 @@
 import slugify from '@sindresorhus/slugify'
-import glob from 'fast-glob'
-import { readFileSync } from 'fs'
 import kleur from 'kleur'
 import path from 'path'
+import { loadConfig } from 'unconfig'
 import { log } from './log.js'
 import { workspaceRoot } from './workspaceRoot.js'
 
@@ -23,58 +22,37 @@ export async function getConfig() {
     return _config
   }
 
-  const files = glob.sync('lazy.config.{js,cjs,mjs,ts,cts,mts,json}', {
-    absolute: true,
-    cwd: workspaceRoot,
+  /** @type {import('unconfig').LoadConfigResult<LazyConfig>} */
+  const { config, sources } = await loadConfig({
+    sources: [
+      {
+        files: 'lazy.config',
+        extensions: ['ts', 'mts', 'cts', 'js', 'mjs', 'cjs', 'json'],
+      },
+    ],
+    merge: true,
   })
-  if (files.length > 1) {
+
+  if (sources.length > 1) {
     log.fail(`Found multiple lazy config files in dir '${workspaceRoot}'.`, {
-      detail: `Remove all but one of the following files: ${files.join(', ')}`,
+      detail: `Remove all but one of the following files: ${sources.join(', ')}`,
     })
   }
-  if (files.length === 0) {
+
+  if (sources.length === 0) {
     console.log(kleur.gray('No config file found. Using defaults.'))
     _config = {}
   } else {
-    const file = files[0]
+    const file = sources[0]
     console.log(kleur.gray(`Using config file: ${file}`))
-    _config = await loadConfigFromFile(file)
+    _config = config
 
     if (!_config) {
-      throw new Error(`Invalid config file '${file}'`)
+      throw new Error(`Invalid config file`)
     }
   }
 
   return _config
-}
-
-/**
- * @param {string} file
- * @returns {Promise<LazyConfig>}
- */
-async function loadConfigFromFile(file) {
-  if (file.endsWith('.json')) {
-    return JSON.parse(readFileSync(file, 'utf8'))
-  } else if (file.endsWith('.ts') || file.endsWith('.mts') || file.endsWith('.cts')) {
-    const { build } = await import('esbuild')
-    const result = await build({
-      absWorkingDir: workspaceRoot,
-      entryPoints: [file],
-      outfile: 'out.js',
-      target: 'esnext',
-      platform: 'node',
-      sourcemap: 'inline',
-      format: 'esm',
-      write: false,
-    })
-    const { text } = result.outputFiles[0]
-
-    const dataUrl = `data:text/javascript;base64,${Buffer.from(text).toString('base64')}`
-
-    return (await import(dataUrl)).default
-  } else {
-    return (await import(file)).default
-  }
 }
 
 /**

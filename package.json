@@ -69,6 +69,7 @@
     "node-gyp": "^9.3.1",
     "prettier": "^2.8.7",
     "prettier-plugin-organize-imports": "^3.2.2",
-    "typescript": "^5.0.3"
+    "typescript": "^5.0.3",
+    "unconfig": "^0.3.7"
   }
 }
