@@ -12,6 +12,7 @@
 
 # not urgent
 
+- add more helpful errors for when no tasks are found
 - flesh out help
 - add --concurrency option
 - add flake detection mode

@@ -1,6 +1,8 @@
+import glob from 'fast-glob'
+import { existsSync, readFileSync } from 'fs'
 import kleur from 'kleur'
 import { cpus } from 'os'
-import { isAbsolute, relative } from 'path'
+import { isAbsolute, join, relative } from 'path'
 import { runTaskIfNeeded } from './runTask.js'
 import { workspaceRoot } from './workspaceRoot.js'
 
@@ -25,7 +27,6 @@ const maxConcurrentTasks = Math.max(1, numCpus - 1)
  * @property {import('../index.js').LazyConfig} config
  * @property {import('./types.js').RepoDetails} repoDetails
  * @property {import('./types.js').CLITaskDescription[]} taskDescriptors
- * @property {string[]} [filteredPackages]
  */
 
 export class TaskGraph {
@@ -53,13 +54,9 @@ export class TaskGraph {
   /**
    * @param {TaskGraphProps} arg
    */
-  constructor({ config, repoDetails, taskDescriptors, filteredPackages }) {
+  constructor({ config, repoDetails, taskDescriptors }) {
     this.config = config
     this.repoDetails = repoDetails
-
-    if (filteredPackages?.length === 0) {
-      filteredPackages = undefined
-    }
 
     /**
      * @type {Array<import('kleur').Color>}
@@ -125,7 +122,7 @@ export class TaskGraph {
      */
     const enqueueTask = (taskDescriptor, dependencies) => {
       const task = this.config.tasks?.[taskDescriptor.taskName] ?? {}
-      if (task.topLevel && !filteredPackages) {
+      if (task.topLevel) {
         dependencies?.push(taskKey(workspaceRoot, taskDescriptor.taskName))
         visit({
           task,
@@ -136,7 +133,15 @@ export class TaskGraph {
         return
       }
 
-      for (const packageName of filteredPackages ?? Object.keys(this.repoDetails.packagesByName)) {
+      const filteredPackageNames = taskDescriptor.filterPaths.length
+        ? glob
+            .sync(taskDescriptor.filterPaths, { onlyDirectories: true })
+            .filter((dir) => existsSync(join(dir, 'package.json')))
+            .map((dir) => JSON.parse(readFileSync(join(dir, 'package.json'), 'utf-8')).name)
+        : null
+
+      for (const packageName of filteredPackageNames ??
+        Object.keys(this.repoDetails.packagesByName)) {
         const pkg = this.repoDetails.packagesByName[packageName]
         if (pkg.scripts?.[taskDescriptor.taskName]) {
           dependencies?.push(taskKey(pkg.dir, taskDescriptor.taskName))

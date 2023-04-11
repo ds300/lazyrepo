@@ -3,6 +3,7 @@ import { log } from '../log.js'
 import { rainbow } from '../rainbow.js'
 import { TaskGraph } from '../TaskGraph.js'
 import { getRepoDetails } from '../workspace.js'
+import { workspaceRoot } from '../workspaceRoot.js'
 
 /**
  *
@@ -75,7 +76,7 @@ export function parseRunArgs(args) {
     taskDescriptors.push({
       taskName: args[0],
       extraArgs: args.slice(1),
-      filterPaths: [],
+      filterPaths: process.cwd() === workspaceRoot ? [] : [process.cwd()],
       force: false,
     })
   }
@@ -88,6 +89,7 @@ export function parseRunArgs(args) {
  */
 export async function run(args) {
   const taskDescriptors = parseRunArgs(args)
+
   const tasks = new TaskGraph({
     config: await getConfig(),
     taskDescriptors,
