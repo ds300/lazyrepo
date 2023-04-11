@@ -183,6 +183,26 @@ describe('with multiple files', () => {
     manifest = new ManifestConstructor({ manifestPath, diffPath })
   })
 
+  test('it should allow no changes', async () => {
+    manifest.update('file', 'packages/core/src/index.ts', 'hash1')
+    manifest.update('file', 'packages/core/src/index2.ts', 'hash2')
+    manifest.update('file', 'packages/core/src/index3.ts', 'hash3')
+
+    const { hash, didChange } = await manifest.end()
+
+    expect(hash).toHaveLength(64)
+    expect(didChange).toBe(false)
+
+    expect(readFileSync(manifestPath, 'utf8')).toEqual(
+      makeManifestString([
+        ['file', 'packages/core/src/index.ts', 'hash1'],
+        ['file', 'packages/core/src/index2.ts', 'hash2'],
+        ['file', 'packages/core/src/index3.ts', 'hash3'],
+      ]),
+    )
+    expect(existsSync(diffPath)).toBe(false)
+  })
+
   test('it should allow things to be removed from the start', async () => {
     manifest.update('file', 'packages/core/src/index2.ts', 'hash2')
     manifest.update('file', 'packages/core/src/index3.ts', 'hash3')
@@ -371,6 +391,31 @@ describe('with multiple files', () => {
 
     expect(readFileSync(diffPath, 'utf8').toString()).toMatchInlineSnapshot(`
       "± changed file packages/core/src/index.ts
+      "
+    `)
+  })
+
+  test('it should allow an env var to be added at the start', async () => {
+    manifest.update('env var', 'VERCEL_DEPLOY_KEY', 'hashA')
+    manifest.update('file', 'packages/core/src/index.ts', 'hash1')
+    manifest.update('file', 'packages/core/src/index2.ts', 'hash2')
+    manifest.update('file', 'packages/core/src/index3.ts', 'hash3')
+
+    const { hash, didChange } = await manifest.end()
+
+    expect(hash).toHaveLength(64)
+    expect(didChange).toBe(true)
+    expect(readFileSync(manifestPath, 'utf8')).toEqual(
+      makeManifestString([
+        ['env var', 'VERCEL_DEPLOY_KEY', 'hashA'],
+        ['file', 'packages/core/src/index.ts', 'hash1'],
+        ['file', 'packages/core/src/index2.ts', 'hash2'],
+        ['file', 'packages/core/src/index3.ts', 'hash3'],
+      ]),
+    )
+
+    expect(readFileSync(diffPath, 'utf8').toString()).toMatchInlineSnapshot(`
+      "+ added env var VERCEL_DEPLOY_KEY
       "
     `)
   })

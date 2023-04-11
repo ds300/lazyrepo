@@ -4,35 +4,8 @@ import kleur from 'kleur'
 import path from 'path'
 import { getTask } from '../config.js'
 import { timeSince } from '../log.js'
+import { uniq } from '../uniq.js'
 import { workspaceRoot } from '../workspaceRoot.js'
-
-/**
- * @param {string[] | undefined} includes
- * @returns {string[]}
- */
-function getIncludes(includes) {
-  if (!includes) {
-    return ['**/*']
-  }
-  if (typeof includes === 'string') {
-    return [includes]
-  }
-  return includes
-}
-
-/**
- * @param {string[] | undefined} excludes
- * @returns {string[]}
- */
-function getExcludes(excludes) {
-  if (!excludes) {
-    return []
-  }
-  if (typeof excludes === 'string') {
-    return [excludes]
-  }
-  return excludes
-}
 
 /**
  *
@@ -57,27 +30,13 @@ function extractGlobPattern(glob) {
 }
 
 /**
- *
- * @param {import('../types.js').ScheduledTask} task
- * @param {string[]} extraFiles
- * @returns
+ * @param {{task: import('../types.js').ScheduledTask, includes: string[], excludes: string[]}} param
  */
-export async function getInputFiles(task, extraFiles) {
-  const { cache } = (await getTask({ taskName: task.taskName })) ?? {}
-
-  if (cache === 'none') {
-    return null
-  }
-
+function globCacheConfig({ includes, excludes, task }) {
   /**
    * @type {Set<string>}
    */
-  const files = new Set(extraFiles)
-
-  const { include, exclude } = extractGlobPattern(cache?.inputs)
-
-  const includes = getIncludes(include)
-  const excludes = getExcludes(exclude)
+  const files = new Set()
 
   for (const pattern of includes) {
     const start = Date.now()
@@ -101,8 +60,47 @@ export async function getInputFiles(task, extraFiles) {
     }
   }
 
-  return [...files].sort()
+  return files
 }
+
+/**
+ *
+ * @param {import('../TaskGraph.js').TaskGraph} tasks
+ * @param {import('../types.js').ScheduledTask} task
+ * @param {string[]} extraFiles
+ * @returns
+ */
+export async function getInputFiles(tasks, task, extraFiles) {
+  const { cache } = (await getTask({ taskName: task.taskName })) ?? {}
+
+  if (cache === 'none') {
+    return null
+  }
+
+  const { include: taskIncludes = [], exclude: taskExcludes = [] } = extractGlobPattern(
+    cache?.inputs,
+  )
+  const globalIncludes = tasks.config.commonCacheConfig?.includes ?? [
+    '<rootDir>/{yarn.lock,pnpm-lock.yaml,package-lock.json}',
+    '<rootDir>/lazy.config.*',
+  ]
+  const globalExcludes = tasks.config.commonCacheConfig?.excludes ?? []
+
+  const localFiles = globCacheConfig({
+    task,
+    includes: replaceRootDirPragmas(uniq([...globalIncludes, ...taskIncludes])),
+    excludes: replaceRootDirPragmas(uniq([...globalExcludes, ...taskExcludes])),
+  })
+
+  return [...new Set([...localFiles, ...extraFiles])].sort()
+}
+
+/**
+ * @param {string[]} arr
+ * @returns
+ */
+const replaceRootDirPragmas = (arr) =>
+  arr.map((str) => path.join(workspaceRoot, str.replace('<rootDir>/', '')))
 
 /**
  *
