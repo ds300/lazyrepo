@@ -1,9 +1,10 @@
-import { spawn } from 'child_process'
-import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
+import { spawn } from 'cross-spawn'
+import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'fs'
 import kleur from 'kleur'
-import path from 'path'
+import path, { relative } from 'path'
+import { Transform } from 'stream'
 import stripAnsi from 'strip-ansi'
-import { getDiffPath, getManifestPath, getTask } from './config.js'
+import { getDiffPath, getManifestPath, getNextManifestPath, getTask } from './config.js'
 import { log } from './log.js'
 import { computeManifest } from './manifest/computeManifest.js'
 import { workspaceRoot } from './workspaceRoot.js'
@@ -11,17 +12,18 @@ import { workspaceRoot } from './workspaceRoot.js'
 /**
  * @param {import('./types.js').ScheduledTask} task
  * @param {import('./TaskGraph.js').TaskGraph} tasks
- * @returns {Promise<boolean>}
+ * @returns {Promise<{didRunTask: boolean, didSucceed: boolean}>}
  */
 export async function runTaskIfNeeded(task, tasks) {
-  const manifestPath = getManifestPath(task)
+  const previousManifestPath = getManifestPath(task)
+  const nextManifestPath = getNextManifestPath(task)
 
   /**
    * @param  {string} msg
    */
   const print = (msg) => console.log(task.terminalPrefix, msg)
 
-  const didHaveManifest = existsSync(manifestPath)
+  const didHaveManifest = existsSync(previousManifestPath)
 
   const didChange = await computeManifest({
     task,
@@ -29,14 +31,15 @@ export async function runTaskIfNeeded(task, tasks) {
   })
 
   let didRunTask = false
+  let didSucceed = false
 
   if (task.force) {
     print('cache miss, --force flag used')
-    await runTask(task)
+    didSucceed = (await runTask(task)).didSucceed
     didRunTask = true
   } else if (didChange === null) {
     print('cache disabled')
-    await runTask(task)
+    didSucceed = (await runTask(task)).didSucceed
     didRunTask = true
   } else if (didChange) {
     const diffPath = getDiffPath(task)
@@ -56,118 +59,120 @@ export async function runTaskIfNeeded(task, tasks) {
     } else if (!didHaveManifest) {
       print('cache miss, no previous manifest found')
     }
-    await runTask(task)
+    didSucceed = (await runTask(task)).didSucceed
     didRunTask = true
   } else {
     print(`cache hit ⚡️`)
   }
 
-  print(kleur.gray('input manifest saved: ' + path.relative(workspaceRoot, manifestPath)))
+  if (didRunTask || didSucceed) {
+    print(kleur.gray('input manifest saved: ' + path.relative(workspaceRoot, previousManifestPath)))
+  }
 
-  return didRunTask
+  if (didRunTask) {
+    if (didSucceed) {
+      renameSync(nextManifestPath, previousManifestPath)
+    } else if (existsSync(previousManifestPath)) {
+      unlinkSync(previousManifestPath)
+    }
+  }
+
+  return { didRunTask, didSucceed: !didRunTask || didSucceed }
+}
+
+/**
+ * @param {import('node:stream').Writable} stream
+ * @param {string} prefix
+ */
+const prefixedWriteStream = (stream, prefix) => {
+  let outData = ''
+  return new Transform({
+    write(chunk, _encoding, callback) {
+      outData += chunk.toString('utf8')
+      callback?.()
+      const lastLineFeed = outData.lastIndexOf('\n')
+      if (lastLineFeed === -1) {
+        return
+      }
+
+      const lines = outData.replaceAll('\r', '').split('\n')
+      outData = lines.pop() || ''
+
+      for (const line of lines) {
+        stream.write(prefix + ' ' + line + '\n', 'utf8')
+      }
+    },
+  })
 }
 
 /**
  * @param {import('./types.js').ScheduledTask} task
- * @returns {Promise<void>}
+ * @returns {Promise<{didSucceed: boolean}>}
  */
 async function runTask(task) {
   const packageJson = JSON.parse(readFileSync(`${task.taskDir}/package.json`, 'utf8'))
-  let command = packageJson.scripts[task.taskName]
-  if (command.startsWith('lazy :inherit')) {
-    const { defaultCommand } = await getTask({ taskName: task.taskName })
-    if (!defaultCommand) {
+  const taskConfig = await getTask({ taskName: task.taskName })
+  let command =
+    taskConfig.runType === 'top-level' ? taskConfig.baseCommand : packageJson.scripts[task.taskName]
+  if (taskConfig.runType !== 'top-level' && command.startsWith('lazy :inherit')) {
+    if (!taskConfig.baseCommand) {
       // TODO: evaluate this stuff ahead-of-time
       log.fail(
-        `Encountered 'lazy :inherit' for scripts#${task.taskName} in ${task.taskDir}/package.json, but there is defaultCommand configured for the task '${task.taskName}'`,
+        `Encountered 'lazy :inherit' for scripts#${task.taskName} in ${task.taskDir}/package.json, but there is baseCommand configured for the task '${task.taskName}'`,
       )
       process.exit(1)
     }
-    command = defaultCommand + ' ' + command.slice('lazy :inherit'.length)
+    command = taskConfig.baseCommand + ' ' + command.slice('lazy :inherit'.length)
     command = command.trim()
   }
 
-  const extraArgs = process.argv.slice(3)
   const start = Date.now()
 
-  console.log(task.terminalPrefix + kleur.bold(' RUN ') + kleur.green().bold(command))
-  try {
-    await new Promise((resolve, reject) => {
-      const proc = spawn(command, extraArgs, {
-        cwd: task.taskDir,
-        shell: true,
-        env: {
-          ...process.env,
-          PATH: `${process.env.PATH}:${workspaceRoot}/node_modules/.bin:./node_modules/.bin`,
-          FORCE_COLOR: '1',
-          npm_lifecycle_event: task.taskName,
-        },
-      })
-      // forward all output to the terminal without losing color
-      let outData = ''
+  console.log(
+    task.terminalPrefix +
+      kleur.bold(' RUN ') +
+      kleur.green().bold(command) +
+      (task.extraArgs.length ? kleur.cyan().bold(' ' + task.extraArgs.join(' ')) : '') +
+      kleur.gray(' in ' + relative(process.cwd(), task.taskDir)),
+  )
 
-      // save stdout to buffer
+  const out = prefixedWriteStream(process.stdout, task.terminalPrefix)
+  const err = prefixedWriteStream(process.stderr, task.terminalPrefix)
+  const proc = spawn(command, task.extraArgs, {
+    cwd: task.taskDir,
+    shell: true,
+    stdio: ['ignore'],
+    env: {
+      ...process.env,
+      PATH: `${process.env.PATH}:./node_modules/.bin:${workspaceRoot}/node_modules/.bin`,
+      FORCE_COLOR: '1',
+      npm_lifecycle_event: task.taskName,
+    },
+  })
 
-      proc.stdout.on('data', (data) => {
-        outData += data
-        const lastLineFeed = outData.lastIndexOf('\n')
-        if (lastLineFeed === -1) {
-          return
-        }
+  proc.stdout?.pipe(out)
+  proc.stderr?.pipe(err)
 
-        const lines = outData.replaceAll('\r', '').split('\n')
-        outData = lines.pop() || ''
+  // if the process exits with a non-zero status, we'll fail the build
+  let status = 0
 
-        for (const line of lines) {
-          process.stdout.write(task.terminalPrefix + ' ' + line + '\n')
-        }
-      })
-
-      let errData = ''
-
-      proc.stderr.on('data', (data) => {
-        errData += data
-        const lastLineFeed = errData.lastIndexOf('\n')
-        if (lastLineFeed === -1) {
-          return
-        }
-
-        const lines = errData.replaceAll('\r', '').split('\n')
-        errData = lines.pop() || ''
-
-        for (const line of lines) {
-          process.stderr.write(task.terminalPrefix + ' ' + line + '\n')
-        }
-      })
-
-      proc.on('exit', (code) => {
-        if (outData) {
-          process.stdout.write(task.terminalPrefix + ' ' + outData + '\n')
-        }
-        if (errData) {
-          process.stderr.write(task.terminalPrefix + ' ' + errData + '\n')
-        }
-        if (code === 0) {
-          resolve(null)
-        } else {
-          reject(new Error(`Command '${command}' exited with code ${code}`))
-        }
-      })
-
-      proc.on('error', (err) => {
-        reject(err)
-      })
+  await new Promise((resolve) => {
+    proc.on('exit', (code) => {
+      status = code ?? 1
+      resolve(null)
     })
-  } catch (e) {
-    const manifestPath = getManifestPath(task)
-    if (existsSync(manifestPath)) {
-      unlinkSync(manifestPath)
-    }
-    throw e
-  }
+
+    proc.on('error', (err) => {
+      status = 1
+      resolve(null)
+      console.error(err)
+    })
+  })
 
   log.log(
     task.terminalPrefix,
     `done in ${kleur.cyan(((Date.now() - start) / 1000).toFixed(2) + 's')}`,
   )
+
+  return { didSucceed: status === 0 }
 }

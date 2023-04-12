@@ -58,6 +58,27 @@ function getWorkspaceGlobs() {
   }
 }
 
+/**
+ * @type {'yarn' | 'pnpm' | 'npm' | null}
+ */
+let _packageManager = null
+/**
+ * @returns {'yarn' | 'pnpm' | 'npm'}
+ */
+export function getPackageManager() {
+  if (_packageManager) {
+    return _packageManager
+  }
+  if (existsSync(path.join(workspaceRoot, 'pnpm-lock.yaml'))) {
+    _packageManager = 'pnpm'
+  } else if (existsSync(path.join(workspaceRoot, 'yarn.lock'))) {
+    _packageManager = 'yarn'
+  } else {
+    _packageManager = 'npm'
+  }
+  return _packageManager
+}
+
 function getPackageJsonPaths() {
   const workspaceGlobs = getWorkspaceGlobs()
   const workspacePaths = workspaceGlobs.flatMap((pattern) => {

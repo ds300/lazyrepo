@@ -2,7 +2,12 @@ import { existsSync, mkdirSync, statSync } from 'fs'
 import kleur from 'kleur'
 import path, { join } from 'path'
 import { taskKey } from '../TaskGraph.js'
-import { getDiffPath, getManifestPath, getTask as getTaskConfig } from '../config.js'
+import {
+  getDiffPath,
+  getManifestPath,
+  getNextManifestPath,
+  getTask as getTaskConfig,
+} from '../config.js'
 import { timeSince } from '../log.js'
 import { uniq } from '../uniq.js'
 import { workspaceRoot } from '../workspaceRoot.js'
@@ -44,22 +49,30 @@ export async function computeManifest({ tasks, task }) {
   if (taskConfig.cache === 'none') return null
 
   const manifestPath = getManifestPath(task)
+  const nextManifestPath = getNextManifestPath(task)
   const diffPath = getDiffPath(task)
 
   if (!existsSync(path.dirname(manifestPath))) {
     mkdirSync(path.dirname(manifestPath), { recursive: true })
   }
+  if (!existsSync(path.dirname(nextManifestPath))) {
+    mkdirSync(path.dirname(nextManifestPath), { recursive: true })
+  }
   if (diffPath && !existsSync(path.dirname(diffPath))) {
     mkdirSync(path.dirname(diffPath), { recursive: true })
   }
 
-  const manifestConstructor = new ManifestConstructor({ diffPath, manifestPath })
+  const manifestConstructor = new ManifestConstructor({
+    diffPath,
+    previousManifestPath: manifestPath,
+    nextManifestPath,
+  })
 
   const extraFiles = []
 
   for (const [otherTaskName, depConfig] of Object.entries(taskConfig.runsAfter ?? {})) {
     if (!depConfig.inheritsInput && depConfig.usesOutput === false) continue
-    const isTopLevel = (await getTaskConfig({ taskName: otherTaskName })).topLevel
+    const isTopLevel = (await getTaskConfig({ taskName: otherTaskName })).runType === 'top-level'
 
     const key = taskKey(isTopLevel ? workspaceRoot : task.taskDir, otherTaskName)
     const depTask = tasks.allTasks[key]
@@ -79,25 +92,32 @@ export async function computeManifest({ tasks, task }) {
   }
 
   if (
-    taskConfig.independent !== true &&
+    taskConfig.runType !== 'independent' &&
     (taskConfig.cache?.inheritsInputFromDependencies ?? true)
   ) {
     // TODO: test that localDeps is always sorted
-    for (const packageName of task.packageDetails?.localDeps ?? []) {
-      const depPackage = tasks.repoDetails.packagesByName[packageName]
-      const key = taskKey(depPackage.dir, task.taskName)
-      const depTask = tasks.allTasks[key]
-      if (!depTask) continue
-      if (!depTask.inputManifestCacheKey) {
-        throw new Error(`Missing inputManifestCacheKey for task: ${key}.`)
-      }
+    const upstreamTaskKeys = task.packageDetails?.localDeps
+      ?.map((packageName) => {
+        const depPackage = tasks.repoDetails.packagesByName[packageName]
+        const key = taskKey(depPackage.dir, task.taskName)
+        return key
+      })
+      .sort()
+    if (upstreamTaskKeys) {
+      for (const key of upstreamTaskKeys) {
+        const depTask = tasks.allTasks[key]
+        if (!depTask) continue
+        if (!depTask.inputManifestCacheKey) {
+          throw new Error(`Missing inputManifestCacheKey for task: ${key}.`)
+        }
 
-      manifestConstructor.update('upstream package inputs', key, depTask.inputManifestCacheKey)
+        manifestConstructor.update('upstream package inputs', key, depTask.inputManifestCacheKey)
+      }
     }
   }
 
   const allEnvVars = uniq(
-    tasks.config.commonCacheConfig?.envInputs?.concat(taskConfig.cache?.envInputs ?? []) ?? [],
+    tasks.config.baseCacheConfig?.envInputs?.concat(taskConfig.cache?.envInputs ?? []) ?? [],
   ).sort()
 
   for (const envVar of allEnvVars) {
