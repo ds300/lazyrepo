@@ -10,7 +10,7 @@ import { workspaceRoot } from '../workspaceRoot.js'
 /**
  *
  * @param {import('../types.js').GlobConfig | null | undefined} glob
- * @returns
+ * @returns {{include: string[], exclude: string[]}}
  */
 function extractGlobPattern(glob) {
   if (!glob) {
@@ -26,7 +26,7 @@ function extractGlobPattern(glob) {
     }
   }
 
-  return glob
+  return { include: glob.include ?? ['**/*'], exclude: glob.exclude ?? [] }
 }
 
 /**
@@ -77,14 +77,12 @@ export async function getInputFiles(tasks, task, extraFiles) {
     return null
   }
 
-  const { include: taskIncludes = [], exclude: taskExcludes = [] } = extractGlobPattern(
-    cache?.inputs,
-  )
-  const globalIncludes = tasks.config.commonCacheConfig?.includes ?? [
+  const { include: taskIncludes, exclude: taskExcludes } = extractGlobPattern(cache?.inputs)
+  const globalIncludes = tasks.config.baseCacheConfig?.includes ?? [
     '<rootDir>/{yarn.lock,pnpm-lock.yaml,package-lock.json}',
     '<rootDir>/lazy.config.*',
   ]
-  const globalExcludes = tasks.config.commonCacheConfig?.excludes ?? []
+  const globalExcludes = tasks.config.baseCacheConfig?.excludes ?? []
 
   const localFiles = globCacheConfig({
     task,
@@ -100,7 +98,9 @@ export async function getInputFiles(tasks, task, extraFiles) {
  * @returns
  */
 const replaceRootDirPragmas = (arr) =>
-  arr.map((str) => path.join(workspaceRoot, str.replace('<rootDir>/', '')))
+  arr.map((str) =>
+    str.startsWith('<rootDir>/') ? path.join(workspaceRoot, str.replace('<rootDir>/', '')) : str,
+  )
 
 /**
  *

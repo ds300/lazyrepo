@@ -102,6 +102,12 @@ export async function run(args) {
 
   await tasks.runAllTasks()
 
+  const failedTasks = tasks.allFailedTasks()
+
+  if (failedTasks.length > 0) {
+    log.fail(`Failed tasks: ${failedTasks.join(', ')}`)
+  }
+
   if (Object.entries(tasks.allTasks).every(([, task]) => task.status === 'success:lazy')) {
     console.log('\n' + rainbow('>>> MAXIMUM LAZY'))
   }

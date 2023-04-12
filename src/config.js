@@ -70,6 +70,15 @@ export function getManifestPath({ taskName, taskDir }) {
  * @param {{ taskName: string, taskDir: string }} param0
  * @returns
  */
+export function getNextManifestPath({ taskName, taskDir }) {
+  const dir = path.join(taskDir, '.lazy', 'manifests')
+  return path.join(dir, slugify(taskName) + '.next')
+}
+
+/**
+ * @param {{ taskName: string, taskDir: string }} param0
+ * @returns
+ */
 export function getDiffPath({ taskName, taskDir }) {
   const dir = path.join(taskDir, '.lazy', 'diffs')
   return path.join(dir, slugify(taskName))

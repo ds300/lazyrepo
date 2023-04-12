@@ -2,7 +2,7 @@
   <img alt="LAZYREPO" src="https://github.com/ds300/lazyrepo/raw/main/assets/lazyrepo.svg" />
 </div>
 
-> 💡 Currently in early alpha! Get help or join in development on [discord](https://discord.gg/XWb3NGHkfD).
+> 💡 Currently in the prototyping stage, expect breaking changes! Get help or join in development on [discord](https://discord.gg/XWb3NGHkfD).
 
 `lazyrepo` is a zero-config caching task runner for `npm`/`pnpm`/`yarn` monorepos.
 
@@ -93,7 +93,7 @@ These are prefixed with a colon (`:`) to help avoid conflicts with your script n
   ```diff
    "tasks": {
      "test": {
-  +    "defaultCommand": "jest --runInBand --noCache --coverage"
+  +    "baseCommand": "jest --runInBand --noCache --coverage"
      }
    }
   ```

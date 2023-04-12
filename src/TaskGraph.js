@@ -14,7 +14,7 @@ import { workspaceRoot } from './workspaceRoot.js'
  */
 export function taskKey(taskDir, taskName) {
   if (!isAbsolute(taskDir)) throw new Error(`taskKey: taskDir must be absolute: ${taskDir}`)
-  return `${relative(workspaceRoot, taskDir)}:${taskName}`
+  return `${relative(workspaceRoot, taskDir) || '<rootDir>'}:${taskName}`
 }
 
 const numCpus = cpus().length
@@ -96,7 +96,7 @@ export class TaskGraph {
         )
       }
 
-      if (task.independent !== true) {
+      if (task.runType !== 'independent') {
         for (const packageName of packageDetails?.localDeps ?? []) {
           const pkg = this.repoDetails.packagesByName[packageName]
           if (pkg.scripts?.[taskDescriptor.taskName]) {
@@ -122,7 +122,7 @@ export class TaskGraph {
      */
     const enqueueTask = (taskDescriptor, dependencies) => {
       const task = this.config.tasks?.[taskDescriptor.taskName] ?? {}
-      if (task.topLevel) {
+      if (task.runType === 'top-level') {
         dependencies?.push(taskKey(workspaceRoot, taskDescriptor.taskName))
         visit({
           task,
@@ -201,13 +201,8 @@ export class TaskGraph {
      * @type {(val: any) => any}
      */
     let resolve = () => {}
-    /**
-     * @type {(err: any) => any}
-     */
-    let reject = () => {}
-    const promise = new Promise((res, rej) => {
+    const promise = new Promise((res) => {
       resolve = res
-      reject = rej
     })
 
     const tick = () => {
@@ -220,7 +215,8 @@ export class TaskGraph {
       }
 
       if (failedTasks.length > 0 && runningTasks.length === 0) {
-        return reject(new Error(`Failed tasks: ${failedTasks.join(', ')}`))
+        // some tasks failed, and there are no more running tasks
+        return resolve(null)
       }
 
       if (failedTasks.length > 0) {
@@ -253,8 +249,12 @@ export class TaskGraph {
      * @param {string} taskKey
      */
     const runTask = async (taskKey) => {
-      const didNeedToRun = await runTaskIfNeeded(this.allTasks[taskKey], this)
-      this.allTasks[taskKey].status = didNeedToRun ? 'success:eager' : 'success:lazy'
+      const { didRunTask, didSucceed } = await runTaskIfNeeded(this.allTasks[taskKey], this)
+      this.allTasks[taskKey].status = didSucceed
+        ? didRunTask
+          ? 'success:eager'
+          : 'success:lazy'
+        : 'failure'
       tick()
     }
 

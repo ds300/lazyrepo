@@ -1,13 +1,6 @@
 import { createHash } from 'crypto'
 
-import {
-  createWriteStream,
-  existsSync,
-  readFileSync,
-  renameSync,
-  unlinkSync,
-  writeFileSync,
-} from 'fs'
+import { createWriteStream, existsSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
 import { compareManifestTypes } from './computeManifest.js'
 
 const TAB = '\t'
@@ -31,7 +24,8 @@ const WAS_CHANGED = 'WAS_CHANGED'
 /**
  * @typedef {Object} ManifestConstructorProps
  *
- * @property {string} manifestPath
+ * @property {string} previousManifestPath
+ * @property {string} nextManifestPath
  * @property {string} diffPath
  */
 
@@ -50,7 +44,7 @@ export class ManifestConstructor {
    * @readonly
    * @type {string}
    */
-  manifestPath
+  nextManifestPath
 
   /**
    * @private
@@ -62,11 +56,11 @@ export class ManifestConstructor {
   /**
    * @param {ManifestConstructorProps} options
    */
-  constructor({ manifestPath, diffPath }) {
-    this.previousManifestSource = existsSync(manifestPath)
-      ? readFileSync(manifestPath, 'utf8')
+  constructor({ previousManifestPath, diffPath, nextManifestPath }) {
+    this.previousManifestSource = existsSync(previousManifestPath)
+      ? readFileSync(previousManifestPath, 'utf8')
       : null
-    this.manifestPath = manifestPath
+    this.nextManifestPath = nextManifestPath
     this.diffPath = diffPath
   }
 
@@ -131,10 +125,7 @@ export class ManifestConstructor {
 
   getManifestOutStream() {
     if (this._manifestOutStream === null) {
-      if (existsSync(this.manifestPath)) {
-        renameSync(this.manifestPath, this.manifestPath + '.prev')
-      }
-      this._manifestOutStream = createWriteStream(this.manifestPath, 'utf-8')
+      this._manifestOutStream = createWriteStream(this.nextManifestPath, 'utf-8')
       if (this.previousManifestSource) {
         // catch up
         this._manifestOutStream.write(this.previousManifestSource.slice(0, this.lineOffset))
@@ -267,7 +258,7 @@ export class ManifestConstructor {
       if (!this._manifestOutStream) {
         if (this.lineOffset === 0) {
           // manifest was previously not empty and is now empty, need to create an empty file
-          writeFileSync(this.manifestPath, '')
+          writeFileSync(this.nextManifestPath, '')
         } else {
           // need to catch up
           this.getManifestOutStream()
@@ -296,7 +287,7 @@ export class ManifestConstructor {
     }
     if (!this._manifestOutStream && this.previousManifestSource === null) {
       // no manifest previously existed and there were no updates so we need to create an empty file
-      writeFileSync(this.manifestPath, '')
+      writeFileSync(this.nextManifestPath, '')
     }
     await Promise.all([close(this._diffOutStream), close(this._manifestOutStream)])
 

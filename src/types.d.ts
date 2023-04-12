@@ -66,13 +66,7 @@ export type CacheConfig =
       inheritsInputFromDependencies?: boolean
     }
 
-export interface TaskConfig {
-  /**
-   * Run the task in the root directory only.
-   *
-   * @default false
-   */
-  topLevel?: boolean
+type BaseTaskConfig = {
   /** The other commands that must be completed before this one can run. */
   runsAfter?: {
     [taskName: string]: {
@@ -103,27 +97,71 @@ export interface TaskConfig {
   cache?: CacheConfig
 
   /**
-   * Whether or not the task must be executed in dependency order.
-   *
-   * If true, the ordering does not matter.
-   * If false, the task will be executed based on topological dependency order.
-   *
-   * @default false
-   */
-  independent?: boolean
-
-  /**
    * Whether this task can be safely executed in parallel with other instances of the same task.
    *
    * @default true
    */
   parallel?: boolean
-
-  /**
-   * The default command to run for this task if the scripts entry uses `lazy :inherit`
-   */
-  defaultCommand?: string
 }
+
+export interface TopLevelTaskConfig extends BaseTaskConfig {
+  /**
+   * The execution strategy for this task
+   *
+   * "dependent" (default)
+   *
+   *   The task will run in workspace package directories. It will run in topological order based
+   *   on the dependencies listed in package.json files.
+   *
+   *   Any tasks that do not depend on each other may be run in parallel, unless specified otherwise.
+   *
+   * "independent"
+   *
+   *   The task will run in workspace package directories, in parallel unless specified otherwise.
+   *
+   * "top-level"
+   *
+   *   The task will run in the root directory of the repo.
+   *   You must specify a command to run.
+   *   You may also want to add a `package.json` script with the same name that calls `lazy`.
+   */
+  runType: 'top-level'
+  /**
+   * The command to run for this task
+   */
+  baseCommand: string
+}
+
+export interface PackageLevelTaskConfig extends BaseTaskConfig {
+  /**
+   * The execution strategy for this task
+   *
+   * "dependent" (default)
+   *
+   *   The task will run in workspace package directories. It will run in topological order based
+   *   on the dependencies listed in package.json files.
+   *
+   *   Any tasks that do not depend on each other may be run in parallel, unless specified otherwise.
+   *
+   * "independent"
+   *
+   *   The task will run in workspace package directories, in parallel unless specified otherwise.
+   *
+   * "top-level"
+   *
+   *   The task will run in the root directory of the repo.
+   *   You must specify a command to run.
+   *   You may also want to add a `package.json` script with the same name that calls `lazy`.
+   *
+   */
+  runType?: 'dependent' | 'independent'
+  /**
+   * The command to run for this task if the task uses `lazy :inherit`
+   */
+  baseCommand?: string
+}
+
+export type TaskConfig = TopLevelTaskConfig | PackageLevelTaskConfig
 
 export interface LazyConfig {
   /**
@@ -133,7 +171,7 @@ export interface LazyConfig {
    * If you want to specify a glob pattern that is relative to the root, prefix the pattern with `<rootDir>/`.
    *
    * @example
-   * commonCacheConfig: {
+   * baseCacheConfig: {
    *   // Include the root package.json in every tasks' cache key
    *   includes: ['<rootDir>/package.json'],
    *   // Ignore dist folder in every package directory
@@ -142,7 +180,7 @@ export interface LazyConfig {
    *
    * @default {includes: ['<rootDir>/{yarn.lock,pnpm-lock.yaml,package-lock.json}']}
    */
-  commonCacheConfig?: {
+  baseCacheConfig?: {
     /**
      * Globs of files that should be included in every task's input manifest.
      *

@@ -7,17 +7,18 @@ import { rimraf } from '../src/rimraf.js'
 const tmpdir = join(os.tmpdir(), 'lazyrepo-test')
 function setup() {
   rimraf(tmpdir)
-  const manifestPath = join(tmpdir, 'manifests', 'test')
+  const previousManifestPath = join(tmpdir, 'manifests', 'test')
+  const nextManifestPath = join(tmpdir, 'manifests', 'test.next')
   const diffPath = join(tmpdir, 'diffs', 'test')
 
-  if (!existsSync(dirname(manifestPath))) {
-    mkdirSync(dirname(manifestPath), { recursive: true })
+  if (!existsSync(dirname(previousManifestPath))) {
+    mkdirSync(dirname(previousManifestPath), { recursive: true })
   }
 
   if (!existsSync(dirname(diffPath))) {
     mkdirSync(dirname(diffPath), { recursive: true })
   }
-  return { manifestPath, diffPath }
+  return { previousManifestPath, diffPath, nextManifestPath }
 }
 
 const makeManifestString = (entries: [string, string, string, string?][]) => {
@@ -32,9 +33,10 @@ const makeManifestString = (entries: [string, string, string, string?][]) => {
 }
 
 test('it creates a new manifest when one did not previously exist', async () => {
-  const { manifestPath, diffPath } = setup()
+  const { previousManifestPath, nextManifestPath, diffPath } = setup()
   const manifest = new ManifestConstructor({
-    manifestPath,
+    previousManifestPath,
+    nextManifestPath,
     diffPath,
   })
 
@@ -44,14 +46,17 @@ test('it creates a new manifest when one did not previously exist', async () => 
 
   expect(hash).toHaveLength(64)
   expect(didChange).toBe(true)
-  expect(readFileSync(manifestPath, 'utf8')).toEqual(`file\tpackages/core/src/index.ts\thash1\n`)
+  expect(readFileSync(nextManifestPath, 'utf8')).toEqual(
+    `file\tpackages/core/src/index.ts\thash1\n`,
+  )
   expect(existsSync(diffPath)).toBe(false)
 })
 
 test('it creates an empty manifest if one did not exist and nothing was added', async () => {
-  const { manifestPath, diffPath } = setup()
+  const { previousManifestPath, nextManifestPath, diffPath } = setup()
   const manifest = new ManifestConstructor({
-    manifestPath,
+    previousManifestPath,
+    nextManifestPath,
     diffPath,
   })
 
@@ -59,37 +64,41 @@ test('it creates an empty manifest if one did not exist and nothing was added', 
 
   expect(hash).toHaveLength(64)
   expect(didChange).toBe(true)
-  expect(readFileSync(manifestPath, 'utf8')).toEqual(``)
+  expect(readFileSync(nextManifestPath, 'utf8')).toEqual(``)
   expect(existsSync(diffPath)).toBe(false)
 })
 
 test('it leaves an empty manifest empty if one did exist and nothing was added', async () => {
-  const { manifestPath, diffPath } = setup()
+  const { previousManifestPath, nextManifestPath, diffPath } = setup()
 
-  writeFileSync(manifestPath, '')
+  writeFileSync(previousManifestPath, '')
 
-  const manifest = new ManifestConstructor({ manifestPath, diffPath })
+  const manifest = new ManifestConstructor({ previousManifestPath, nextManifestPath, diffPath })
 
   const { hash, didChange } = await manifest.end()
 
   expect(hash).toHaveLength(64)
   expect(didChange).toBe(false)
-  expect(readFileSync(manifestPath, 'utf8')).toEqual(``)
+  expect(readFileSync(previousManifestPath, 'utf8')).toEqual(``)
+  expect(existsSync(nextManifestPath)).toBe(false)
   expect(existsSync(diffPath)).toBe(false)
 })
 
 test('it leaves a manifest empty if it was not previously empty and nothing was added', async () => {
-  const { manifestPath, diffPath } = setup()
+  const { previousManifestPath, nextManifestPath, diffPath } = setup()
 
-  writeFileSync(manifestPath, makeManifestString([['file', 'packages/core/src/index.ts', 'hash1']]))
+  writeFileSync(
+    previousManifestPath,
+    makeManifestString([['file', 'packages/core/src/index.ts', 'hash1']]),
+  )
 
-  const manifest = new ManifestConstructor({ manifestPath, diffPath })
+  const manifest = new ManifestConstructor({ previousManifestPath, nextManifestPath, diffPath })
 
   const { hash, didChange } = await manifest.end()
 
   expect(hash).toHaveLength(64)
   expect(didChange).toBe(true)
-  expect(readFileSync(manifestPath, 'utf8')).toEqual(``)
+  expect(readFileSync(nextManifestPath, 'utf8')).toEqual(``)
   expect(readFileSync(diffPath, 'utf8')).toMatchInlineSnapshot(`
     "- removed file packages/core/src/index.ts
     "
@@ -97,11 +106,11 @@ test('it leaves a manifest empty if it was not previously empty and nothing was 
 })
 
 test('it adds things to an empty manifest', async () => {
-  const { manifestPath, diffPath } = setup()
+  const { previousManifestPath, nextManifestPath, diffPath } = setup()
 
-  writeFileSync(manifestPath, '')
+  writeFileSync(previousManifestPath, '')
 
-  const manifest = new ManifestConstructor({ manifestPath, diffPath })
+  const manifest = new ManifestConstructor({ previousManifestPath, nextManifestPath, diffPath })
 
   manifest.update('file', 'packages/core/src/index.ts', 'hash1')
 
@@ -109,7 +118,9 @@ test('it adds things to an empty manifest', async () => {
 
   expect(hash).toHaveLength(64)
   expect(didChange).toBe(true)
-  expect(readFileSync(manifestPath, 'utf8')).toEqual(`file\tpackages/core/src/index.ts\thash1\n`)
+  expect(readFileSync(nextManifestPath, 'utf8')).toEqual(
+    `file\tpackages/core/src/index.ts\thash1\n`,
+  )
   expect(readFileSync(diffPath, 'utf8')).toMatchInlineSnapshot(`
     "+ added file packages/core/src/index.ts
     "
@@ -117,9 +128,9 @@ test('it adds things to an empty manifest', async () => {
 })
 
 test('it creates a manifest but not a diff if there was no manifest before', async () => {
-  const { manifestPath, diffPath } = setup()
+  const { previousManifestPath, nextManifestPath, diffPath } = setup()
 
-  const manifest = new ManifestConstructor({ manifestPath, diffPath })
+  const manifest = new ManifestConstructor({ previousManifestPath, nextManifestPath, diffPath })
 
   manifest.update('file', 'packages/core/src/index.ts', 'hash1')
 
@@ -127,16 +138,21 @@ test('it creates a manifest but not a diff if there was no manifest before', asy
 
   expect(hash).toHaveLength(64)
   expect(didChange).toBe(true)
-  expect(readFileSync(manifestPath, 'utf8')).toEqual(`file\tpackages/core/src/index.ts\thash1\n`)
+  expect(readFileSync(nextManifestPath, 'utf8')).toEqual(
+    `file\tpackages/core/src/index.ts\thash1\n`,
+  )
   expect(existsSync(diffPath)).toBe(false)
 })
 
 test('if nothing changed it does not create a new manifest', async () => {
-  const { manifestPath, diffPath } = setup()
+  const { previousManifestPath, nextManifestPath, diffPath } = setup()
 
-  writeFileSync(manifestPath, makeManifestString([['file', 'packages/core/src/index.ts', 'hash1']]))
+  writeFileSync(
+    previousManifestPath,
+    makeManifestString([['file', 'packages/core/src/index.ts', 'hash1']]),
+  )
 
-  const manifest = new ManifestConstructor({ manifestPath, diffPath })
+  const manifest = new ManifestConstructor({ previousManifestPath, nextManifestPath, diffPath })
 
   manifest.update('file', 'packages/core/src/index.ts', 'hash1')
 
@@ -144,16 +160,22 @@ test('if nothing changed it does not create a new manifest', async () => {
 
   expect(hash).toHaveLength(64)
   expect(didChange).toBe(false)
-  expect(readFileSync(manifestPath, 'utf8')).toEqual(`file\tpackages/core/src/index.ts\thash1\n`)
+  expect(existsSync(nextManifestPath)).toBe(false)
+  expect(readFileSync(previousManifestPath, 'utf8')).toEqual(
+    `file\tpackages/core/src/index.ts\thash1\n`,
+  )
   expect(existsSync(diffPath)).toBe(false)
 })
 
 test('it should allow things to change', async () => {
-  const { manifestPath, diffPath } = setup()
+  const { previousManifestPath, nextManifestPath, diffPath } = setup()
 
-  writeFileSync(manifestPath, makeManifestString([['file', 'packages/core/src/index.ts', 'hash1']]))
+  writeFileSync(
+    previousManifestPath,
+    makeManifestString([['file', 'packages/core/src/index.ts', 'hash1']]),
+  )
 
-  const manifest = new ManifestConstructor({ manifestPath, diffPath })
+  const manifest = new ManifestConstructor({ previousManifestPath, nextManifestPath, diffPath })
 
   manifest.update('file', 'packages/core/src/index.ts', 'hash2')
 
@@ -161,7 +183,9 @@ test('it should allow things to change', async () => {
 
   expect(hash).toHaveLength(64)
   expect(didChange).toBe(true)
-  expect(readFileSync(manifestPath, 'utf8')).toEqual(`file\tpackages/core/src/index.ts\thash2\n`)
+  expect(readFileSync(nextManifestPath, 'utf8')).toEqual(
+    `file\tpackages/core/src/index.ts\thash2\n`,
+  )
   expect(readFileSync(diffPath, 'utf8').toString()).toMatchInlineSnapshot(`
     "± changed file packages/core/src/index.ts
     "
@@ -169,18 +193,21 @@ test('it should allow things to change', async () => {
 })
 
 describe('with multiple files', () => {
-  let manifestPath: string, diffPath: string, manifest: ManifestConstructor
+  let previousManifestPath: string,
+    nextManifestPath: string,
+    diffPath: string,
+    manifest: ManifestConstructor
   beforeEach(() => {
-    ;({ manifestPath, diffPath } = setup())
+    ;({ previousManifestPath, nextManifestPath, diffPath } = setup())
     writeFileSync(
-      manifestPath,
+      previousManifestPath,
       makeManifestString([
         ['file', 'packages/core/src/index.ts', 'hash1'],
         ['file', 'packages/core/src/index2.ts', 'hash2'],
         ['file', 'packages/core/src/index3.ts', 'hash3'],
       ]),
     )
-    manifest = new ManifestConstructor({ manifestPath, diffPath })
+    manifest = new ManifestConstructor({ previousManifestPath, nextManifestPath, diffPath })
   })
 
   test('it should allow no changes', async () => {
@@ -193,7 +220,8 @@ describe('with multiple files', () => {
     expect(hash).toHaveLength(64)
     expect(didChange).toBe(false)
 
-    expect(readFileSync(manifestPath, 'utf8')).toEqual(
+    expect(existsSync(nextManifestPath)).toBe(false)
+    expect(readFileSync(previousManifestPath, 'utf8')).toEqual(
       makeManifestString([
         ['file', 'packages/core/src/index.ts', 'hash1'],
         ['file', 'packages/core/src/index2.ts', 'hash2'],
@@ -211,7 +239,7 @@ describe('with multiple files', () => {
 
     expect(hash).toHaveLength(64)
     expect(didChange).toBe(true)
-    expect(readFileSync(manifestPath, 'utf8')).toEqual(
+    expect(readFileSync(nextManifestPath, 'utf8')).toEqual(
       makeManifestString([
         ['file', 'packages/core/src/index2.ts', 'hash2'],
         ['file', 'packages/core/src/index3.ts', 'hash3'],
@@ -231,7 +259,7 @@ describe('with multiple files', () => {
 
     expect(hash).toHaveLength(64)
     expect(didChange).toBe(true)
-    expect(readFileSync(manifestPath, 'utf8')).toEqual(
+    expect(readFileSync(nextManifestPath, 'utf8')).toEqual(
       makeManifestString([
         ['file', 'packages/core/src/index.ts', 'hash1'],
         ['file', 'packages/core/src/index3.ts', 'hash3'],
@@ -251,7 +279,7 @@ describe('with multiple files', () => {
 
     expect(hash).toHaveLength(64)
     expect(didChange).toBe(true)
-    expect(readFileSync(manifestPath, 'utf8')).toEqual(
+    expect(readFileSync(nextManifestPath, 'utf8')).toEqual(
       makeManifestString([
         ['file', 'packages/core/src/index.ts', 'hash1'],
         ['file', 'packages/core/src/index2.ts', 'hash2'],
@@ -270,7 +298,7 @@ describe('with multiple files', () => {
 
     expect(hash).toHaveLength(64)
     expect(didChange).toBe(true)
-    expect(readFileSync(manifestPath, 'utf8')).toEqual(
+    expect(readFileSync(nextManifestPath, 'utf8')).toEqual(
       makeManifestString([['file', 'packages/core/src/index.ts', 'hash1']]),
     )
     expect(readFileSync(diffPath, 'utf8').toString()).toMatchInlineSnapshot(`
@@ -287,7 +315,7 @@ describe('with multiple files', () => {
 
     expect(hash).toHaveLength(64)
     expect(didChange).toBe(true)
-    expect(readFileSync(manifestPath, 'utf8')).toEqual(
+    expect(readFileSync(nextManifestPath, 'utf8')).toEqual(
       makeManifestString([['file', 'packages/core/src/index3.ts', 'hash3']]),
     )
     expect(readFileSync(diffPath, 'utf8').toString()).toMatchInlineSnapshot(`
@@ -307,7 +335,7 @@ describe('with multiple files', () => {
 
     expect(hash).toHaveLength(64)
     expect(didChange).toBe(true)
-    expect(readFileSync(manifestPath, 'utf8')).toEqual(
+    expect(readFileSync(nextManifestPath, 'utf8')).toEqual(
       makeManifestString([
         ['file', 'packages/abacus/src/index.ts', 'hashA'],
         ['file', 'packages/core/src/index.ts', 'hash1'],
@@ -332,7 +360,7 @@ describe('with multiple files', () => {
 
     expect(hash).toHaveLength(64)
     expect(didChange).toBe(true)
-    expect(readFileSync(manifestPath, 'utf8')).toEqual(
+    expect(readFileSync(nextManifestPath, 'utf8')).toEqual(
       makeManifestString([
         ['file', 'packages/abacus/src/index.ts', 'hashA'],
         ['file', 'packages/abacus/src/index2.ts', 'hashB'],
@@ -357,7 +385,7 @@ describe('with multiple files', () => {
 
     expect(hash).toHaveLength(64)
     expect(didChange).toBe(true)
-    expect(readFileSync(manifestPath, 'utf8')).toEqual(
+    expect(readFileSync(nextManifestPath, 'utf8')).toEqual(
       makeManifestString([
         ['file', 'packages/abacus/src/index.ts', 'hashA'],
         ['file', 'packages/core/src/index.ts', 'hash2'],
@@ -381,7 +409,7 @@ describe('with multiple files', () => {
 
     expect(hash).toHaveLength(64)
     expect(didChange).toBe(true)
-    expect(readFileSync(manifestPath, 'utf8')).toEqual(
+    expect(readFileSync(nextManifestPath, 'utf8')).toEqual(
       makeManifestString([
         ['file', 'packages/core/src/index.ts', 'hashA'],
         ['file', 'packages/core/src/index2.ts', 'hash2'],
@@ -405,7 +433,7 @@ describe('with multiple files', () => {
 
     expect(hash).toHaveLength(64)
     expect(didChange).toBe(true)
-    expect(readFileSync(manifestPath, 'utf8')).toEqual(
+    expect(readFileSync(nextManifestPath, 'utf8')).toEqual(
       makeManifestString([
         ['env var', 'VERCEL_DEPLOY_KEY', 'hashA'],
         ['file', 'packages/core/src/index.ts', 'hash1'],
@@ -422,9 +450,9 @@ describe('with multiple files', () => {
 })
 
 it('should complain if keys are added in non alphabetical order', async () => {
-  const { manifestPath, diffPath } = setup()
+  const { previousManifestPath, nextManifestPath, diffPath } = setup()
 
-  const manifest = new ManifestConstructor({ manifestPath, diffPath })
+  const manifest = new ManifestConstructor({ previousManifestPath, nextManifestPath, diffPath })
 
   manifest.update('file', 'packages/core/src/index.ts', 'hash2')
   expect(() => {
@@ -435,9 +463,9 @@ it('should complain if keys are added in non alphabetical order', async () => {
 })
 
 it('should complain if types are added in non alphabetical order', async () => {
-  const { manifestPath, diffPath } = setup()
+  const { previousManifestPath, nextManifestPath, diffPath } = setup()
 
-  const manifest = new ManifestConstructor({ manifestPath, diffPath })
+  const manifest = new ManifestConstructor({ previousManifestPath, nextManifestPath, diffPath })
 
   manifest.update('file', 'packages/core/src/index.ts', 'hash2')
   expect(() => {
@@ -448,9 +476,9 @@ it('should complain if types are added in non alphabetical order', async () => {
 })
 
 it('should not complain if types are added in alphabetical order', async () => {
-  const { manifestPath, diffPath } = setup()
+  const { previousManifestPath, nextManifestPath, diffPath } = setup()
 
-  const manifest = new ManifestConstructor({ manifestPath, diffPath })
+  const manifest = new ManifestConstructor({ previousManifestPath, nextManifestPath, diffPath })
 
   manifest.update('env var', 'VERCEL_DEPLOY_KEY', 'hash2')
   manifest.update('file', 'packages/core/src/index.ts', 'hash2')
