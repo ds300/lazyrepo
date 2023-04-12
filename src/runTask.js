@@ -65,7 +65,7 @@ export async function runTaskIfNeeded(task, tasks) {
     print(`cache hit ⚡️`)
   }
 
-  if (didRunTask || didSucceed) {
+  if (!didRunTask || didSucceed) {
     print(kleur.gray('input manifest saved: ' + path.relative(workspaceRoot, previousManifestPath)))
   }
 
