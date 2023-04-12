@@ -1,6 +1,5 @@
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["test"] }] */
 import { parseRunArgs } from '../src/commands/run.js'
-// eslint-disable-next-line n/no-missing-import
 import { CLITaskDescription } from '../src/types.js'
 
 function test(args: string[], expected: CLITaskDescription[]) {

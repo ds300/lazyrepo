@@ -133,6 +133,7 @@ export class TaskGraph {
         return
       }
 
+      /** @type {Array<string> | null} */
       const filteredPackageNames = taskDescriptor.filterPaths.length
         ? glob
             .sync(taskDescriptor.filterPaths, { onlyDirectories: true })
@@ -205,7 +206,7 @@ export class TaskGraph {
       resolve = res
     })
 
-    const tick = () => {
+    const tick = async () => {
       const runningTasks = this.allRunningTasks()
       const readyTasks = this.allReadyTasks()
       const failedTasks = this.allFailedTasks()
@@ -240,7 +241,7 @@ export class TaskGraph {
       for (let i = 0; i < numTasksToStart; i++) {
         const taskKey = readyTasks[i]
         this.allTasks[taskKey].status = 'running'
-        runTask(readyTasks[i])
+        await runTask(readyTasks[i])
       }
 
       return true
@@ -255,10 +256,8 @@ export class TaskGraph {
           ? 'success:eager'
           : 'success:lazy'
         : 'failure'
-      tick()
+      await tick()
     }
-
-    tick()
 
     return await promise
   }

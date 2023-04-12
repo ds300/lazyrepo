@@ -1,6 +1,6 @@
 import k from 'kleur'
 
-const { cyan, grey, red, green, bold } = k
+const { cyan, red, green, bold } = k
 
 let stdout = process.stdout
 
@@ -26,88 +26,6 @@ function decapitalize(str) {
   return str && str[0].toLowerCase() + str.slice(1)
 }
 
-/**
- *
- * @template T
- * @param {string} str
- * @param {() => T | Promise<T>} task
- * @returns {Promise<T>}
- */
-async function timedStep(str, task) {
-  stdout.write(cyan(`• `) + str + '...')
-  const start = Date.now()
-  block()
-  const done = () => {
-    stdout.write(cyan(' ' + timeSince(start) + '\n'))
-    release()
-  }
-  try {
-    return await Promise.resolve(task()).then((result) => {
-      done()
-      return result
-    })
-  } catch (/** @type {any} */ error) {
-    return log.fail('Unexpected error', { error })
-  }
-}
-
-/**
- *
- * @template T
- * @param {string} str
- * @param {() => T | Promise<T>} task
- * @returns {Promise<T>}
- */
-async function timedSubstep(str, task) {
-  stdout.write(grey('  ' + str + '...'))
-  const start = Date.now()
-  block()
-  const done = () => {
-    stdout.write(cyan(' ' + timeSince(start) + '\n'))
-    release()
-  }
-  try {
-    return await Promise.resolve(task()).then((result) => {
-      done()
-      return result
-    })
-  } catch (/** @type {any} */ error) {
-    return log.fail('Unexpected error', { error })
-  }
-}
-
-/**
- * @type {(() => void)[]}
- */
-const logQueue = []
-let isBlocked = false
-
-function block() {
-  isBlocked = true
-}
-
-function release() {
-  isBlocked = false
-  while (logQueue.length) {
-    logQueue.shift()?.()
-  }
-}
-
-/**
- * @template {any[]} Args
- * @param {(...args: Args) => void} f
- * @returns {(...args: Args) => void}
- */
-function queueify(f) {
-  return (...args) => {
-    if (isBlocked) {
-      logQueue.push(() => f(...args))
-    } else {
-      f(...args)
-    }
-  }
-}
-
 export const log = {
   /**
    * @param {string} headline
@@ -128,7 +46,6 @@ export const log = {
    * @param {string} str
    */
   step: (str) => writeLine(cyan(`•`), str),
-  substep: queueify((str) => writeLine(grey('  ' + str))),
   /**
    * @param {string} str
    */
@@ -137,8 +54,6 @@ export const log = {
    * @param {string} str
    */
   info: (str) => writeLine('💡', str),
-  timedStep,
-  timedSubstep,
   /**
    * @param {string} str
    */

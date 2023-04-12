@@ -100,6 +100,7 @@ export function getRepoDetails() {
 
   const allLocalPackageNames = packageJsonObjects.map((packageJson) => packageJson.name)
 
+  /** @type {Object.<string, import('./types.js').PackageDetails>} */
   const packages = Object.fromEntries(
     packageJsonPaths
       .map((path, i) => [

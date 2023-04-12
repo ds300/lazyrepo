@@ -55,4 +55,4 @@ async function main() {
   done('Done')
 }
 
-main()
+await main()
