@@ -10,9 +10,9 @@ export interface ScheduledTask {
   extraArgs: string[]
   outputFiles: string[]
   dependencies: string[]
-  terminalPrefix: string
   inputManifestCacheKey: string | null
   packageDetails: PackageDetails | null
+  logger: CliLoggerTask
 }
 
 export type PackageDetails = {
@@ -216,4 +216,22 @@ export type CLITaskDescription = {
   filterPaths: string[]
   extraArgs: string[]
   force: boolean
+}
+
+export interface CliLoggerBase {
+  log(...message: string[]): void
+  logErr(...message: string[]): void
+
+  info(...message: string[]): void
+  note(...message: string[]): void
+  success(...message: string[]): void
+  fail(headline: string, more?: { error?: Error; detail?: string }): void
+}
+
+export interface CliLoggerTask extends CliLoggerBase {
+  startTimer(): void
+}
+
+export interface CliLogger extends CliLoggerBase {
+  task(taskName: string): CliLoggerTask
 }

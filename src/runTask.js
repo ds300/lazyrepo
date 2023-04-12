@@ -2,10 +2,9 @@ import { spawn } from 'cross-spawn'
 import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'fs'
 import kleur from 'kleur'
 import path, { relative } from 'path'
-import { Transform } from 'stream'
 import stripAnsi from 'strip-ansi'
 import { getDiffPath, getManifestPath, getNextManifestPath, getTask } from './config.js'
-import { log } from './log.js'
+import { logger } from './log.js'
 import { computeManifest } from './manifest/computeManifest.js'
 import { workspaceRoot } from './workspaceRoot.js'
 
@@ -15,13 +14,10 @@ import { workspaceRoot } from './workspaceRoot.js'
  * @returns {Promise<{didRunTask: boolean, didSucceed: boolean}>}
  */
 export async function runTaskIfNeeded(task, tasks) {
+  task.logger.startTimer()
+
   const previousManifestPath = getManifestPath(task)
   const nextManifestPath = getNextManifestPath(task)
-
-  /**
-   * @param  {string} msg
-   */
-  const print = (msg) => console.log(task.terminalPrefix, msg)
 
   const didHaveManifest = existsSync(previousManifestPath)
 
@@ -34,11 +30,12 @@ export async function runTaskIfNeeded(task, tasks) {
   let didSucceed = false
 
   if (task.force) {
-    print('cache miss, --force flag used')
+    task.logger.log('cache miss, --force flag used')
+
     didSucceed = (await runTask(task)).didSucceed
     didRunTask = true
   } else if (didChange === null) {
-    print('cache disabled')
+    task.logger.log('cache disabled')
     didSucceed = (await runTask(task)).didSucceed
     didRunTask = true
   } else if (didChange) {
@@ -51,63 +48,46 @@ export async function runTaskIfNeeded(task, tasks) {
         mkdirSync(path.dirname(diffPath), { recursive: true })
       }
       writeFileSync(diffPath, stripAnsi(allLines.join('\n')))
-      print('cache miss, changes since last run:')
-      allLines.slice(0, 10).forEach((line) => print(kleur.gray(line)))
+      task.logger.log('cache miss, changes since last run:')
+      allLines.slice(0, 10).forEach((line) => task.logger.log(kleur.gray(line)))
       if (allLines.length > 10) {
-        print(kleur.gray(`... and ${allLines.length - 10} more. See ${diffPath} for full diff.`))
+        task.logger.log(
+          kleur.gray(`... and ${allLines.length - 10} more. See ${diffPath} for full diff.`),
+        )
       }
     } else if (!didHaveManifest) {
-      print('cache miss, no previous manifest found')
+      task.logger.log('cache miss, no previous manifest found')
     }
     didSucceed = (await runTask(task)).didSucceed
     didRunTask = true
   } else {
-    print(`cache hit ⚡️`)
+    // cache hit
   }
 
   if (!didRunTask || didSucceed) {
-    print(kleur.gray('input manifest saved: ' + path.relative(workspaceRoot, previousManifestPath)))
+    task.logger.log(
+      kleur.gray('input manifest saved: ' + path.relative(workspaceRoot, previousManifestPath)),
+    )
   }
 
   if (didRunTask) {
     if (didSucceed) {
       renameSync(nextManifestPath, previousManifestPath)
+      task.logger.success('done')
     } else if (existsSync(previousManifestPath)) {
       unlinkSync(previousManifestPath)
+      task.logger.fail('failed')
     }
+  } else {
+    task.logger.success(`cache hit ⚡️`)
   }
 
   return { didRunTask, didSucceed: !didRunTask || didSucceed }
 }
 
 /**
- * @param {import('node:stream').Writable} stream
- * @param {string} prefix
- */
-const prefixedWriteStream = (stream, prefix) => {
-  let outData = ''
-  return new Transform({
-    write(chunk, _encoding, callback) {
-      outData += chunk.toString('utf8')
-      callback?.()
-      const lastLineFeed = outData.lastIndexOf('\n')
-      if (lastLineFeed === -1) {
-        return
-      }
-
-      const lines = outData.replaceAll('\r', '').split('\n')
-      outData = lines.pop() || ''
-
-      for (const line of lines) {
-        stream.write(prefix + ' ' + line + '\n', 'utf8')
-      }
-    },
-  })
-}
-
-/**
  * @param {import('./types.js').ScheduledTask} task
- * @returns {Promise<{didSucceed: boolean}>}
+ * @returns {Promise<{didSucceed: boolean;}>}
  */
 async function runTask(task) {
   const packageJson = JSON.parse(readFileSync(`${task.taskDir}/package.json`, 'utf8'))
@@ -117,7 +97,7 @@ async function runTask(task) {
   if (taskConfig.runType !== 'top-level' && command.startsWith('lazy :inherit')) {
     if (!taskConfig.baseCommand) {
       // TODO: evaluate this stuff ahead-of-time
-      log.fail(
+      logger.fail(
         `Encountered 'lazy :inherit' for scripts#${task.taskName} in ${task.taskDir}/package.json, but there is baseCommand configured for the task '${task.taskName}'`,
       )
       process.exit(1)
@@ -126,18 +106,15 @@ async function runTask(task) {
     command = command.trim()
   }
 
-  const start = Date.now()
+  // const start = Date.now()
 
-  console.log(
-    task.terminalPrefix +
-      kleur.bold(' RUN ') +
+  task.logger.log(
+    kleur.bold(' RUN ') +
       kleur.green().bold(command) +
       (task.extraArgs.length ? kleur.cyan().bold(' ' + task.extraArgs.join(' ')) : '') +
       kleur.gray(' in ' + relative(process.cwd(), task.taskDir)),
   )
 
-  const out = prefixedWriteStream(process.stdout, task.terminalPrefix)
-  const err = prefixedWriteStream(process.stderr, task.terminalPrefix)
   const proc = spawn(command, task.extraArgs, {
     cwd: task.taskDir,
     shell: true,
@@ -150,13 +127,21 @@ async function runTask(task) {
     },
   })
 
-  proc.stdout?.pipe(out)
-  proc.stderr?.pipe(err)
+  let streamPromises = []
+  const { stdout, stderr } = proc
+  if (stdout) {
+    handleChildProcessStream(stdout, (line) => task.logger.log(line))
+    streamPromises.push(new Promise((resolve) => stdout.on('close', resolve)))
+  }
+  if (stderr) {
+    handleChildProcessStream(stderr, (line) => task.logger.logErr(line))
+    streamPromises.push(new Promise((resolve) => stderr.on('close', resolve)))
+  }
 
   // if the process exits with a non-zero status, we'll fail the build
   let status = 0
 
-  await new Promise((resolve) => {
+  const finishPromise = new Promise((resolve) => {
     proc.on('exit', (code) => {
       status = code ?? 1
       resolve(null)
@@ -165,14 +150,33 @@ async function runTask(task) {
     proc.on('error', (err) => {
       status = 1
       resolve(null)
-      console.error(err)
+      task.logger.log(err.message)
     })
   })
 
-  log.log(
-    task.terminalPrefix,
-    `done in ${kleur.cyan(((Date.now() - start) / 1000).toFixed(2) + 's')}`,
-  )
+  await Promise.all([finishPromise, ...streamPromises])
 
   return { didSucceed: status === 0 }
+}
+
+/**
+ * @param {import("stream").Readable} stream
+ * @param {(line: string) => void} onLine
+ */
+function handleChildProcessStream(stream, onLine) {
+  let pendingLine = ''
+  stream.on('data', (/** @type {{ toString: (arg0: 'utf-8') => string; }} */ chunk) => {
+    const chunkString = chunk.toString('utf-8')
+
+    const lines = chunkString.split('\n')
+    lines[0] = pendingLine + lines[0]
+    pendingLine = lines.pop() ?? ''
+
+    for (const line of lines) {
+      onLine(line)
+    }
+  })
+  stream.on('close', () => {
+    onLine(pendingLine)
+  })
 }

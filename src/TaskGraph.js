@@ -1,8 +1,8 @@
 import glob from 'fast-glob'
 import { existsSync, readFileSync } from 'fs'
-import kleur from 'kleur'
 import { cpus } from 'os'
 import { isAbsolute, join, relative } from 'path'
+import { logger } from './log.js'
 import { runTaskIfNeeded } from './runTask.js'
 import { workspaceRoot } from './workspaceRoot.js'
 
@@ -59,12 +59,6 @@ export class TaskGraph {
     this.repoDetails = repoDetails
 
     /**
-     * @type {Array<import('kleur').Color>}
-     */
-    const colors = [kleur.cyan, kleur.magenta, kleur.yellow, kleur.blue, kleur.green]
-    let nextColorIndex = 0
-
-    /**
      * @param {{ task: import('./types.js').TaskConfig, taskDescriptor: import('./types.js').CLITaskDescription, dir: string, packageDetails: import('./types.js').PackageDetails | null }} arg
      * @returns
      */
@@ -83,9 +77,9 @@ export class TaskGraph {
         status: 'pending',
         outputFiles: [],
         dependencies: [],
-        terminalPrefix: colors[nextColorIndex++ % colors.length](key),
         inputManifestCacheKey: null,
         packageDetails,
+        logger: logger.task(key),
       }
       const result = this.allTasks[key]
 

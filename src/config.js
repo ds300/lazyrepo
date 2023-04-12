@@ -3,7 +3,7 @@ import glob from 'fast-glob'
 import { readFileSync } from 'fs'
 import kleur from 'kleur'
 import path from 'path'
-import { log } from './log.js'
+import { logger } from './log.js'
 import { workspaceRoot } from './workspaceRoot.js'
 
 /**
@@ -25,16 +25,16 @@ export async function getConfig() {
 
   const files = glob.sync('lazy.config.{js,cjs,mjs,json}', { absolute: true, cwd: workspaceRoot })
   if (files.length > 1) {
-    log.fail(`Found multiple lazy config files in dir '${workspaceRoot}'.`, {
+    logger.fail(`Found multiple lazy config files in dir '${workspaceRoot}'.`, {
       detail: `Remove all but one of the following files: ${files.join(', ')}`,
     })
   }
   if (files.length === 0) {
-    console.log(kleur.gray('No config file found. Using defaults.'))
+    logger.note(kleur.gray('No config file found. Using defaults.'))
     _config = {}
   } else {
     const file = files[0]
-    console.log(kleur.gray(`Using config file: ${file}`))
+    logger.note(kleur.gray(`Using config file: ${file}`))
     if (file.endsWith('.json')) {
       _config = JSON.parse(readFileSync(file, 'utf8'))
     } else {

@@ -1,18 +1,18 @@
 import { spawnSync } from 'child_process'
 import { getTask } from '../config.js'
-import { log } from '../log.js'
+import { logger } from '../log.js'
 
 export async function inherit() {
   const scriptName = process.env.npm_lifecycle_event
   if (!scriptName) {
-    log.fail(
+    logger.fail(
       'No npm_lifecycle_event found. Did you run `lazy :inherit` directly instead of via "scripts"?',
     )
     process.exit(1)
   }
   const task = await getTask({ taskName: scriptName })
   if (!task.baseCommand) {
-    log.fail(
+    logger.fail(
       `No baseCommand found for task '${scriptName}'. Using :inherit requires you to add one in your lazy.config file!`,
     )
     process.exit(1)
@@ -22,7 +22,7 @@ export async function inherit() {
     shell: true,
   })
   if (result.status === null) {
-    log.fail(`Failed to run '${task.baseCommand}'`, { error: result.error })
+    logger.fail(`Failed to run '${task.baseCommand}'`, { error: result.error })
     process.exit(1)
   }
   process.exit(result.status)

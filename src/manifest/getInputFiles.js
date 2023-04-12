@@ -53,10 +53,7 @@ function globCacheConfig({ includes, excludes, task }) {
     }
     // todo: always log this if verbose
     if (Date.now() - start > 100) {
-      console.log(
-        task.terminalPrefix,
-        kleur.gray(`Searching ${pattern} took ${kleur.cyan(timeSince(start))}`),
-      )
+      task.logger.note(`Searching ${pattern} took ${kleur.cyan(timeSince(start))}`)
     }
   }
 

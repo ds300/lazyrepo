@@ -153,11 +153,8 @@ export async function computeManifest({ tasks, task }) {
 
   // todo: always log this if verbose
   if (Date.now() - start > 100) {
-    console.log(
-      task.terminalPrefix,
-      kleur.gray(
-        `Hashed ${numHashed}/${numSkipped + numHashed} files in ${kleur.cyan(timeSince(start))}`,
-      ),
+    task.logger.note(
+      `Hashed ${numHashed}/${numSkipped + numHashed} files in ${kleur.cyan(timeSince(start))}`,
     )
   }
 

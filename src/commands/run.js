@@ -1,5 +1,5 @@
 import { getConfig } from '../config.js'
-import { log } from '../log.js'
+import { logger } from '../log.js'
 import { rainbow } from '../rainbow.js'
 import { TaskGraph } from '../TaskGraph.js'
 import { getRepoDetails } from '../workspace.js'
@@ -97,7 +97,7 @@ export async function run(args) {
   })
 
   if (tasks.sortedTaskKeys.length === 0) {
-    log.fail(`No tasks found matching [${taskDescriptors.map((t) => t.taskName).join(', ')}]`)
+    logger.fail(`No tasks found matching [${taskDescriptors.map((t) => t.taskName).join(', ')}]`)
   }
 
   await tasks.runAllTasks()
@@ -105,10 +105,10 @@ export async function run(args) {
   const failedTasks = tasks.allFailedTasks()
 
   if (failedTasks.length > 0) {
-    log.fail(`Failed tasks: ${failedTasks.join(', ')}`)
+    logger.fail(`Failed tasks: ${failedTasks.join(', ')}`)
   }
 
   if (Object.entries(tasks.allTasks).every(([, task]) => task.status === 'success:lazy')) {
-    console.log('\n' + rainbow('>>> MAXIMUM LAZY'))
+    logger.log('\n' + rainbow('>>> MAXIMUM LAZY'))
   }
 }

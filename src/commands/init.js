@@ -1,10 +1,10 @@
 import { existsSync, writeFileSync } from 'fs'
-import { log } from '../log.js'
+import { logger } from '../log.js'
 
 export function init() {
   const configPath = 'lazy.config.mjs'
   if (existsSync(configPath)) {
-    log.fail(`Config file already exists at '${configPath}'`)
+    logger.fail(`Config file already exists at '${configPath}'`)
   }
   writeFileSync(
     configPath,
@@ -13,5 +13,5 @@ export function init() {
 /** @type {import('lazyrepo').LazyConfig} */
 export default {}\n`,
   )
-  log.success(`Created config file at '${configPath}'`)
+  logger.success(`\nCreated config file at '${configPath}'`)
 }
