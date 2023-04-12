@@ -3,12 +3,12 @@ import k from 'kleur'
 import {
   formatFailMessage,
   formatInfoMessage,
-  formatVerboseMessage as formatNoteMessage,
+  formatNoteMessage,
   formatSuccessMessage,
   getColorForString,
   prefixLines,
   timeSince,
-} from './BaseLogger.js'
+} from './formatting.js'
 
 /**
  * @implements {CliLogger}
@@ -77,7 +77,7 @@ export class RealtimeLogger {
   task(taskName) {
     let start = Date.now()
     const color = getColorForString(taskName)
-    const prefix = color(`${taskName} `)
+    const prefix = color.fg(`${taskName} `)
 
     let isDone = false
     const assertNotDone = () => {

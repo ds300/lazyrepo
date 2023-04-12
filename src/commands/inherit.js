@@ -1,6 +1,6 @@
 import { spawnSync } from 'child_process'
 import { getTask } from '../config.js'
-import { logger } from '../log.js'
+import { logger } from '../logger/logger.js'
 
 export async function inherit() {
   const scriptName = process.env.npm_lifecycle_event

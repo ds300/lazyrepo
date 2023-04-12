@@ -3,7 +3,7 @@ import fs from 'fs'
 import kleur from 'kleur'
 import path from 'path'
 import { getTask } from '../config.js'
-import { timeSince } from '../log.js'
+import { timeSince } from '../logger/formatting.js'
 import { uniq } from '../uniq.js'
 import { workspaceRoot } from '../workspaceRoot.js'
 

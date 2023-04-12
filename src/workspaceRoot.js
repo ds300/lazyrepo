@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'fs'
 import path from 'path'
-import { logger } from './log.js'
+import { logger } from './logger/logger.js'
 
 /**
  * @param {string} dir

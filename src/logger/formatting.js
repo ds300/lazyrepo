@@ -1,9 +1,15 @@
 import k from 'kleur'
 
 /**
- * @type {Array<import('kleur').Color>}
+ * @type {Array<{fg: import('kleur').Color, bg: import('kleur').Color}>}
  */
-const colors = [k.cyan, k.magenta, k.yellow, k.blue, k.green]
+const colors = [
+  { fg: k.cyan, bg: k.bgCyan },
+  { fg: k.magenta, bg: k.bgMagenta },
+  { fg: k.yellow, bg: k.bgYellow },
+  { fg: k.blue, bg: k.bgBlue },
+  { fg: k.green, bg: k.bgGreen },
+]
 /**
  * @param {string} str
  */
@@ -21,6 +27,19 @@ export function getColorForString(str) {
  */
 export function prefixLines(prefix, str) {
   return str.replace(/^/gm, prefix)
+}
+
+/**
+ * @param {string} str
+ */
+export function lastNonEmptyLineIfPossible(str) {
+  const lines = str.split('\n')
+  for (let i = lines.length - 1; i >= 0; i--) {
+    if (lines[i].trim()) {
+      return lines[i]
+    }
+  }
+  return ''
 }
 
 /**
@@ -48,7 +67,7 @@ export function formatInfoMessage(...args) {
 /**
  * @param {string[]} args
  */
-export function formatVerboseMessage(...args) {
+export function formatNoteMessage(...args) {
   return k.gray(args.join(' '))
 }
 

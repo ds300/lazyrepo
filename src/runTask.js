@@ -4,7 +4,7 @@ import kleur from 'kleur'
 import path, { relative } from 'path'
 import stripAnsi from 'strip-ansi'
 import { getDiffPath, getManifestPath, getNextManifestPath, getTask } from './config.js'
-import { logger } from './log.js'
+import { logger } from './logger/logger.js'
 import { computeManifest } from './manifest/computeManifest.js'
 import { workspaceRoot } from './workspaceRoot.js'
 

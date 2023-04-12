@@ -2,7 +2,7 @@ import glob from 'fast-glob'
 import { existsSync, readFileSync } from 'fs'
 import { cpus } from 'os'
 import { isAbsolute, join, relative } from 'path'
-import { logger } from './log.js'
+import { logger } from './logger/logger.js'
 import { runTaskIfNeeded } from './runTask.js'
 import { workspaceRoot } from './workspaceRoot.js'
 

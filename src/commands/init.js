@@ -1,5 +1,5 @@
 import { existsSync, writeFileSync } from 'fs'
-import { logger } from '../log.js'
+import { logger } from '../logger/logger.js'
 
 export function init() {
   const configPath = 'lazy.config.mjs'

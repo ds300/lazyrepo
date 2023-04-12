@@ -1,5 +1,6 @@
 import { getConfig } from '../config.js'
-import { logger } from '../log.js'
+import { InteractiveLogger } from '../logger/InteractiveLogger.js'
+import { logger } from '../logger/logger.js'
 import { rainbow } from '../rainbow.js'
 import { TaskGraph } from '../TaskGraph.js'
 import { getRepoDetails } from '../workspace.js'
@@ -101,6 +102,7 @@ export async function run(args) {
   }
 
   await tasks.runAllTasks()
+  if (logger instanceof InteractiveLogger) logger.clearTasks()
 
   const failedTasks = tasks.allFailedTasks()
 

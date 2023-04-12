@@ -3,7 +3,7 @@ import glob from 'fast-glob'
 import { readFileSync } from 'fs'
 import kleur from 'kleur'
 import path from 'path'
-import { logger } from './log.js'
+import { logger } from './logger/logger.js'
 import { workspaceRoot } from './workspaceRoot.js'
 
 /**

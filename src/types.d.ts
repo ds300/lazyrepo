@@ -233,5 +233,5 @@ export interface CliLoggerTask extends CliLoggerBase {
 }
 
 export interface CliLogger extends CliLoggerBase {
-  task(taskName: string): CliLoggerTask
+  task(taskName: string, sortOrder: number): CliLoggerTask
 }

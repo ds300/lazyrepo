@@ -8,7 +8,7 @@ import {
   getNextManifestPath,
   getTask as getTaskConfig,
 } from '../config.js'
-import { timeSince } from '../log.js'
+import { timeSince } from '../logger/formatting.js'
 import { uniq } from '../uniq.js'
 import { workspaceRoot } from '../workspaceRoot.js'
 import { ManifestConstructor } from './ManifestConstructor.js'

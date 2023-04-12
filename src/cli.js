@@ -4,8 +4,8 @@ import { help } from './commands/help.js'
 import { inherit } from './commands/inherit.js'
 import { init } from './commands/init.js'
 import { run } from './commands/run.js'
-import { logger } from './log.js'
-import { timeSince } from './log/BaseLogger.js'
+import { timeSince } from './logger/formatting.js'
+import { logger } from './logger/logger.js'
 import { rimraf } from './rimraf.js'
 import { workspaceRoot } from './workspaceRoot.js'
 
@@ -54,6 +54,7 @@ async function main() {
   const start = Date.now()
   await cli(process.argv.slice(2))
   logger.success(`Done in ${timeSince(start)}`)
+  process.exit(0)
 }
 
 main()
