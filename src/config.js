@@ -1,7 +1,10 @@
 import slugify from '@sindresorhus/slugify'
+import glob from 'fast-glob'
+import { mkdirSync, readFileSync, writeFileSync } from 'fs'
 import kleur from 'kleur'
-import path from 'path'
-import { loadConfig } from 'unconfig'
+import os from 'os'
+import path, { dirname, join } from 'path'
+import 'source-map-support/register.js'
 import { log } from './log.js'
 import { workspaceRoot } from './workspaceRoot.js'
 
@@ -22,30 +25,24 @@ export async function getConfig() {
     return _config
   }
 
-  /** @type {import('unconfig').LoadConfigResult<LazyConfig>} */
-  const { config, sources } = await loadConfig({
-    sources: [
-      {
-        files: 'lazy.config',
-        extensions: ['ts', 'mts', 'cts', 'js', 'mjs', 'cjs', 'json'],
-      },
-    ],
-    merge: true,
+  const files = glob.sync('lazy.config.{js,cjs,mjs,ts,cts,mts,json}', {
+    absolute: true,
+    cwd: workspaceRoot,
   })
 
-  if (sources.length > 1) {
+  if (files.length > 1) {
     log.fail(`Found multiple lazy config files in dir '${workspaceRoot}'.`, {
-      detail: `Remove all but one of the following files: ${sources.join(', ')}`,
+      detail: `Remove all but one of the following files: ${files.join(', ')}`,
     })
   }
 
-  if (sources.length === 0) {
+  if (files.length === 0) {
     console.log(kleur.gray('No config file found. Using defaults.'))
     _config = {}
   } else {
-    const file = sources[0]
+    const file = files[0]
     console.log(kleur.gray(`Using config file: ${file}`))
-    _config = config
+    _config = await loadConfig(file)
 
     if (!_config) {
       throw new Error(`Invalid config file`)
@@ -53,6 +50,38 @@ export async function getConfig() {
   }
 
   return _config
+}
+
+/**
+ * @param {string} file
+ * @returns {Promise<LazyConfig>}
+ */
+async function loadConfig(file) {
+  if (file.endsWith('.json')) {
+    return JSON.parse(readFileSync(file, 'utf8'))
+  }
+  if (file.endsWith('.js') || file.endsWith('.cjs') || file.endsWith('.mjs')) {
+    return (await import(file)).default
+  }
+
+  const tmpDir = join(os.tmpdir(), '.lazyconfig', dirname(file))
+  mkdirSync(tmpDir, { recursive: true })
+
+  const inFile = join(tmpDir, 'config.source.mjs')
+  writeFileSync(inFile, `import config from '${file}'; export default config`)
+  const outFile = join(tmpDir, 'config.cache.mjs')
+
+  const esbuild = await import('esbuild')
+  await esbuild.build({
+    entryPoints: [inFile],
+    outfile: outFile,
+    bundle: true,
+    sourcemap: 'inline',
+    sourcesContent: true,
+    format: 'esm',
+  })
+
+  return (await import(outFile)).default
 }
 
 /**
