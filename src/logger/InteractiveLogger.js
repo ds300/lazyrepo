@@ -139,7 +139,7 @@ export class InteractiveLogger {
 
   /**
    * @param {string} taskName
-   * @returns {import('../types.js').CliLoggerTask}
+   * @returns {import('../types.js').TaskLogger}
    */
   task(taskName) {
     let start = Date.now()
@@ -215,7 +215,7 @@ export class InteractiveLogger {
     }
 
     return {
-      startTimer: () => {
+      restartTimer: () => {
         assertNotDone()
         start = Date.now()
         task.startedAt = start

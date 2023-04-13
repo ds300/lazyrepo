@@ -14,7 +14,7 @@ import { workspaceRoot } from './workspaceRoot.js'
  * @returns {Promise<{didRunTask: boolean, didSucceed: boolean}>}
  */
 export async function runTaskIfNeeded(task, tasks) {
-  task.logger.startTimer()
+  task.logger.restartTimer()
 
   const previousManifestPath = getManifestPath(task)
   const nextManifestPath = getNextManifestPath(task)
@@ -126,11 +126,11 @@ async function runTask(task) {
   let streamPromises = []
   const { stdout, stderr } = proc
   if (stdout) {
-    handleChildProcessStream(stdout, (line) => task.logger.log(line))
+    childProcessStreamToLines(stdout, (line) => task.logger.log(line))
     streamPromises.push(new Promise((resolve) => stdout.on('close', resolve)))
   }
   if (stderr) {
-    handleChildProcessStream(stderr, (line) => task.logger.logErr(line))
+    childProcessStreamToLines(stderr, (line) => task.logger.logErr(line))
     streamPromises.push(new Promise((resolve) => stderr.on('close', resolve)))
   }
 
@@ -159,7 +159,7 @@ async function runTask(task) {
  * @param {import("stream").Readable} stream
  * @param {(line: string) => void} onLine
  */
-function handleChildProcessStream(stream, onLine) {
+function childProcessStreamToLines(stream, onLine) {
   let pendingLine = ''
   stream.on('data', (/** @type {{ toString: (arg0: 'utf-8') => string; }} */ chunk) => {
     const chunkString = chunk.toString('utf-8')

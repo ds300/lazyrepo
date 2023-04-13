@@ -72,7 +72,7 @@ export class RealtimeLogger {
 
   /**
    * @param {string} taskName
-   * @returns {import('../types.js').CliLoggerTask}
+   * @returns {import('../types.js').TaskLogger}
    */
   task(taskName) {
     let start = Date.now()
@@ -96,7 +96,7 @@ export class RealtimeLogger {
     }
 
     return {
-      startTimer: () => {
+      restartTimer: () => {
         assertNotDone()
         start = Date.now()
       },

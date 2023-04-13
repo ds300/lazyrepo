@@ -12,7 +12,7 @@ export interface ScheduledTask {
   dependencies: string[]
   inputManifestCacheKey: string | null
   packageDetails: PackageDetails | null
-  logger: CliLoggerTask
+  logger: TaskLogger
 }
 
 export type PackageDetails = {
@@ -218,7 +218,7 @@ export type CLITaskDescription = {
   force: boolean
 }
 
-export interface CliLoggerBase {
+export interface Logger {
   log(...message: string[]): void
   logErr(...message: string[]): void
 
@@ -228,10 +228,10 @@ export interface CliLoggerBase {
   fail(headline: string, more?: { error?: Error; detail?: string }): void
 }
 
-export interface CliLoggerTask extends CliLoggerBase {
-  startTimer(): void
+export interface TaskLogger extends Logger {
+  restartTimer(): void
 }
 
-export interface CliLogger extends CliLoggerBase {
-  task(taskName: string, sortOrder: number): CliLoggerTask
+export interface CliLogger extends Logger {
+  task(taskName: string, sortOrder: number): TaskLogger
 }
