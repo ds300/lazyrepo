@@ -13,12 +13,14 @@ module.exports = {
     sourceType: 'module',
   },
   rules: {
+    '@typescript-eslint/no-empty-function': 'off',
+    '@typescript-eslint/no-extra-semi': 'off',
     'n/no-missing-import': 'off',
-    'no-extra-semi': 'off',
-    eqeqeq: ['error', 'always'],
     'n/no-process-exit': 'off',
-    'no-console': 'error',
     'n/no-unpublished-import': 'off',
     'n/no-unpublished-require': 'off',
+    'no-console': 'error',
+    'no-extra-semi': 'off',
+    eqeqeq: ['error', 'always'],
   },
 }
