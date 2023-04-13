@@ -48,12 +48,10 @@ export async function runTaskIfNeeded(task, tasks) {
         mkdirSync(path.dirname(diffPath), { recursive: true })
       }
       writeFileSync(diffPath, stripAnsi(allLines.join('\n')))
-      task.logger.log('cache miss, changes since last run:')
-      allLines.slice(0, 10).forEach((line) => task.logger.log(kleur.gray(line)))
+      task.logger.note('cache miss, changes since last run:')
+      allLines.slice(0, 10).forEach((line) => task.logger.note(line))
       if (allLines.length > 10) {
-        task.logger.log(
-          kleur.gray(`... and ${allLines.length - 10} more. See ${diffPath} for full diff.`),
-        )
+        task.logger.note(`... and ${allLines.length - 10} more. See ${diffPath} for full diff.`)
       }
     } else if (!didHaveManifest) {
       task.logger.log('cache miss, no previous manifest found')
@@ -65,9 +63,7 @@ export async function runTaskIfNeeded(task, tasks) {
   }
 
   if (!didRunTask || didSucceed) {
-    task.logger.log(
-      kleur.gray('input manifest saved: ' + path.relative(workspaceRoot, previousManifestPath)),
-    )
+    task.logger.note('input manifest saved: ' + path.relative(workspaceRoot, previousManifestPath))
   }
 
   if (didRunTask) {

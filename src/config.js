@@ -1,7 +1,6 @@
 import slugify from '@sindresorhus/slugify'
 import glob from 'fast-glob'
 import { readFileSync } from 'fs'
-import kleur from 'kleur'
 import path from 'path'
 import { logger } from './logger/logger.js'
 import { workspaceRoot } from './workspaceRoot.js'
@@ -30,11 +29,11 @@ export async function getConfig() {
     })
   }
   if (files.length === 0) {
-    logger.note(kleur.gray('No config file found. Using defaults.'))
+    logger.note('No config file found. Using defaults.')
     _config = {}
   } else {
     const file = files[0]
-    logger.note(kleur.gray(`Using config file: ${file}`))
+    logger.note(`Using config file: ${file}`)
     if (file.endsWith('.json')) {
       _config = JSON.parse(readFileSync(file, 'utf8'))
     } else {
