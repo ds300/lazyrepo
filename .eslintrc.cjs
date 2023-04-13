@@ -17,8 +17,8 @@ module.exports = {
     'no-extra-semi': 'off',
     eqeqeq: ['error', 'always'],
     'n/no-process-exit': 'off',
-    '@typescript-eslint/no-empty-function': 'off',
-    '@typescript-eslint/no-extra-semi': 'off',
     'no-console': 'error',
+    'n/no-unpublished-import': 'off',
+    'n/no-unpublished-require': 'off',
   },
 }
