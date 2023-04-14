@@ -14,6 +14,7 @@ module.exports = {
   },
   rules: {
     '@typescript-eslint/no-empty-function': 'off',
+    '@typescript-eslint/ban-ts-comment': 'off',
     '@typescript-eslint/no-extra-semi': 'off',
     'n/no-missing-import': 'off',
     'n/no-process-exit': 'off',
