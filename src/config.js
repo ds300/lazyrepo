@@ -1,8 +1,7 @@
 import slugify from '@sindresorhus/slugify'
 import glob from 'fast-glob'
-import { mkdirSync, readFileSync, writeFileSync } from 'fs'
-import os from 'os'
-import path, { dirname, join } from 'path'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
+import path, { join } from 'path'
 import 'source-map-support/register.js'
 import { logger } from './logger/logger.js'
 import { workspaceRoot } from './workspaceRoot.js'
@@ -65,12 +64,14 @@ async function loadConfig(file) {
     return (await import(file)).default
   }
 
-  const tmpDir = join(os.tmpdir(), '.lazyconfig', dirname(file))
-  mkdirSync(tmpDir, { recursive: true })
+  const configDir = join(workspaceRoot, '.lazy')
+  if (!existsSync(configDir)) {
+    mkdirSync(configDir)
+  }
 
-  const inFile = join(tmpDir, 'config.source.mjs')
+  const inFile = join(configDir, 'config.source.mjs')
   writeFileSync(inFile, `import config from '${file}'; export default config`)
-  const outFile = join(tmpDir, 'config.cache.mjs')
+  const outFile = join(configDir, 'config.cache.mjs')
 
   const esbuild = await import('esbuild')
   await esbuild.build({
