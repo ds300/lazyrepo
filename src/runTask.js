@@ -68,10 +68,14 @@ export async function runTaskIfNeeded(task, tasks) {
 
   if (didRunTask) {
     if (didSucceed) {
-      renameSync(nextManifestPath, previousManifestPath)
+      if (existsSync(nextManifestPath)) {
+        renameSync(nextManifestPath, previousManifestPath)
+      }
       task.logger.success('done')
-    } else if (existsSync(previousManifestPath)) {
-      unlinkSync(previousManifestPath)
+    } else {
+      if (existsSync(previousManifestPath)) {
+        unlinkSync(previousManifestPath)
+      }
       task.logger.fail('failed')
     }
   } else {
