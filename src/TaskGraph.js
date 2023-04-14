@@ -127,10 +127,12 @@ export class TaskGraph {
         return
       }
 
+      /** @type {Array<string> | null} */
       const filteredPackageNames = taskDescriptor.filterPaths.length
         ? glob
             .sync(taskDescriptor.filterPaths, { onlyDirectories: true })
             .filter((dir) => existsSync(join(dir, 'package.json')))
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
             .map((dir) => JSON.parse(readFileSync(join(dir, 'package.json'), 'utf-8')).name)
         : null
 
@@ -199,17 +201,19 @@ export class TaskGraph {
       resolve = res
     })
 
-    const tick = () => {
+    const tick = async () => {
       const runningTasks = this.allRunningTasks()
       const readyTasks = this.allReadyTasks()
       const failedTasks = this.allFailedTasks()
 
       if (runningTasks.length === 0 && readyTasks.length === 0 && failedTasks.length === 0) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return resolve(null)
       }
 
       if (failedTasks.length > 0 && runningTasks.length === 0) {
         // some tasks failed, and there are no more running tasks
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return resolve(null)
       }
 
@@ -234,7 +238,7 @@ export class TaskGraph {
       for (let i = 0; i < numTasksToStart; i++) {
         const taskKey = readyTasks[i]
         this.allTasks[taskKey].status = 'running'
-        runTask(readyTasks[i])
+        await runTask(readyTasks[i])
       }
 
       return true
@@ -249,11 +253,10 @@ export class TaskGraph {
           ? 'success:eager'
           : 'success:lazy'
         : 'failure'
-      tick()
+      await tick()
     }
 
-    tick()
-
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return await promise
   }
 }

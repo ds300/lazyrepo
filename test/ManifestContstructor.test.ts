@@ -198,7 +198,10 @@ describe('with multiple files', () => {
     diffPath: string,
     manifest: ManifestConstructor
   beforeEach(() => {
-    ;({ previousManifestPath, nextManifestPath, diffPath } = setup())
+    const setupResult = setup()
+    nextManifestPath = setupResult.nextManifestPath
+    previousManifestPath = setupResult.previousManifestPath
+    diffPath = setupResult.diffPath
     writeFileSync(
       previousManifestPath,
       makeManifestString([
@@ -459,7 +462,7 @@ it('should complain if keys are added in non alphabetical order', async () => {
     manifest.update('file', 'packages/abacus/src/index.ts', 'hash2')
   }).toThrow()
 
-  manifest.end()
+  await manifest.end()
 })
 
 it('should complain if types are added in non alphabetical order', async () => {
@@ -472,7 +475,7 @@ it('should complain if types are added in non alphabetical order', async () => {
     manifest.update('env var', 'VERCEL_DEPLOY_KEY', 'hash2')
   }).toThrow()
 
-  manifest.end()
+  await manifest.end()
 })
 
 it('should not complain if types are added in alphabetical order', async () => {
@@ -480,8 +483,10 @@ it('should not complain if types are added in alphabetical order', async () => {
 
   const manifest = new ManifestConstructor({ previousManifestPath, nextManifestPath, diffPath })
 
-  manifest.update('env var', 'VERCEL_DEPLOY_KEY', 'hash2')
-  manifest.update('file', 'packages/core/src/index.ts', 'hash2')
+  expect(() => {
+    manifest.update('env var', 'VERCEL_DEPLOY_KEY', 'hash2')
+    manifest.update('file', 'packages/core/src/index.ts', 'hash2')
+  }).not.toThrow()
 
-  manifest.end()
+  await manifest.end()
 })

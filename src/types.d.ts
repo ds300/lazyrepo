@@ -228,6 +228,17 @@ export interface Logger {
   fail(headline: string, more?: { error?: Error; detail?: string }): void
 }
 
+export interface PackageJson {
+  name: string
+  version: string
+  dependencies?: { [depName: string]: string }
+  devDependencies?: { [depName: string]: string }
+  peerDependencies?: { [depName: string]: string }
+  optionalDependencies?: { [depName: string]: string }
+  scripts?: { [scriptName: string]: string }
+  workspaces?: string[]
+}
+
 export interface TaskLogger extends Logger {
   restartTimer(): void
 }

@@ -1,3 +1,4 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["test"] }] */
 import { parseRunArgs } from '../src/commands/run.js'
 import { CLITaskDescription } from '../src/types.js'
 

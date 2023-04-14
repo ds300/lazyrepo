@@ -57,9 +57,11 @@ export async function getConfig() {
  */
 async function loadConfig(file) {
   if (file.endsWith('.json')) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return JSON.parse(readFileSync(file, 'utf8'))
   }
   if (file.endsWith('.js') || file.endsWith('.cjs') || file.endsWith('.mjs')) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
     return (await import(file)).default
   }
 
@@ -80,6 +82,7 @@ async function loadConfig(file) {
     format: 'esm',
   })
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
   return (await import(outFile)).default
 }
 
