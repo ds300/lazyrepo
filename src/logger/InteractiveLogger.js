@@ -21,6 +21,7 @@ const spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '
 /**
  * @typedef {Object} Task
  *
+ *
  * @property {string} prefix
  * @property {string} coloredPrefix
  * @property {string} lastLogLine
@@ -44,8 +45,7 @@ export class InteractiveLogger {
 
     setInterval(() => {
       if (this.tasks.length) {
-        this.moveCursorToAboveTasksSection()
-        this.printTasks()
+        this.update()
       }
     }, 30)
   }
@@ -55,8 +55,18 @@ export class InteractiveLogger {
     return this.tasks.filter((task) => task.status !== 'waiting').sort(compareTasksForPrinting)
   }
 
-  /** @private */
-  printTasks() {
+  /**
+   * @param {() => void} [update]
+   */
+  update(update) {
+    if (!this.isCursorAboveTasksSection) {
+      this.tty.cursorTo(0)
+      this.tty.moveCursor(0, -this.getTasksToPrint().length - 1)
+      this.isCursorAboveTasksSection = true
+    }
+
+    if (update) update()
+
     const spinnerFrame = spinnerFrames[Math.floor(Date.now() / 60) % spinnerFrames.length]
     for (const task of this.getTasksToPrint()) {
       let message = task.lastLogLine || k.gray(task.status)
@@ -74,15 +84,6 @@ export class InteractiveLogger {
     this.isCursorAboveTasksSection = false
   }
 
-  /** @private */
-  moveCursorToAboveTasksSection() {
-    if (!this.isCursorAboveTasksSection) {
-      this.tty.cursorTo(0)
-      this.tty.moveCursor(0, -this.getTasksToPrint().length - 1)
-      this.isCursorAboveTasksSection = true
-    }
-  }
-
   clearTasks() {
     this.tasks = []
   }
@@ -91,10 +92,10 @@ export class InteractiveLogger {
    * @param {string[]} args
    */
   log(...args) {
-    this.moveCursorToAboveTasksSection()
-    this.tty.clearScreenDown()
-    this.tty.write(args.join(' ') + '\n')
-    this.printTasks()
+    this.update(() => {
+      this.tty.clearScreenDown()
+      this.tty.write(args.join(' ') + '\n')
+    })
   }
 
   /**
@@ -146,8 +147,6 @@ export class InteractiveLogger {
     const color = getColorForString(taskName)
     const prefix = color.fg(`${taskName} `)
 
-    this.moveCursorToAboveTasksSection()
-
     /** @type {Task} */
     const task = {
       prefix: taskName,
@@ -157,8 +156,9 @@ export class InteractiveLogger {
       startedAt: start,
     }
 
-    this.tasks.push(task)
-    this.printTasks()
+    this.update(() => {
+      this.tasks.push(task)
+    })
 
     let isDone = false
     const assertNotDone = () => {
@@ -173,45 +173,37 @@ export class InteractiveLogger {
     const log = (/** @type {TaskStatus} */ status, /** @type {string[]} */ ...args) => {
       assertNotDone()
 
-      // if the status changes, we need to reprint the tasks immediately. if
-      // not, we can just wait for our interval loop to do it
-      const didStatusChange = task.status !== status
-      if (didStatusChange) {
-        this.moveCursorToAboveTasksSection()
+      this.update(() => {
         task.status = status
-      }
 
-      const message = args.join(' ')
-      bufferedLogLines.push(message)
-      const lastLine = lastNonEmptyLineIfPossible(message)
-      if (lastLine) {
-        task.lastLogLine = lastLine
-      }
-
-      if (didStatusChange) {
-        this.printTasks()
-      }
+        const message = args.join(' ')
+        bufferedLogLines.push(message)
+        const lastLine = lastNonEmptyLineIfPossible(message)
+        if (lastLine) {
+          task.lastLogLine = lastLine
+        }
+      })
     }
 
     const complete = (/** @type {TaskStatus} */ status, /** @type {string} */ message) => {
       assertNotDone()
-      this.moveCursorToAboveTasksSection()
-      this.tty.clearScreenDown()
-      task.status = status
-      const lastLine = lastNonEmptyLineIfPossible(message)
-      if (lastLine) {
-        task.lastLogLine = lastLine
-      }
+      this.update(() => {
+        this.tty.clearScreenDown()
+        task.status = status
+        const lastLine = lastNonEmptyLineIfPossible(message)
+        if (lastLine) {
+          task.lastLogLine = lastLine
+        }
 
-      bufferedLogLines.push(message)
-      this.tty.write(color.fg(':: ') + color.bg().bold(` ${taskName} `) + color.fg(' ::') + '\n')
-      for (const line of bufferedLogLines) {
-        this.tty.write(line + '\n')
-      }
-      this.tty.write('\n')
+        bufferedLogLines.push(message)
+        this.tty.write(color.fg(':: ') + color.bg().bold(` ${taskName} `) + color.fg(' ::') + '\n')
+        for (const line of bufferedLogLines) {
+          this.tty.write(line + '\n')
+        }
+        this.tty.write('\n')
 
-      isDone = true
-      this.printTasks()
+        isDone = true
+      })
     }
 
     return {

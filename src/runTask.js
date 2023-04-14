@@ -106,8 +106,6 @@ async function runTask(task) {
     command = command.trim()
   }
 
-  // const start = Date.now()
-
   task.logger.log(
     kleur.bold(' RUN ') +
       kleur.green().bold(command) +
