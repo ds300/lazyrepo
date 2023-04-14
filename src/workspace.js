@@ -14,6 +14,8 @@ function getPackageDetails({ dir, allLocalPackageNames }) {
   if (!existsSync(packageJsonPath)) {
     return null
   }
+  /** @type {import('./types.js').PackageJson} */
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const packageJson = JSON.parse(readFileSync(path.join(dir, 'package.json'), 'utf8'))
   const deps = {
     ...packageJson.dependencies,
@@ -46,10 +48,14 @@ function getWorkspaceGlobs() {
   try {
     const pnpmWorkspaceYamlPath = path.join(workspaceRoot, 'pnpm-workspace.yaml')
     if (existsSync(pnpmWorkspaceYamlPath)) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const workspaceConfig = yaml.parse(readFileSync(pnpmWorkspaceYamlPath, 'utf8').toString())
 
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
       return workspaceConfig?.packages || []
     } else {
+      /** @type {import('./types.js').PackageJson} */
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const packageJson = JSON.parse(readFileSync(path.join(workspaceRoot, 'package.json'), 'utf8'))
       return packageJson?.workspaces || []
     }
@@ -96,14 +102,19 @@ export function getRepoDetails() {
   }
 
   const packageJsonPaths = getPackageJsonPaths()
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   const packageJsonObjects = packageJsonPaths.map((path) => JSON.parse(readFileSync(path, 'utf8')))
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
   const allLocalPackageNames = packageJsonObjects.map((packageJson) => packageJson.name)
 
   /** @type {Object.<string, import('./types.js').PackageDetails>} */
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const packages = Object.fromEntries(
     packageJsonPaths
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       .map((path, i) => [
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         packageJsonObjects[i].name,
         getPackageDetails({ dir: path.replace('/package.json', ''), allLocalPackageNames }),
       ])

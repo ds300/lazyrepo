@@ -7,9 +7,10 @@ import { logger } from './logger/logger.js'
  * @returns
  */
 function isWorkspaceRoot(dir) {
-  return (
+  return !!(
     existsSync(path.join(dir, 'pnpm-workspace.yaml')) ||
     (existsSync(path.join(dir, 'package.json')) &&
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       JSON.parse(readFileSync(path.join(dir, 'package.json'), 'utf8')).workspaces)
   )
 }

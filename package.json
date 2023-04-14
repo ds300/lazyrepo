@@ -16,7 +16,7 @@
     "clean": "rm -rf node_modules && pnpm install",
     "format": "prettier --write .",
     "format:check": "prettier --list-different .",
-    "lint": "eslint **/*.{js,ts}",
+    "lint": "eslint -f compact **/*.{js,ts}",
     "prepare": "husky install"
   },
   "packageManager": "pnpm@latest",

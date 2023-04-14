@@ -90,9 +90,13 @@ export async function runTaskIfNeeded(task, tasks) {
  * @returns {Promise<{didSucceed: boolean;}>}
  */
 async function runTask(task) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const packageJson = JSON.parse(readFileSync(`${task.taskDir}/package.json`, 'utf8'))
   const taskConfig = await getTask({ taskName: task.taskName })
+  /** @type {string} */
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   let command =
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     taskConfig.runType === 'top-level' ? taskConfig.baseCommand : packageJson.scripts[task.taskName]
   if (taskConfig.runType !== 'top-level' && command.startsWith('lazy :inherit')) {
     if (!taskConfig.baseCommand) {
@@ -120,7 +124,7 @@ async function runTask(task) {
     env: {
       ...process.env,
       PATH: `./node_modules/.bin:${path.join(workspaceRoot, 'node_modules/.bin')}:${
-        process.env.PATH
+        process.env.PATH ?? ''
       }`,
       FORCE_COLOR: '1',
       npm_lifecycle_event: task.taskName,
