@@ -3,7 +3,7 @@ import fs from 'fs'
 import kleur from 'kleur'
 import path from 'path'
 import { getTask } from '../config.js'
-import { timeSince } from '../log.js'
+import { timeSince } from '../logger/formatting.js'
 import { uniq } from '../uniq.js'
 import { workspaceRoot } from '../workspaceRoot.js'
 
@@ -53,10 +53,7 @@ function globCacheConfig({ includes, excludes, task }) {
     }
     // todo: always log this if verbose
     if (Date.now() - start > 100) {
-      console.log(
-        task.terminalPrefix,
-        kleur.gray(`Searching ${pattern} took ${kleur.cyan(timeSince(start))}`),
-      )
+      task.logger.note(`Searching ${pattern} took ${kleur.cyan(timeSince(start))}`)
     }
   }
 

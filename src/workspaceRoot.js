@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'fs'
 import path from 'path'
-import { log } from './log.js'
+import { logger } from './logger/logger.js'
 
 /**
  * @param {string} dir
@@ -19,7 +19,7 @@ let dir = process.cwd()
 while (!isWorkspaceRoot(dir)) {
   const parentDir = path.dirname(dir)
   if (parentDir === dir) {
-    log.fail('Could not find workspace root. Are you in a yarn/npm/pnpm workspace?')
+    logger.fail('Could not find workspace root. Are you in a yarn/npm/pnpm workspace?')
   }
   dir = parentDir
 }
