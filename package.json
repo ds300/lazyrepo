@@ -49,6 +49,7 @@
     "fast-glob": "^3.2.12",
     "fast-json-stable-stringify": "^2.1.0",
     "kleur": "^4.1.5",
+    "slice-ansi": "^6.0.0",
     "source-map-support": "^0.5.21",
     "strip-ansi": "^7.0.1",
     "yaml": "^2.2.1"
@@ -57,6 +58,7 @@
     "@types/cross-spawn": "^6.0.2",
     "@types/jest": "^29.5.0",
     "@types/node": "^18.15.11",
+    "@types/slice-ansi": "^5.0.0",
     "@types/source-map-support": "^0.5.6",
     "@typescript-eslint/eslint-plugin": "^5.58.0",
     "@typescript-eslint/parser": "^5.58.0",

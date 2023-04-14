@@ -1,10 +1,11 @@
 import glob from 'fast-glob'
-import kleur from 'kleur'
+import k from 'kleur'
 import { help } from './commands/help.js'
 import { inherit } from './commands/inherit.js'
 import { init } from './commands/init.js'
 import { run } from './commands/run.js'
-import { log } from './log.js'
+import { timeSince } from './logger/formatting.js'
+import { logger } from './logger/logger.js'
 import { rimraf } from './rimraf.js'
 import { workspaceRoot } from './workspaceRoot.js'
 
@@ -36,9 +37,8 @@ async function cli(args) {
       cwd: workspaceRoot,
     })
 
-    console.log(`Cleaning ${cacheDirs.length} cache directories...`)
+    logger.log(`Cleaning ${cacheDirs.length} cache directories...`)
     cacheDirs.forEach(rimraf)
-    console.log('Done')
     return
   }
 
@@ -50,9 +50,11 @@ async function main() {
     await inherit()
     return
   }
-  const done = log.timedTask(kleur.bold().bgGreen(' lazyrepo '))
+  logger.log(k.green('\n::'), k.bold().bgGreen(' lazyrepo '), k.green('::\n'))
+  const start = Date.now()
   await cli(process.argv.slice(2))
-  done('Done')
+  logger.success(`Done in ${timeSince(start)}`)
+  process.exit(0)
 }
 
 main()

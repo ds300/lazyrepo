@@ -1,11 +1,10 @@
 import slugify from '@sindresorhus/slugify'
 import glob from 'fast-glob'
 import { mkdirSync, readFileSync, writeFileSync } from 'fs'
-import kleur from 'kleur'
 import os from 'os'
 import path, { dirname, join } from 'path'
 import 'source-map-support/register.js'
-import { log } from './log.js'
+import { logger } from './logger/logger.js'
 import { workspaceRoot } from './workspaceRoot.js'
 
 /**
@@ -31,17 +30,17 @@ export async function getConfig() {
   })
 
   if (files.length > 1) {
-    log.fail(`Found multiple lazy config files in dir '${workspaceRoot}'.`, {
+    logger.fail(`Found multiple lazy config files in dir '${workspaceRoot}'.`, {
       detail: `Remove all but one of the following files: ${files.join(', ')}`,
     })
   }
 
   if (files.length === 0) {
-    console.log(kleur.gray('No config file found. Using defaults.'))
+    logger.note('No config file found. Using defaults.')
     _config = {}
   } else {
     const file = files[0]
-    console.log(kleur.gray(`Using config file: ${file}`))
+    logger.note(`Using config file: ${file}`)
     _config = await loadConfig(file)
 
     if (!_config) {
