@@ -1,60 +1,51 @@
-import glob from 'fast-glob'
-import k from 'kleur'
-import { help } from './commands/help.js'
+import { cac } from 'cac'
+import { clean } from './commands/clean.js'
 import { inherit } from './commands/inherit.js'
 import { init } from './commands/init.js'
 import { run } from './commands/run.js'
-import { timeSince } from './logger/formatting.js'
-import { logger } from './logger/logger.js'
-import { rimraf } from './rimraf.js'
-import { workspaceRoot } from './workspaceRoot.js'
 
-/**
- * @param {string[]} args
- */
-async function cli(args) {
-  let [command] = args
-  if (!command) {
-    help(true)
-    process.exit(1)
-  }
+const cli = cac('lazyrepo')
 
-  if (command === ':init') {
-    init()
+cli
+  .command('<task>', 'run task in all packages')
+  .option('--filter <paths>', '[string] run task in packages specified by paths')
+  .option('--force', '[boolean] ignore existing cached artifacts', {
+    default: false,
+  })
+  .action(async (task, options) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    await run(task, options)
     process.exit(0)
-  }
+  })
 
-  if (command === ':help' || command === '-h' || command === '--help') {
-    help()
+cli
+  .command('run <task>', 'run task in all packages')
+  .option('--filter <paths>', '[string] run task in packages specified by paths')
+  .option('--force', '[boolean] ignore existing cached artifacts', {
+    default: false,
+  })
+  .action(async (task, options) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    await run(task, options)
     process.exit(0)
-  }
+  })
 
-  if (command === ':clean') {
-    const cacheDirs = glob.sync(['**/*/.lazy', '.lazy'], {
-      ignore: ['**/node_modules/**'],
-      absolute: true,
-      onlyDirectories: true,
-      cwd: workspaceRoot,
-    })
-
-    logger.log(`Cleaning ${cacheDirs.length} cache directories...`)
-    cacheDirs.forEach(rimraf)
-    return
-  }
-
-  await run(args)
-}
-
-async function main() {
-  if (process.argv[2] === ':inherit') {
-    await inherit()
-    return
-  }
-  logger.log(k.green('\n::'), k.bold().bgGreen(' lazyrepo '), k.green('::\n'))
-  const start = Date.now()
-  await cli(process.argv.slice(2))
-  logger.success(`Done in ${timeSince(start)}`)
+cli.command('init', 'create config file').action(() => {
+  init()
   process.exit(0)
-}
+})
 
-await main()
+cli.command('clean', 'delete all local cache data').action(() => {
+  clean()
+  process.exit(0)
+})
+
+cli
+  .command('inherit', 'run command from configuration file specified by script name')
+  .action(async () => {
+    await inherit()
+  })
+
+cli.help()
+
+cli.parse()

@@ -218,6 +218,12 @@ export type CLITaskDescription = {
   force: boolean
 }
 
+export type CLIOption = {
+  force: boolean
+  filter?: string | string[]
+  '--': string[]
+}
+
 export interface Logger {
   log(...message: string[]): void
   logErr(...message: string[]): void
