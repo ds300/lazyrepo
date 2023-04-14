@@ -144,7 +144,9 @@ async function runTask(task) {
     stdio: ['ignore'],
     env: {
       ...process.env,
-      PATH: `${process.env.PATH}:./node_modules/.bin:${workspaceRoot}/node_modules/.bin`,
+      PATH: `./node_modules/.bin:${path.join(workspaceRoot, 'node_modules/.bin')}:${
+        process.env.PATH
+      }`,
       FORCE_COLOR: '1',
       npm_lifecycle_event: task.taskName,
     },
