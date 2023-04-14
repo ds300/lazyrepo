@@ -75,7 +75,7 @@ export class InteractiveLogger {
       }
       message = task.coloredPrefix + message
 
-      this.tty.write(sliceAnsi(message, 0, this.tty.columns))
+      this.tty.write(sliceAnsi(message.replaceAll('\t', '   '), 0, this.tty.columns))
       this.tty.clearLine(1)
       this.tty.write('\n')
     }
@@ -97,7 +97,6 @@ export class InteractiveLogger {
       this.tty.write(args.join(' ') + '\n')
     })
   }
-
   /**
    * @param {string[]} args
    */
@@ -173,16 +172,22 @@ export class InteractiveLogger {
     const log = (/** @type {TaskStatus} */ status, /** @type {string[]} */ ...args) => {
       assertNotDone()
 
-      this.update(() => {
+      const addLogLines = () => {
         task.status = status
-
         const message = args.join(' ')
         bufferedLogLines.push(message)
         const lastLine = lastNonEmptyLineIfPossible(message)
         if (lastLine) {
           task.lastLogLine = lastLine
         }
-      })
+      }
+
+      const didStatusChange = task.status !== status
+      if (didStatusChange) {
+        this.update(addLogLines)
+      } else {
+        addLogLines()
+      }
     }
 
     const complete = (/** @type {TaskStatus} */ status, /** @type {string} */ message) => {
