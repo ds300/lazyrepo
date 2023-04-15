@@ -15,7 +15,6 @@ cli
   .action(async (task, options) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     await run(task, options)
-    process.exit(0)
   })
 
 cli
@@ -27,17 +26,14 @@ cli
   .action(async (task, options) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     await run(task, options)
-    process.exit(0)
   })
 
 cli.command('init', 'create config file').action(() => {
   init()
-  process.exit(0)
 })
 
 cli.command('clean', 'delete all local cache data').action(() => {
   clean()
-  process.exit(0)
 })
 
 cli
@@ -48,4 +44,14 @@ cli
 
 cli.help()
 
-cli.parse()
+try {
+  cli.parse()
+} catch (/** @type {any} */ e) {
+  // find out if this is a CACError instance
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  if (e.name === 'CACError') {
+    cli.outputHelp()
+  } else {
+    throw e
+  }
+}
