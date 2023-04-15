@@ -3,7 +3,7 @@ import fs from 'fs'
 import kleur from 'kleur'
 import path from 'path'
 import { getTask } from '../config.js'
-import { timeSince } from '../logger/formatting.js'
+import { createTimer } from '../createTimer.js'
 import { uniq } from '../uniq.js'
 import { workspaceRoot } from '../workspaceRoot.js'
 
@@ -39,7 +39,7 @@ function globCacheConfig({ includes, excludes, task }) {
   const files = new Set()
 
   for (const pattern of includes) {
-    const start = Date.now()
+    const timer = createTimer()
     for (const file of glob.sync(pattern, {
       cwd: task.taskDir,
       ignore: ['**/node_modules', ...excludes],
@@ -52,8 +52,8 @@ function globCacheConfig({ includes, excludes, task }) {
       }
     }
     // todo: always log this if verbose
-    if (Date.now() - start > 100) {
-      task.logger.note(`Searching ${pattern} took ${kleur.cyan(timeSince(start))}`)
+    if (timer.getElapsedMs() > 100) {
+      task.logger.note(`Searching ${pattern} took ${kleur.cyan(timer.formatElapsedTime())}`)
     }
   }
 

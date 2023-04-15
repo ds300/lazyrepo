@@ -1,0 +1,15 @@
+diff --git a/build/resolver.js b/build/resolver.js
+index 35b10709256f8c82c0271a8e35e6c86bd2d4381c..f6c766f0f95c1305d8afbe00d5ba0a0656c4417d 100644
+--- a/build/resolver.js
++++ b/build/resolver.js
+@@ -346,6 +346,10 @@ class Resolver {
+     return null;
+   }
+   resolveModule(from, moduleName, options) {
++    if (from.endsWith('.ts') && moduleName.endsWith('.js')) {
++      // hack to support esm imports
++      moduleName = moduleName.replace(/\.js$/, '');
++    }
+     const dirname = path().dirname(from);
+     const module =
+       this.resolveStubModuleName(from, moduleName) ||

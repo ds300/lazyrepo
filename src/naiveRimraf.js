@@ -4,14 +4,14 @@ import path from 'path'
 /**
  * @param {string} dir
  */
-export const rimraf = (dir) => {
+export const naiveRimraf = (dir) => {
   if (!existsSync(dir)) return
   const files = readdirSync(dir)
   for (const file of files) {
     const fullPath = path.join(dir, file)
     const isDir = statSync(fullPath).isDirectory()
     if (isDir) {
-      rimraf(fullPath)
+      naiveRimraf(fullPath)
     } else {
       unlinkSync(fullPath)
     }

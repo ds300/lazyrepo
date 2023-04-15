@@ -2,6 +2,7 @@
 
 import k from 'kleur'
 import _sliceAnsi from 'slice-ansi'
+import { createTimer } from '../createTimer.js'
 import {
   formatFailMessage,
   formatInfoMessage,
@@ -9,7 +10,6 @@ import {
   formatSuccessMessage,
   getColorForString,
   lastNonEmptyLineIfPossible,
-  timeSince,
 } from './formatting.js'
 
 const sliceAnsi = _sliceAnsi.default || _sliceAnsi
@@ -147,7 +147,7 @@ export class InteractiveLogger {
    * @returns {import('../types.js').TaskLogger}
    */
   task(taskName) {
-    let start = Date.now()
+    const timer = createTimer()
     const color = getColorForString(taskName)
     const prefix = color.fg(`${taskName} `)
 
@@ -157,7 +157,7 @@ export class InteractiveLogger {
       coloredPrefix: prefix,
       lastLogLine: '',
       status: 'waiting',
-      startedAt: start,
+      startedAt: timer.getStartTime(),
     }
 
     this.update(() => {
@@ -219,8 +219,8 @@ export class InteractiveLogger {
     return {
       restartTimer: () => {
         assertNotDone()
-        start = Date.now()
-        task.startedAt = start
+        timer.reset()
+        task.startedAt = timer.getStartTime()
       },
       log: (...args) => {
         log('running', ...args)
@@ -232,7 +232,7 @@ export class InteractiveLogger {
         complete('failed', formatFailMessage(headline, more))
       },
       success: (message) => {
-        complete('done', formatSuccessMessage(message, k.gray(`in ${timeSince(start)}`)))
+        complete('done', formatSuccessMessage(message, k.gray(`in ${timer.formatElapsedTime()}`)))
       },
       info: (...args) => {
         log('running', formatInfoMessage(...args))
