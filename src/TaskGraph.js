@@ -201,7 +201,7 @@ export class TaskGraph {
       resolve = res
     })
 
-    const tick = async () => {
+    const tick = () => {
       const runningTasks = this.allRunningTasks()
       const readyTasks = this.allReadyTasks()
       const failedTasks = this.allFailedTasks()
@@ -238,7 +238,8 @@ export class TaskGraph {
       for (let i = 0; i < numTasksToStart; i++) {
         const taskKey = readyTasks[i]
         this.allTasks[taskKey].status = 'running'
-        await runTask(readyTasks[i])
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        runTask(readyTasks[i])
       }
 
       return true
@@ -253,8 +254,10 @@ export class TaskGraph {
           ? 'success:eager'
           : 'success:lazy'
         : 'failure'
-      await tick()
+      tick()
     }
+
+    tick()
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return await promise
