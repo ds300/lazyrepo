@@ -44,18 +44,18 @@ test('dependent tasks run', async () => {
         ::  lazyrepo  ::
 
         No config file found. Using defaults.
-        packages/utils:build 💡 Searching /Users/davidsheldrick/code/lazyrepo/.test/9LSbA3gblHtOjqcYCXd4N/{yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-        packages/utils:build 💡 Searching /Users/davidsheldrick/code/lazyrepo/.test/9LSbA3gblHtOjqcYCXd4N/lazy.config.* took 1.00s
+        packages/utils:build 💡 Searching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
+        packages/utils:build 💡 Searching lazy.config.* took 1.00s
         packages/utils:build 💡 Searching **/* took 1.00s
         packages/utils:build 💡 Hashed 2/2 files in 1.00s
         packages/utils:build cache miss, no previous manifest found
         packages/utils:build  RUN echo $RANDOM > .out.txt in packages/utils
         packages/utils:build 
-        packages/utils:build 💡 input manifest saved: packages/utils/.lazy/manifests/build
         packages/utils:build 
+        packages/utils:build 💡 input manifest saved: packages/utils/.lazy/manifests/build
         packages/utils:build ✔ done in 1.00s
-        packages/core:build 💡 Searching /Users/davidsheldrick/code/lazyrepo/.test/9LSbA3gblHtOjqcYCXd4N/{yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-        packages/core:build 💡 Searching /Users/davidsheldrick/code/lazyrepo/.test/9LSbA3gblHtOjqcYCXd4N/lazy.config.* took 1.00s
+        packages/core:build 💡 Searching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
+        packages/core:build 💡 Searching lazy.config.* took 1.00s
         packages/core:build 💡 Searching **/* took 1.00s
         packages/core:build 💡 Hashed 2/2 files in 1.00s
         packages/core:build cache miss, no previous manifest found
@@ -80,14 +80,14 @@ test('dependent tasks run', async () => {
         ::  lazyrepo  ::
 
         No config file found. Using defaults.
-        packages/utils:build 💡 Searching /Users/davidsheldrick/code/lazyrepo/.test/9LSbA3gblHtOjqcYCXd4N/{yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-        packages/utils:build 💡 Searching /Users/davidsheldrick/code/lazyrepo/.test/9LSbA3gblHtOjqcYCXd4N/lazy.config.* took 1.00s
+        packages/utils:build 💡 Searching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
+        packages/utils:build 💡 Searching lazy.config.* took 1.00s
         packages/utils:build 💡 Searching **/* took 1.00s
         packages/utils:build 💡 Hashed 0/2 files in 1.00s
         packages/utils:build 💡 input manifest saved: packages/utils/.lazy/manifests/build
         packages/utils:build ✔ cache hit ⚡️ in 1.00s
-        packages/core:build 💡 Searching /Users/davidsheldrick/code/lazyrepo/.test/9LSbA3gblHtOjqcYCXd4N/{yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-        packages/core:build 💡 Searching /Users/davidsheldrick/code/lazyrepo/.test/9LSbA3gblHtOjqcYCXd4N/lazy.config.* took 1.00s
+        packages/core:build 💡 Searching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
+        packages/core:build 💡 Searching lazy.config.* took 1.00s
         packages/core:build 💡 Searching **/* took 1.00s
         packages/core:build 💡 Hashed 0/2 files in 1.00s
         packages/core:build 💡 input manifest saved: packages/core/.lazy/manifests/build

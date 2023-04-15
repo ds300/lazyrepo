@@ -2,6 +2,7 @@ import glob from 'fast-glob'
 import fs from 'fs'
 import kleur from 'kleur'
 import path from 'path'
+import process from 'process'
 import { getTask } from '../config.js'
 import { createTimer } from '../createTimer.js'
 import { uniq } from '../uniq.js'
@@ -53,7 +54,11 @@ function globCacheConfig({ includes, excludes, task }) {
     }
     // todo: always log this if verbose
     if (timer.getElapsedMs() > 100) {
-      task.logger.note(`Searching ${pattern} took ${kleur.cyan(timer.formatElapsedTime())}`)
+      task.logger.note(
+        `Searching ${path.relative(process.cwd(), pattern)} took ${kleur.cyan(
+          timer.formatElapsedTime(),
+        )}`,
+      )
     }
   }
 
