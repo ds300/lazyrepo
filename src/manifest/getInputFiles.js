@@ -42,7 +42,7 @@ function globCacheConfig({ includes, excludes, task }) {
     const start = Date.now()
     for (const file of glob.sync(pattern, {
       cwd: task.taskDir,
-      ignore: ['node_modules', '**/node_modules', ...excludes],
+      ignore: ['**/node_modules', ...excludes],
       absolute: true,
     })) {
       if (fs.statSync(file).isDirectory()) {
