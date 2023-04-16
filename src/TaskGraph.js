@@ -20,7 +20,11 @@ export function taskKey(taskDir, taskName) {
 
 const numCpus = cpus().length
 
-const maxConcurrentTasks = Math.max(1, numCpus - 1)
+const maxConcurrentTasks = process.env.__test__FORCE_PARALLEL
+  ? 2
+  : isTest
+  ? 1
+  : Math.max(1, numCpus - 1)
 
 /**
  * @typedef {Object} TaskGraphProps
@@ -236,11 +240,6 @@ export class TaskGraph {
       // start as many tasks as we can
       let numTasksToStart = Math.min(maxConcurrentTasks - runningTasks.length, readyTasks.length)
       // eslint-disable-next-line no-console
-      console.log('DEBUG', {
-        numTasksToStart,
-        isTest,
-        __test__FORCE_PARALLEL: process.env.__test__FORCE_PARALLEL,
-      })
       if (isTest && process.env.__test__FORCE_PARALLEL !== 'true') {
         // in tests, we want to run tasks one at a time to avoid flakiness
         numTasksToStart = runningTasks.length > 0 ? 0 : Math.min(numTasksToStart, 1)
