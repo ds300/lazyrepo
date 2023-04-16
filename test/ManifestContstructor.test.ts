@@ -1,12 +1,12 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import os from 'os'
 import { dirname, join } from 'path'
+import { rimraf } from 'rimraf'
 import { ManifestConstructor } from '../src/manifest/ManifestConstructor.js'
-import { rimraf } from '../src/rimraf.js'
 
 const tmpdir = join(os.tmpdir(), 'lazyrepo-test')
 function setup() {
-  rimraf(tmpdir)
+  rimraf.sync(tmpdir)
   const previousManifestPath = join(tmpdir, 'manifests', 'test')
   const nextManifestPath = join(tmpdir, 'manifests', 'test.next')
   const diffPath = join(tmpdir, 'diffs', 'test')

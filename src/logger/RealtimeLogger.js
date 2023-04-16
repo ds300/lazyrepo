@@ -1,5 +1,6 @@
 /** @typedef {import('../types.js').CliLogger} CliLogger */
 import k from 'kleur'
+import { createTimer } from '../createTimer.js'
 import {
   formatFailMessage,
   formatInfoMessage,
@@ -7,7 +8,6 @@ import {
   formatSuccessMessage,
   getColorForString,
   prefixLines,
-  timeSince,
 } from './formatting.js'
 
 /**
@@ -75,7 +75,7 @@ export class RealtimeLogger {
    * @returns {import('../types.js').TaskLogger}
    */
   task(taskName) {
-    let start = Date.now()
+    const timer = createTimer()
     const color = getColorForString(taskName)
     const prefix = color.fg(`${taskName} `)
 
@@ -98,7 +98,7 @@ export class RealtimeLogger {
     return {
       restartTimer: () => {
         assertNotDone()
-        start = Date.now()
+        timer.reset()
       },
       log,
       logErr,
@@ -107,7 +107,7 @@ export class RealtimeLogger {
         isDone = true
       },
       success: (message) => {
-        log(formatSuccessMessage(message, k.gray(`in ${timeSince(start)}`)))
+        log(formatSuccessMessage(message, k.gray(`in ${timer.formatElapsedTime()}`)))
         isDone = true
       },
       info: (...args) => {

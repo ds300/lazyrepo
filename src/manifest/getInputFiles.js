@@ -1,9 +1,9 @@
 import glob from 'fast-glob'
-import fs from 'fs'
 import kleur from 'kleur'
-import path from 'path'
+import path, { isAbsolute, join } from 'path'
 import { getTask } from '../config.js'
-import { timeSince } from '../logger/formatting.js'
+import { createTimer } from '../createTimer.js'
+import { readdirSync, statSync } from '../fs.js'
 import { uniq } from '../uniq.js'
 import { workspaceRoot } from '../workspaceRoot.js'
 
@@ -39,21 +39,26 @@ function globCacheConfig({ includes, excludes, task }) {
   const files = new Set()
 
   for (const pattern of includes) {
-    const start = Date.now()
+    const timer = createTimer()
     for (const file of glob.sync(pattern, {
       cwd: task.taskDir,
-      ignore: ['node_modules', '**/node_modules', ...excludes],
+      ignore: ['**/node_modules', ...excludes],
       absolute: true,
     })) {
-      if (fs.statSync(file).isDirectory()) {
+      if (statSync(file).isDirectory()) {
         visitAllFiles(file, (filePath) => files.add(filePath))
       } else {
         files.add(path.relative(workspaceRoot, file))
       }
     }
     // todo: always log this if verbose
-    if (Date.now() - start > 100) {
-      task.logger.note(`Searching ${pattern} took ${kleur.cyan(timeSince(start))}`)
+    if (timer.getElapsedMs() > 100) {
+      task.logger.note(
+        `Finding files matching ${path.relative(
+          process.cwd(),
+          isAbsolute(pattern) ? pattern : join(task.taskDir, pattern),
+        )} took ${kleur.cyan(timer.formatElapsedTime())}`,
+      )
     }
   }
 
@@ -105,9 +110,9 @@ const replaceRootDirPragmas = (arr) =>
  * @param {(filePath: string) => void} visit
  */
 function visitAllFiles(dir, visit) {
-  for (const fileName of fs.readdirSync(dir)) {
+  for (const fileName of readdirSync(dir)) {
     const fullPath = path.join(dir, fileName)
-    if (fs.statSync(fullPath).isDirectory()) {
+    if (statSync(fullPath).isDirectory()) {
       visitAllFiles(fullPath, visit)
     } else {
       visit(fullPath)

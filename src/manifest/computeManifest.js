@@ -1,4 +1,3 @@
-import { existsSync, mkdirSync, statSync } from 'fs'
 import kleur from 'kleur'
 import path, { join } from 'path'
 import { taskKey } from '../TaskGraph.js'
@@ -8,7 +7,8 @@ import {
   getNextManifestPath,
   getTask as getTaskConfig,
 } from '../config.js'
-import { timeSince } from '../logger/formatting.js'
+import { createTimer } from '../createTimer.js'
+import { existsSync, mkdirSync, statSync } from '../fs.js'
 import { uniq } from '../uniq.js'
 import { workspaceRoot } from '../workspaceRoot.js'
 import { ManifestConstructor } from './ManifestConstructor.js'
@@ -132,7 +132,7 @@ export async function computeManifest({ tasks, task }) {
   const files = await getInputFiles(tasks, task, extraFiles.flat())
   if (!files) return null
 
-  const start = Date.now()
+  const timer = createTimer()
 
   for (const file of files.sort()) {
     const fullPath = join(workspaceRoot, file)
@@ -152,9 +152,11 @@ export async function computeManifest({ tasks, task }) {
   const { didChange, hash } = await manifestConstructor.end()
 
   // todo: always log this if verbose
-  if (Date.now() - start > 100) {
+  if (timer.getElapsedMs() > 100) {
     task.logger.note(
-      `Hashed ${numHashed}/${numSkipped + numHashed} files in ${kleur.cyan(timeSince(start))}`,
+      `Hashed ${numHashed}/${numSkipped + numHashed} files in ${kleur.cyan(
+        timer.formatElapsedTime(),
+      )}`,
     )
   }
 

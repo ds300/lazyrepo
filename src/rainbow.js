@@ -2,6 +2,8 @@
 // Copyright (c) 2017 Raphael Amorim
 // Source: https://github.com/raphamorim/go-rainbow
 
+import { isatty } from 'tty'
+
 // SPDX-License-Identifier: MIT
 /**
  * @param {number} i
@@ -29,6 +31,9 @@ const char = (c, [r, g, b]) => `\x1b[1m\x1b[38;2;${r};${g};${b}m${c}\x1b[0m\x1b[
  * @returns {string}
  */
 export function rainbow(text) {
+  if (!isatty(process.stdout.fd)) {
+    return text
+  }
   let rainbowStr = ''
 
   let i = 0

@@ -1,5 +1,5 @@
 import crypto from 'crypto'
-import fs from 'fs'
+import { openSync, readSync } from '../fs.js'
 
 const bufferSize = 1024
 
@@ -13,10 +13,10 @@ const buffer = Buffer.alloc(bufferSize)
  */
 export function hashFile(filePath, fileSize) {
   const sha = crypto.createHash('sha256')
-  const fileDescriptor = fs.openSync(filePath, 'r')
+  const fileDescriptor = openSync(filePath, 'r')
   let totalBytesRead = 0
   while (totalBytesRead < fileSize) {
-    const bytesRead = fs.readSync(
+    const bytesRead = readSync(
       fileDescriptor,
       buffer,
       0,

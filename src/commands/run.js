@@ -4,6 +4,7 @@ import { logger } from '../logger/logger.js'
 import { rainbow } from '../rainbow.js'
 import { TaskGraph } from '../TaskGraph.js'
 import { getRepoDetails } from '../workspace.js'
+import { workspaceRoot } from '../workspaceRoot.js'
 
 /**
  * @param {string} taskName
@@ -32,7 +33,11 @@ export async function run(taskName, options) {
   })
 
   if (tasks.sortedTaskKeys.length === 0) {
-    logger.fail(`No tasks found matching [${taskDescriptors.map((t) => t.taskName).join(', ')}]`)
+    logger.fail(
+      `No tasks found matching [${taskDescriptors
+        .map((t) => t.taskName)
+        .join(', ')}] in ${workspaceRoot}`,
+    )
   }
 
   await tasks.runAllTasks()

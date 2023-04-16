@@ -1,9 +1,9 @@
 import { spawn } from 'cross-spawn'
-import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'fs'
 import kleur from 'kleur'
 import path, { relative } from 'path'
 import stripAnsi from 'strip-ansi'
 import { getDiffPath, getManifestPath, getNextManifestPath, getTask } from './config.js'
+import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from './fs.js'
 import { logger } from './logger/logger.js'
 import { computeManifest } from './manifest/computeManifest.js'
 import { workspaceRoot } from './workspaceRoot.js'
@@ -111,7 +111,7 @@ async function runTask(task) {
   }
 
   task.logger.log(
-    kleur.bold(' RUN ') +
+    kleur.bold('RUN ') +
       kleur.green().bold(command) +
       (task.extraArgs.length ? kleur.cyan().bold(' ' + task.extraArgs.join(' ')) : '') +
       kleur.gray(' in ' + relative(process.cwd(), task.taskDir)),
@@ -134,12 +134,10 @@ async function runTask(task) {
   let streamPromises = []
   const { stdout, stderr } = proc
   if (stdout) {
-    childProcessStreamToLines(stdout, (line) => task.logger.log(line))
-    streamPromises.push(new Promise((resolve) => stdout.on('close', resolve)))
+    streamPromises.push(childProcessStreamToLines(stdout, (line) => task.logger.log(line)))
   }
   if (stderr) {
-    childProcessStreamToLines(stderr, (line) => task.logger.logErr(line))
-    streamPromises.push(new Promise((resolve) => stderr.on('close', resolve)))
+    streamPromises.push(childProcessStreamToLines(stderr, (line) => task.logger.logErr(line)))
   }
 
   // if the process exits with a non-zero status, we'll fail the build
@@ -180,7 +178,12 @@ function childProcessStreamToLines(stream, onLine) {
       onLine(line)
     }
   })
-  stream.on('close', () => {
-    onLine(pendingLine)
+  return new Promise((resolve) => {
+    stream.on('close', () => {
+      if (pendingLine) {
+        onLine(pendingLine)
+      }
+      resolve(null)
+    })
   })
 }

@@ -24,7 +24,10 @@ module.exports = {
       },
       plugins: ['jest'],
       extends: ['plugin:jest/recommended'],
-      rules: {},
+      rules: {
+        'no-restricted-imports': 'off',
+        '@typescript-eslint/no-unsafe-call': 'off',
+      },
     },
   ],
   parserOptions: {
@@ -32,6 +35,7 @@ module.exports = {
     sourceType: 'module',
   },
   rules: {
+    'no-restricted-imports': ['error', 'fs', 'fs/promises', 'node:fs', 'node:fs/promises'],
     'no-console': 'error',
     'no-extra-semi': 'off',
     eqeqeq: ['error', 'always'],

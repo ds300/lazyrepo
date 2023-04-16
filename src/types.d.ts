@@ -156,7 +156,7 @@ export interface PackageLevelTaskConfig extends BaseTaskConfig {
    */
   runType?: 'dependent' | 'independent'
   /**
-   * The command to run for this task if the task uses `lazy :inherit`
+   * The command to run for this task if the task uses `lazy inherit`
    */
   baseCommand?: string
 }
@@ -243,6 +243,7 @@ export interface PackageJson {
   optionalDependencies?: { [depName: string]: string }
   scripts?: { [scriptName: string]: string }
   workspaces?: string[]
+  type?: 'module' | 'commonjs'
 }
 
 export interface TaskLogger extends Logger {

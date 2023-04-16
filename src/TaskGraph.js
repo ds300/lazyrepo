@@ -1,7 +1,8 @@
 import glob from 'fast-glob'
-import { existsSync, readFileSync } from 'fs'
 import { cpus } from 'os'
 import { isAbsolute, join, relative } from 'path'
+import { existsSync, readFileSync } from './fs.js'
+import { isTest } from './isTest.js'
 import { logger } from './logger/logger.js'
 import { runTaskIfNeeded } from './runTask.js'
 import { workspaceRoot } from './workspaceRoot.js'
@@ -19,7 +20,11 @@ export function taskKey(taskDir, taskName) {
 
 const numCpus = cpus().length
 
-const maxConcurrentTasks = Math.max(1, numCpus - 1)
+const maxConcurrentTasks = process.env.__test__FORCE_PARALLEL
+  ? 2
+  : isTest
+  ? 1
+  : Math.max(1, numCpus - 1)
 
 /**
  * @typedef {Object} TaskGraphProps

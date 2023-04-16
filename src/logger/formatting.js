@@ -61,7 +61,7 @@ export function formatFailMessage(headline, more) {
  * @param {string[]} args
  */
 export function formatInfoMessage(...args) {
-  return `💡 ${args.join(' ')}`
+  return `${args.join(' ')}`
 }
 
 /**
@@ -87,7 +87,9 @@ export function decapitalize(str) {
 }
 
 /**
- * @param {number} start
- * @returns {string}
+ * @param {number} ms
+ * @returns
  */
-export const timeSince = (start) => `${((Date.now() - start) / 1000).toFixed(2)}s`
+export const duration = (ms) => {
+  return `${(ms / 1000).toFixed(2)}s`
+}
