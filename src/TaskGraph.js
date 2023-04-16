@@ -168,16 +168,18 @@ export class TaskGraph {
     const allReadyTasks = this.sortedTaskKeys.filter((key) => this.isTaskReady(key))
     const inBandTaskNames = new Set()
     // filter out duplicates for in-band tasks
-    return allReadyTasks.filter((key) => {
-      const { taskName, taskConfig } = this.allTasks[key]
-      const singleThreaded = taskConfig.parallel === false
-      if (singleThreaded && inBandTaskNames.has(taskName)) {
-        return false
-      }
+    return allReadyTasks
+      .filter((key) => {
+        const { taskName, taskConfig } = this.allTasks[key]
+        const singleThreaded = taskConfig.parallel === false
+        if (singleThreaded && inBandTaskNames.has(taskName)) {
+          return false
+        }
 
-      inBandTaskNames.add(taskName)
-      return true
-    })
+        inBandTaskNames.add(taskName)
+        return true
+      })
+      .sort()
   }
 
   allRunningTasks() {
