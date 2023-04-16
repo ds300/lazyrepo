@@ -28,14 +28,14 @@ function globCacheConfig({ includes, excludes, task, workspaceRoot }) {
       }
     }
     // todo: always log this if verbose
-    // if (timer.getElapsedMs() > 100) {
-    task.logger.note(
-      `Finding files matching ${path.relative(
-        process.cwd(),
-        isAbsolute(pattern) ? pattern : join(task.taskDir, pattern),
-      )} took ${kleur.cyan(timer.formatElapsedTime())}`,
-    )
-    // }
+    if (timer.getElapsedMs() > 100) {
+      task.logger.note(
+        `Finding files matching ${path.relative(
+          process.cwd(),
+          isAbsolute(pattern) ? pattern : join(task.taskDir, pattern),
+        )} took ${kleur.cyan(timer.formatElapsedTime())}`,
+      )
+    }
   }
 
   return files
