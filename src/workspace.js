@@ -1,7 +1,7 @@
 import glob from 'fast-glob'
-import { existsSync, readFileSync } from 'fs'
 import path from 'path'
 import yaml from 'yaml'
+import { existsSync, readFileSync } from './fs.js'
 import { workspaceRoot } from './workspaceRoot.js'
 
 /**

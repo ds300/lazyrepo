@@ -1,6 +1,6 @@
 import { createHash } from 'crypto'
 
-import { createWriteStream, existsSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
+import { createWriteStream, existsSync, readFileSync, unlinkSync, writeFileSync } from '../fs.js'
 import { compareManifestTypes } from './computeManifest.js'
 
 const TAB = '\t'

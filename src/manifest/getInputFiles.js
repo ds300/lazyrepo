@@ -1,10 +1,10 @@
 import glob from 'fast-glob'
-import fs from 'fs'
 import kleur from 'kleur'
 import path from 'path'
 import process from 'process'
 import { getTask } from '../config.js'
 import { createTimer } from '../createTimer.js'
+import { readdirSync, statSync } from '../fs.js'
 import { uniq } from '../uniq.js'
 import { workspaceRoot } from '../workspaceRoot.js'
 
@@ -46,7 +46,7 @@ function globCacheConfig({ includes, excludes, task }) {
       ignore: ['**/node_modules', ...excludes],
       absolute: true,
     })) {
-      if (fs.statSync(file).isDirectory()) {
+      if (statSync(file).isDirectory()) {
         visitAllFiles(file, (filePath) => files.add(filePath))
       } else {
         files.add(path.relative(workspaceRoot, file))
@@ -110,9 +110,9 @@ const replaceRootDirPragmas = (arr) =>
  * @param {(filePath: string) => void} visit
  */
 function visitAllFiles(dir, visit) {
-  for (const fileName of fs.readdirSync(dir)) {
+  for (const fileName of readdirSync(dir)) {
     const fullPath = path.join(dir, fileName)
-    if (fs.statSync(fullPath).isDirectory()) {
+    if (statSync(fullPath).isDirectory()) {
       visitAllFiles(fullPath, visit)
     } else {
       visit(fullPath)

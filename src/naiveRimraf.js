@@ -1,5 +1,5 @@
-import { existsSync, readdirSync, rmdirSync, statSync, unlinkSync } from 'fs'
 import path from 'path'
+import { existsSync, readdirSync, rmdirSync, statSync, unlinkSync } from './fs.js'
 
 /**
  * @param {string} dir

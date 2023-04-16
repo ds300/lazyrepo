@@ -1,8 +1,8 @@
 import slugify from '@sindresorhus/slugify'
 import glob from 'fast-glob'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import path, { join } from 'path'
 import 'source-map-support/register.js'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from './fs.js'
 import { logger } from './logger/logger.js'
 import { workspaceRoot } from './workspaceRoot.js'
 

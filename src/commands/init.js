@@ -1,4 +1,4 @@
-import { existsSync, writeFileSync } from 'fs'
+import { existsSync, writeFileSync } from '../fs.js'
 import { logger } from '../logger/logger.js'
 
 export function init() {

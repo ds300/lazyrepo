@@ -1,5 +1,5 @@
-import { existsSync, readFileSync } from 'fs'
 import path from 'path'
+import { existsSync, readFileSync } from './fs.js'
 import { logger } from './logger/logger.js'
 
 /**

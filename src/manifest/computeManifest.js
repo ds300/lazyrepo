@@ -1,4 +1,3 @@
-import { existsSync, mkdirSync, statSync } from 'fs'
 import kleur from 'kleur'
 import path, { join } from 'path'
 import { taskKey } from '../TaskGraph.js'
@@ -9,6 +8,7 @@ import {
   getTask as getTaskConfig,
 } from '../config.js'
 import { createTimer } from '../createTimer.js'
+import { existsSync, mkdirSync, statSync } from '../fs.js'
 import { uniq } from '../uniq.js'
 import { workspaceRoot } from '../workspaceRoot.js'
 import { ManifestConstructor } from './ManifestConstructor.js'
