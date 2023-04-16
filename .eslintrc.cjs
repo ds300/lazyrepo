@@ -26,6 +26,7 @@ module.exports = {
       extends: ['plugin:jest/recommended'],
       rules: {
         'no-restricted-imports': 'off',
+        '@typescript-eslint/no-unsafe-call': 'off',
       },
     },
   ],

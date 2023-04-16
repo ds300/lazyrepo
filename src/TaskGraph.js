@@ -2,6 +2,7 @@ import glob from 'fast-glob'
 import { cpus } from 'os'
 import { isAbsolute, join, relative } from 'path'
 import { existsSync, readFileSync } from './fs.js'
+import { isTest } from './isTest.js'
 import { logger } from './logger/logger.js'
 import { runTaskIfNeeded } from './runTask.js'
 import { workspaceRoot } from './workspaceRoot.js'
@@ -233,7 +234,11 @@ export class TaskGraph {
       }
 
       // start as many tasks as we can
-      const numTasksToStart = Math.min(maxConcurrentTasks - runningTasks.length, readyTasks.length)
+      let numTasksToStart = Math.min(maxConcurrentTasks - runningTasks.length, readyTasks.length)
+      if (isTest) {
+        // in tests, we want to run tasks one at a time to avoid flakiness
+        numTasksToStart = Math.max(numTasksToStart, 1)
+      }
 
       for (let i = 0; i < numTasksToStart; i++) {
         const taskKey = readyTasks[i]

@@ -1,20 +1,19 @@
-import path from 'path'
+import { join } from 'path'
 import { existsSync, readdirSync, rmdirSync, statSync, unlinkSync } from './fs.js'
 
 /**
- * @param {string} dir
+ * @param {string} path
  */
-export const naiveRimraf = (dir) => {
-  if (!existsSync(dir)) return
-  const files = readdirSync(dir)
-  for (const file of files) {
-    const fullPath = path.join(dir, file)
-    const isDir = statSync(fullPath).isDirectory()
-    if (isDir) {
+export const naiveRimraf = (path) => {
+  if (!existsSync(path)) return
+  const isDir = statSync(path).isDirectory()
+  if (isDir) {
+    for (const file of readdirSync(path)) {
+      const fullPath = join(path, file)
       naiveRimraf(fullPath)
-    } else {
-      unlinkSync(fullPath)
     }
+    rmdirSync(path)
+  } else {
+    unlinkSync(path)
   }
-  rmdirSync(dir)
 }

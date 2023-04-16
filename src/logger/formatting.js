@@ -61,7 +61,7 @@ export function formatFailMessage(headline, more) {
  * @param {string[]} args
  */
 export function formatInfoMessage(...args) {
-  return `💡 ${args.join(' ')}`
+  return `${args.join(' ')}`
 }
 
 /**

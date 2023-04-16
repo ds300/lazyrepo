@@ -1,7 +1,6 @@
 import glob from 'fast-glob'
 import kleur from 'kleur'
-import path from 'path'
-import process from 'process'
+import path, { isAbsolute, join } from 'path'
 import { getTask } from '../config.js'
 import { createTimer } from '../createTimer.js'
 import { readdirSync, statSync } from '../fs.js'
@@ -55,9 +54,10 @@ function globCacheConfig({ includes, excludes, task }) {
     // todo: always log this if verbose
     if (timer.getElapsedMs() > 100) {
       task.logger.note(
-        `Searching ${path.relative(process.cwd(), pattern)} took ${kleur.cyan(
-          timer.formatElapsedTime(),
-        )}`,
+        `Finding files matching ${path.relative(
+          process.cwd(),
+          isAbsolute(pattern) ? pattern : join(task.taskDir, pattern),
+        )} took ${kleur.cyan(timer.formatElapsedTime())}`,
       )
     }
   }

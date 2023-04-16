@@ -44,19 +44,25 @@ cli
 
 cli.help()
 
-try {
-  cli.parse()
-} catch (/** @type {any} */ e) {
-  // find out if this is a CACError instance
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  if (e.name === 'CACError') {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, no-console
-    console.error(e.message)
-    // eslint-disable-next-line no-console
-    console.error()
-    cli.outputHelp()
-    process.exit(1)
-  } else {
-    throw e
+/**
+ *
+ * @param {string[]} argv
+ */
+export async function exec(argv) {
+  try {
+    cli.parse(argv, { run: false })
+    await cli.runMatchedCommand()
+  } catch (/** @type {any} */ e) {
+    // find out if this is a CACError instance
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (e.name === 'CACError') {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, no-console
+      console.error(e.message)
+      // eslint-disable-next-line no-console
+      cli.outputHelp()
+      process.exit(1)
+    } else {
+      throw e
+    }
   }
 }
