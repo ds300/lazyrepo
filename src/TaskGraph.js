@@ -235,9 +235,9 @@ export class TaskGraph {
 
       // start as many tasks as we can
       let numTasksToStart = Math.min(maxConcurrentTasks - runningTasks.length, readyTasks.length)
-      if (isTest) {
+      if (isTest && process.env.__test__FORCE_PARALLEL !== 'true') {
         // in tests, we want to run tasks one at a time to avoid flakiness
-        numTasksToStart = Math.max(numTasksToStart, 1)
+        numTasksToStart = runningTasks.length > 0 ? 0 : Math.min(numTasksToStart, 1)
       }
 
       for (let i = 0; i < numTasksToStart; i++) {

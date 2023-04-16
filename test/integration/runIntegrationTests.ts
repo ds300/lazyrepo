@@ -6,7 +6,7 @@ import { join } from 'path'
 import stripAnsi from 'strip-ansi'
 import { exec } from '../../src/cli.js'
 import { naiveRimraf } from '../../src/naiveRimraf.js'
-import { PackageJson } from '../../src/types.js'
+import { LazyConfig, PackageJson } from '../../src/types.js'
 
 class TestHarness {
   constructor(readonly config: { dir: string; packageManager: PackageManager; spawn?: boolean }) {}
@@ -181,6 +181,7 @@ export async function runIntegrationTest(
     'pnpm-workspace.yaml':
       config.packageManager === 'pnpm' ? makeWorkspaceYaml(config.workspaceGlobs) : undefined,
     'package.json': makePackageJson({
+      type: 'module',
       workspaces: config.packageManager === 'pnpm' ? undefined : config.workspaceGlobs,
     }),
     ...config.structure,
@@ -196,6 +197,10 @@ export function makePackageJson(opts: Partial<PackageJson>) {
     version: '1.0.0-' + nanoid(),
     ...opts,
   })
+}
+
+export function makeConfigFile(config: LazyConfig) {
+  return `export default ${JSON.stringify(config)}`
 }
 
 function makeWorkspaceYaml(globs: string[]) {

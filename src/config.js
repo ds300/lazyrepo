@@ -1,6 +1,6 @@
 import slugify from '@sindresorhus/slugify'
 import glob from 'fast-glob'
-import path, { join } from 'path'
+import path, { join, relative } from 'path'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from './fs.js'
 import { isTest } from './isTest.js'
 import { logger } from './logger/logger.js'
@@ -39,7 +39,7 @@ export async function getConfig() {
     _config = {}
   } else {
     const file = files[0]
-    logger.note(`Using config file: ${file}`)
+    logger.note(`Using config file: ${relative(process.cwd(), file)}`)
     _config = await loadConfig(file)
 
     if (!_config) {
