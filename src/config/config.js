@@ -5,6 +5,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from '../fs.js'
 import { isTest } from '../isTest.js'
 import { logger } from '../logger/logger.js'
 import { workspaceRoot } from '../workspaceRoot.js'
+import { validateConfig } from './validateConfig.js'
 
 /**
  * @typedef {import('../../index.js').LazyConfig} LazyConfig
@@ -40,7 +41,9 @@ export async function getConfig() {
   } else {
     const file = files[0]
     logger.note(`Using config file: ${relative(process.cwd(), file)}`)
-    _config = await loadConfig(file)
+
+    const loadedConfig = await loadConfig(file)
+    _config = validateConfig(loadedConfig) || null
 
     if (!_config) {
       throw new Error(`Invalid config file`)
