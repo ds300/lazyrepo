@@ -1,13 +1,13 @@
 import slugify from '@sindresorhus/slugify'
 import glob from 'fast-glob'
 import path, { join, relative } from 'path'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from './fs.js'
-import { isTest } from './isTest.js'
-import { logger } from './logger/logger.js'
-import { workspaceRoot } from './workspaceRoot.js'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from '../fs.js'
+import { isTest } from '../isTest.js'
+import { logger } from '../logger/logger.js'
+import { workspaceRoot } from '../workspaceRoot.js'
 
 /**
- * @typedef {import('../index.js').LazyConfig} LazyConfig
+ * @typedef {import('../../index.js').LazyConfig} LazyConfig
  */
 
 /**

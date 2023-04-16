@@ -1,7 +1,7 @@
 import glob from 'fast-glob'
 import kleur from 'kleur'
 import path, { isAbsolute, join } from 'path'
-import { getTask } from '../config.js'
+import { getTask } from '../config/config.js'
 import { createTimer } from '../createTimer.js'
 import { readdirSync, statSync } from '../fs.js'
 import { uniq } from '../uniq.js'

@@ -6,7 +6,7 @@ import {
   getManifestPath,
   getNextManifestPath,
   getTask as getTaskConfig,
-} from '../config.js'
+} from '../config/config.js'
 import { createTimer } from '../createTimer.js'
 import { existsSync, mkdirSync, statSync } from '../fs.js'
 import { uniq } from '../uniq.js'

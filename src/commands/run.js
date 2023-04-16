@@ -1,4 +1,4 @@
-import { getConfig } from '../config.js'
+import { getConfig } from '../config/config.js'
 import { InteractiveLogger } from '../logger/InteractiveLogger.js'
 import { logger } from '../logger/logger.js'
 import { rainbow } from '../rainbow.js'
