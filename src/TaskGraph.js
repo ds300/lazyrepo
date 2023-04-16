@@ -1,22 +1,17 @@
 import glob from 'fast-glob'
 import { cpus } from 'os'
-import { isAbsolute, join, relative } from 'path'
+import { join } from 'path'
 import { existsSync, readFileSync } from './fs.js'
 import { isTest } from './isTest.js'
 import { logger } from './logger/logger.js'
 import { runTaskIfNeeded } from './runTask.js'
-import { workspaceRoot } from './workspaceRoot.js'
 
 /**
- *
- * @param {string} taskDir
- * @param {string} taskName
- * @returns {string}
+ * @typedef {Object} TaskKeyProps
+ * @property {string} taskDir
+ * @property {string} taskName
+ * @property {string} workspaceRoot
  */
-export function taskKey(taskDir, taskName) {
-  if (!isAbsolute(taskDir)) throw new Error(`taskKey: taskDir must be absolute: ${taskDir}`)
-  return `${relative(workspaceRoot, taskDir) || '<rootDir>'}:${taskName}`
-}
 
 const numCpus = cpus().length
 
@@ -29,20 +24,14 @@ const maxConcurrentTasks = process.env.__test__FORCE_PARALLEL
 /**
  * @typedef {Object} TaskGraphProps
  *
- * @property {import('../index.js').LazyConfig} config
- * @property {import('./types.js').RepoDetails} repoDetails
- * @property {import('./types.js').CLITaskDescription[]} taskDescriptors
+ * @property {import('./config.js').Config} config
+ * @property {import('./types.js').RequestedTask[]} requestedTasks
  */
 
 export class TaskGraph {
   /**
    * @readonly
-   * @type {import('./types.js').RepoDetails}
-   */
-  repoDetails
-  /**
-   * @readonly
-   * @type {import('../index.js').LazyConfig}
+   * @type {import('./config.js').Config}
    */
   config
   /**
@@ -59,25 +48,26 @@ export class TaskGraph {
   /**
    * @param {TaskGraphProps} arg
    */
-  constructor({ config, repoDetails, taskDescriptors }) {
+  constructor({ config, requestedTasks }) {
     this.config = config
-    this.repoDetails = repoDetails
 
     /**
-     * @param {{ task: import('./types.js').TaskConfig, taskDescriptor: import('./types.js').CLITaskDescription, dir: string, packageDetails: import('./types.js').PackageDetails | null }} arg
+     * @param {{ requestedTask: import('./types.js').RequestedTask, dir: string, packageDetails: import('./types.js').PackageDetails | null }} arg
      * @returns
      */
-    const visit = ({ task, taskDescriptor, dir, packageDetails }) => {
-      const key = taskKey(dir, taskDescriptor.taskName)
+    const visit = ({ requestedTask, dir, packageDetails }) => {
+      const taskConfig = this.config.getTaskConfig(dir, requestedTask.taskName)
+      const key = this.config.getTaskKey(dir, requestedTask.taskName)
       if (this.allTasks[key]) {
         return
       }
       this.allTasks[key] = {
         key,
-        taskName: taskDescriptor.taskName,
-        extraArgs: taskDescriptor.extraArgs,
-        filterPaths: taskDescriptor.filterPaths,
-        force: taskDescriptor.force,
+        taskConfig: taskConfig,
+        taskName: requestedTask.taskName,
+        extraArgs: requestedTask.extraArgs,
+        filterPaths: requestedTask.filterPaths,
+        force: requestedTask.force,
         taskDir: dir,
         status: 'pending',
         outputFiles: [],
@@ -88,21 +78,21 @@ export class TaskGraph {
       }
       const result = this.allTasks[key]
 
-      for (const depTaskName of Object.keys(task.runsAfter ?? {})) {
+      for (const depTaskName of Object.keys(taskConfig.runsAfter)) {
         enqueueTask(
-          { taskName: depTaskName, extraArgs: [], filterPaths: [], force: taskDescriptor.force },
+          dir,
+          { taskName: depTaskName, extraArgs: [], filterPaths: [], force: requestedTask.force },
           result.dependencies,
         )
       }
 
-      if (task.runType !== 'independent') {
+      if (taskConfig.runType !== 'independent') {
         for (const packageName of packageDetails?.localDeps ?? []) {
-          const pkg = this.repoDetails.packagesByName[packageName]
-          if (pkg.scripts?.[taskDescriptor.taskName]) {
-            result.dependencies.push(taskKey(pkg.dir, taskDescriptor.taskName))
+          const pkg = this.config.repoDetails.packagesByName[packageName]
+          if (pkg.scripts?.[requestedTask.taskName]) {
+            result.dependencies.push(this.config.getTaskKey(pkg.dir, requestedTask.taskName))
             visit({
-              task,
-              taskDescriptor,
+              requestedTask,
               dir: pkg.dir,
               packageDetails: pkg,
             })
@@ -115,40 +105,41 @@ export class TaskGraph {
 
     /**
      *
-     * @param {import('./types.js').CLITaskDescription} taskDescriptor
+     * @param {string} dir
+     * @param {import('./types.js').RequestedTask} requestedTask
      * @param {string[]} [dependencies]
      * @returns
      */
-    const enqueueTask = (taskDescriptor, dependencies) => {
-      const task = this.config.tasks?.[taskDescriptor.taskName] ?? {}
-      if (task.runType === 'top-level') {
-        dependencies?.push(taskKey(workspaceRoot, taskDescriptor.taskName))
+    const enqueueTask = (dir, requestedTask, dependencies) => {
+      const rootTaskConfig = this.config.getTaskConfig(dir, requestedTask.taskName)
+      if (rootTaskConfig.runType === 'top-level') {
+        dependencies?.push(
+          this.config.getTaskKey(this.config.workspaceRoot, requestedTask.taskName),
+        )
         visit({
-          task,
-          taskDescriptor,
-          dir: workspaceRoot,
+          requestedTask,
+          dir: this.config.workspaceRoot,
           packageDetails: null,
         })
         return
       }
 
       /** @type {Array<string> | null} */
-      const filteredPackageNames = taskDescriptor.filterPaths.length
+      const filteredPackageNames = requestedTask.filterPaths.length
         ? glob
-            .sync(taskDescriptor.filterPaths, { onlyDirectories: true })
+            .sync(requestedTask.filterPaths, { onlyDirectories: true })
             .filter((dir) => existsSync(join(dir, 'package.json')))
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
             .map((dir) => JSON.parse(readFileSync(join(dir, 'package.json'), 'utf-8')).name)
         : null
 
       for (const packageName of filteredPackageNames ??
-        Object.keys(this.repoDetails.packagesByName)) {
-        const pkg = this.repoDetails.packagesByName[packageName]
-        if (pkg.scripts?.[taskDescriptor.taskName]) {
-          dependencies?.push(taskKey(pkg.dir, taskDescriptor.taskName))
+        Object.keys(this.config.repoDetails.packagesByName)) {
+        const pkg = this.config.repoDetails.packagesByName[packageName]
+        if (pkg.scripts?.[requestedTask.taskName]) {
+          dependencies?.push(this.config.getTaskKey(pkg.dir, requestedTask.taskName))
           visit({
-            task,
-            taskDescriptor,
+            requestedTask,
             dir: pkg.dir,
             packageDetails: pkg,
           })
@@ -156,8 +147,8 @@ export class TaskGraph {
       }
     }
 
-    for (const taskDescriptor of taskDescriptors) {
-      enqueueTask(taskDescriptor)
+    for (const requestedTask of requestedTasks) {
+      enqueueTask(process.cwd(), requestedTask)
     }
   }
 
@@ -178,13 +169,13 @@ export class TaskGraph {
     const inBandTaskNames = new Set()
     // filter out duplicates for in-band tasks
     return allReadyTasks.filter((key) => {
-      const task = this.allTasks[key]
-      const inBand = this.config.tasks?.[task.taskName]?.parallel === false
-      if (inBand && inBandTaskNames.has(task.taskName)) {
+      const { taskName, taskConfig } = this.allTasks[key]
+      const singleThreaded = taskConfig.parallel === false
+      if (singleThreaded && inBandTaskNames.has(taskName)) {
         return false
       }
 
-      inBandTaskNames.add(task.taskName)
+      inBandTaskNames.add(taskName)
       return true
     })
   }

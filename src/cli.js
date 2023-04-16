@@ -12,9 +12,9 @@ cli
   .option('--force', '[boolean] ignore existing cached artifacts', {
     default: false,
   })
-  .action(async (task, options) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    await run(task, options)
+  .action(async (taskName, options) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    await run({ taskName, options })
   })
 
 cli
@@ -23,9 +23,9 @@ cli
   .option('--force', '[boolean] ignore existing cached artifacts', {
     default: false,
   })
-  .action(async (task, options) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    await run(task, options)
+  .action(async (taskName, options) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    await run({ taskName, options })
   })
 
 cli.command('init', 'create config file').action(() => {

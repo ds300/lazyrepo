@@ -2,7 +2,6 @@ import glob from 'fast-glob'
 import path from 'path'
 import yaml from 'yaml'
 import { existsSync, readFileSync } from './fs.js'
-import { workspaceRoot } from './workspaceRoot.js'
 
 /**
  *
@@ -36,15 +35,10 @@ function getPackageDetails({ dir, allLocalPackageNames }) {
 }
 
 /**
- * @type {import('./types.js').RepoDetails | null}
- */
-let _repoDetails = null
-
-/**
- *
  * @returns {string[]}
+ * @param {string} workspaceRoot
  */
-function getWorkspaceGlobs() {
+function getWorkspaceGlobs(workspaceRoot) {
   try {
     const pnpmWorkspaceYamlPath = path.join(workspaceRoot, 'pnpm-workspace.yaml')
     if (existsSync(pnpmWorkspaceYamlPath)) {
@@ -65,28 +59,25 @@ function getWorkspaceGlobs() {
 }
 
 /**
- * @type {'yarn' | 'pnpm' | 'npm' | null}
+ * @returns {'yarn' | 'pnpm' | 'npm' | null}
+ * @param {string} workspaceRoot
  */
-let _packageManager = null
-/**
- * @returns {'yarn' | 'pnpm' | 'npm'}
- */
-export function getPackageManager() {
-  if (_packageManager) {
-    return _packageManager
-  }
+export function getPackageManager(workspaceRoot) {
   if (existsSync(path.join(workspaceRoot, 'pnpm-lock.yaml'))) {
-    _packageManager = 'pnpm'
+    return 'pnpm'
   } else if (existsSync(path.join(workspaceRoot, 'yarn.lock'))) {
-    _packageManager = 'yarn'
-  } else {
-    _packageManager = 'npm'
+    return 'yarn'
+  } else if (existsSync(path.join(workspaceRoot, 'package-lock.json'))) {
+    return 'npm'
   }
-  return _packageManager
+  return null
 }
 
-function getPackageJsonPaths() {
-  const workspaceGlobs = getWorkspaceGlobs()
+/**
+ * @param {string} workspaceRoot
+ */
+function getPackageJsonPaths(workspaceRoot) {
+  const workspaceGlobs = getWorkspaceGlobs(workspaceRoot)
   const workspacePaths = workspaceGlobs.flatMap((pattern) => {
     return glob.sync(path.join(workspaceRoot, pattern, 'package.json'))
   })
@@ -95,13 +86,10 @@ function getPackageJsonPaths() {
 
 /**
  * @returns {import('./types.js').RepoDetails}
+ * @param {string} workspaceRoot
  */
-export function getRepoDetails() {
-  if (_repoDetails) {
-    return _repoDetails
-  }
-
-  const packageJsonPaths = getPackageJsonPaths()
+export function getRepoDetails(workspaceRoot) {
+  const packageJsonPaths = getPackageJsonPaths(workspaceRoot)
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   const packageJsonObjects = packageJsonPaths.map((path) => JSON.parse(readFileSync(path, 'utf8')))
 
@@ -121,11 +109,10 @@ export function getRepoDetails() {
       .filter(([, result]) => result !== null),
   )
 
-  _repoDetails = {
+  return {
     packagesByName: packages,
     packagesInTopologicalOrder: topologicalSortPackages(packages),
   }
-  return _repoDetails
 }
 
 /**

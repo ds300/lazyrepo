@@ -180,6 +180,9 @@ export async function runIntegrationTest(
   // create file structure in dir
 
   create(dir, {
+    'pnpm-lock.yaml': config.packageManager === 'pnpm' ? '' : undefined,
+    'yarn.lock': config.packageManager === 'yarn' ? '' : undefined,
+    'package-lock.json': config.packageManager === 'npm' ? '' : undefined,
     'pnpm-workspace.yaml':
       config.packageManager === 'pnpm' ? makeWorkspaceYaml(config.workspaceGlobs) : undefined,
     'package.json': makePackageJson({

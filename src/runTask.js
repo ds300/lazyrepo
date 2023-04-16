@@ -2,11 +2,9 @@ import { spawn } from 'cross-spawn'
 import kleur from 'kleur'
 import path, { relative } from 'path'
 import stripAnsi from 'strip-ansi'
-import { getDiffPath, getManifestPath, getNextManifestPath, getTask } from './config.js'
 import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from './fs.js'
 import { logger } from './logger/logger.js'
 import { computeManifest } from './manifest/computeManifest.js'
-import { workspaceRoot } from './workspaceRoot.js'
 
 /**
  * @param {import('./types.js').ScheduledTask} task
@@ -16,8 +14,10 @@ import { workspaceRoot } from './workspaceRoot.js'
 export async function runTaskIfNeeded(task, tasks) {
   task.logger.restartTimer()
 
-  const previousManifestPath = getManifestPath(task)
-  const nextManifestPath = getNextManifestPath(task)
+  const taskConfig = tasks.config.getTaskConfig(task.taskDir, task.taskName)
+
+  const previousManifestPath = taskConfig.getManifestPath()
+  const nextManifestPath = taskConfig.getNextManifestPath()
 
   const didHaveManifest = existsSync(previousManifestPath)
 
@@ -32,18 +32,18 @@ export async function runTaskIfNeeded(task, tasks) {
   if (task.force) {
     task.logger.log('cache miss, --force flag used')
 
-    didSucceed = (await runTask(task)).didSucceed
+    didSucceed = (await runTask(task, tasks)).didSucceed
     didRunTask = true
   } else if (didChange === null) {
     task.logger.log('cache disabled')
-    didSucceed = (await runTask(task)).didSucceed
+    didSucceed = (await runTask(task, tasks)).didSucceed
     didRunTask = true
   } else if (didChange) {
-    const diffPath = getDiffPath(task)
+    const diffPath = taskConfig.getDiffPath()
     const diff = existsSync(diffPath) ? readFileSync(diffPath, 'utf-8').toString() : null
     if (diff?.length) {
       const allLines = diff.split('\n')
-      const diffPath = getDiffPath(task)
+      const diffPath = taskConfig.getDiffPath()
       if (!existsSync(path.dirname(diffPath))) {
         mkdirSync(path.dirname(diffPath), { recursive: true })
       }
@@ -56,14 +56,16 @@ export async function runTaskIfNeeded(task, tasks) {
     } else if (!didHaveManifest) {
       task.logger.log('cache miss, no previous manifest found')
     }
-    didSucceed = (await runTask(task)).didSucceed
+    didSucceed = (await runTask(task, tasks)).didSucceed
     didRunTask = true
   } else {
     // cache hit
   }
 
   if (!didRunTask || didSucceed) {
-    task.logger.note('input manifest saved: ' + path.relative(workspaceRoot, previousManifestPath))
+    task.logger.note(
+      'input manifest saved: ' + path.relative(tasks.config.workspaceRoot, previousManifestPath),
+    )
   }
 
   if (didRunTask) {
@@ -87,12 +89,13 @@ export async function runTaskIfNeeded(task, tasks) {
 
 /**
  * @param {import('./types.js').ScheduledTask} task
+ * @param {import('./TaskGraph.js').TaskGraph} tasks
  * @returns {Promise<{didSucceed: boolean;}>}
  */
-async function runTask(task) {
+async function runTask(task, tasks) {
+  const taskConfig = tasks.config.getTaskConfig(task.taskDir, task.taskName)
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const packageJson = JSON.parse(readFileSync(`${task.taskDir}/package.json`, 'utf8'))
-  const taskConfig = await getTask({ taskName: task.taskName })
   /** @type {string} */
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   let command =
@@ -123,7 +126,7 @@ async function runTask(task) {
     stdio: ['ignore'],
     env: {
       ...process.env,
-      PATH: `./node_modules/.bin:${path.join(workspaceRoot, 'node_modules/.bin')}:${
+      PATH: `./node_modules/.bin:${path.join(tasks.config.workspaceRoot, 'node_modules/.bin')}:${
         process.env.PATH ?? ''
       }`,
       FORCE_COLOR: '1',
