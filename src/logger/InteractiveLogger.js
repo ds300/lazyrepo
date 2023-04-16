@@ -42,12 +42,6 @@ export class InteractiveLogger {
    */
   constructor(tty) {
     this.tty = tty
-
-    setInterval(() => {
-      if (this.tasks.length) {
-        this.update()
-      }
-    }, 30)
   }
 
   /** @private */
@@ -55,10 +49,20 @@ export class InteractiveLogger {
     return this.tasks.filter((task) => task.status !== 'waiting').sort(compareTasksForPrinting)
   }
 
+  /** @type {ReturnType<typeof setInterval> | null} */
+  animationInterval = null
+
   /**
    * @param {() => void} [update]
    */
   update(update) {
+    if (this.animationInterval === null) {
+      this.animationInterval = setInterval(() => {
+        if (this.tasks.length) {
+          this.update()
+        }
+      }, 30)
+    }
     if (!this.isCursorAboveTasksSection) {
       this.tty.cursorTo(0)
       this.tty.moveCursor(0, -this.getTasksToPrint().length - 1)
@@ -86,6 +90,7 @@ export class InteractiveLogger {
 
   clearTasks() {
     this.tasks = []
+    if (this.animationInterval) clearInterval(this.animationInterval)
   }
 
   /**
