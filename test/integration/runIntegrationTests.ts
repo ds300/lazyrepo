@@ -8,6 +8,8 @@ import { exec } from '../../src/cli.js'
 import { naiveRimraf } from '../../src/naiveRimraf.js'
 import { LazyConfig, PackageJson } from '../../src/types.js'
 
+const cleanup = (text: string) => stripAnsi(text).replace(/DEBUG.*\n/g, '')
+
 class TestHarness {
   constructor(readonly config: { dir: string; packageManager: PackageManager; spawn?: boolean }) {}
   edit(path: string) {
@@ -93,11 +95,11 @@ class TestHarness {
     try {
       await exec(['node', join(process.cwd(), 'bin.js'), ...args])
       if (!throwOnError || status === 0) {
-        return { output: stripAnsi(output), status }
+        return { output: cleanup(output), status }
       } else {
         // eslint-disable-next-line no-console
-        console.error(stripAnsi(output))
-        throw new Error(`Exited with code ${status} ${stripAnsi(output)}`)
+        console.error(cleanup(output))
+        throw new Error(`Exited with code ${status} ${cleanup(output)}`)
       }
     } finally {
       cwd.mockRestore()
@@ -130,7 +132,7 @@ class TestHarness {
       })
       proc.on('exit', (code) => {
         if (!throwOnError || code === 0) {
-          resolve({ output: stripAnsi(output), status: code ?? 1 })
+          resolve({ output: cleanup(output), status: code ?? 1 })
         } else {
           // eslint-disable-next-line no-console
           console.error(output)
