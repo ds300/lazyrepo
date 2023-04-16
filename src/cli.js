@@ -50,7 +50,12 @@ try {
   // find out if this is a CACError instance
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   if (e.name === 'CACError') {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, no-console
+    console.error(e.message)
+    // eslint-disable-next-line no-console
+    console.error()
     cli.outputHelp()
+    process.exit(1)
   } else {
     throw e
   }

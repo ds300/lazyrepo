@@ -44,7 +44,7 @@ class TestHarness {
 
   exec(
     args: string[],
-    options?: { packageDir?: string; env?: NodeJS.ProcessEnv },
+    options?: { packageDir?: string; env?: NodeJS.ProcessEnv; throwOnError?: boolean },
   ): Promise<{ output: string; status: number }> {
     return new Promise((resolve, reject) => {
       const proc = spawn('node', [join(process.cwd(), 'bin.js'), ...args], {
@@ -63,11 +63,12 @@ class TestHarness {
         output += data
       })
       proc.on('exit', (code) => {
-        if (code === 0) {
-          resolve({ output, status: code })
+        if (!options?.throwOnError || code === 0) {
+          resolve({ output, status: code ?? 1 })
         } else {
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          reject(new Error(`Exited with code ${code}`))
+          // eslint-disable-next-line no-console
+          console.error(output)
+          reject(new Error(`Exited with code ${code ?? 'null'}`))
         }
       })
       proc.on('error', (err) => {

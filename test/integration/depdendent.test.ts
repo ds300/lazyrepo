@@ -40,10 +40,7 @@ test('dependent tasks run', async () => {
       expect(t.exists('packages/core/.out.txt')).toBe(true)
       expect(t.exists('packages/utils/.out.txt')).toBe(true)
       expect(firstRun.output).toMatchInlineSnapshot(`
-        "
-        ::  lazyrepo  ::
-
-        No config file found. Using defaults.
+        "No config file found. Using defaults.
         packages/utils:build 💡 Searching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
         packages/utils:build 💡 Searching lazy.config.* took 1.00s
         packages/utils:build 💡 Searching **/* took 1.00s
@@ -64,7 +61,6 @@ test('dependent tasks run', async () => {
         packages/core:build 
         packages/core:build 💡 input manifest saved: packages/core/.lazy/manifests/build
         packages/core:build ✔ done in 1.00s
-        ✔ Done in 1.00s
         "
       `)
 
@@ -76,10 +72,7 @@ test('dependent tasks run', async () => {
 
       expect(secondRun.status).toBe(0)
       expect(secondRun.output).toMatchInlineSnapshot(`
-        "
-        ::  lazyrepo  ::
-
-        No config file found. Using defaults.
+        "No config file found. Using defaults.
         packages/utils:build 💡 Searching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
         packages/utils:build 💡 Searching lazy.config.* took 1.00s
         packages/utils:build 💡 Searching **/* took 1.00s
@@ -94,7 +87,6 @@ test('dependent tasks run', async () => {
         packages/core:build ✔ cache hit ⚡️ in 1.00s
 
         >>> MAXIMUM LAZY
-        ✔ Done in 1.00s
         "
       `)
 

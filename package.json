@@ -13,6 +13,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
+    "update-snapshots": "jest -u",
     "clean": "rm -rf node_modules && pnpm install",
     "format": "prettier --write .",
     "format:check": "prettier --list-different .",
