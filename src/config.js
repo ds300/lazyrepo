@@ -76,6 +76,8 @@ async function loadConfigObject(dir, file) {
     entryPoints: [inFile],
     outfile: outFile,
     bundle: true,
+    platform: 'node',
+    packages: 'external',
     sourcemap: 'inline',
     sourcesContent: true,
     format: 'esm',
