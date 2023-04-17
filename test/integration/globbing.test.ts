@@ -41,7 +41,7 @@ test('dependent tasks run', async () => {
 
         build::<rootDir> Finding files matching scripts/**/* took 1.00s
         build::<rootDir> Finding files matching scripts/build.js took 1.00s
-        build::<rootDir> Hashed 2/2 files in 1.00s
+        build::<rootDir> Hashed 1/1 files in 1.00s
         build::<rootDir> cache miss, no previous manifest found
         build::<rootDir> RUN node scripts/build.js > .out.txt in 
         build::<rootDir> input manifest saved: .lazy/manifests/build
@@ -56,6 +56,7 @@ test('dependent tasks run', async () => {
       `)
 
       expect(t.read('.lazy/manifests/build').includes('tsconfig.tsbuildinfo')).toBeFalsy()
+      expect(t.read('.lazy/manifests/build').includes('build.js')).toBeTruthy()
     },
   )
 })
