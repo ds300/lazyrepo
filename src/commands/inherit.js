@@ -6,7 +6,7 @@ export async function inherit() {
   const scriptName = process.env.npm_lifecycle_event
   if (!scriptName) {
     logger.fail(
-      'No npm_lifecycle_event found. Did you run `lazy :inherit` directly instead of via "scripts"?',
+      'No npm_lifecycle_event found. Did you run `lazy inherit` directly instead of via "scripts"?',
     )
     process.exit(1)
   }
@@ -14,7 +14,7 @@ export async function inherit() {
   const task = config.getTaskConfig(process.cwd(), scriptName)
   if (!task._config.baseCommand) {
     logger.fail(
-      `No baseCommand found for task '${scriptName}'. Using :inherit requires you to add one in your lazy.config file!`,
+      `No baseCommand found for task '${scriptName}'. Using 'lazy inherit' requires you to add a baseCommand for the relevant task in your lazy.config file!`,
     )
     process.exit(1)
   }

@@ -6,6 +6,7 @@ import { init } from './commands/init.js'
 import { run } from './commands/run.js'
 import { createTimer } from './createTimer.js'
 import { readFileSync } from './fs.js'
+import { isTest } from './isTest.js'
 import { logger } from './logger/logger.js'
 import { rainbow } from './rainbow.js'
 
@@ -59,10 +60,11 @@ const upperCaseFirst = (/** @type {string} */ str) => {
  */
 export async function exec(argv) {
   /** @type {string} */
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-  const version = JSON.parse(
-    readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
-  ).version
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const version = isTest
+    ? '0.0.0-test'
+    : // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version
   const timer = createTimer()
   logger.log(kleur.bold('lazyrepo'), kleur.gray(`@${version}`))
   logger.log(rainbow('-'.repeat(`lazyrepo @${version}`.length)))

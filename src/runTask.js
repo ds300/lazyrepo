@@ -101,15 +101,15 @@ async function runTask(task, tasks) {
   let command =
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     taskConfig.runType === 'top-level' ? taskConfig.baseCommand : packageJson.scripts[task.taskName]
-  if (taskConfig.runType !== 'top-level' && command.startsWith('lazy :inherit')) {
+  if (taskConfig.runType !== 'top-level' && command.startsWith('lazy inherit')) {
     if (!taskConfig.baseCommand) {
       // TODO: evaluate this stuff ahead-of-time
       logger.fail(
-        `Encountered 'lazy :inherit' for scripts#${task.taskName} in ${task.taskDir}/package.json, but there is baseCommand configured for the task '${task.taskName}'`,
+        `Encountered 'lazy inherit' for scripts#${task.taskName} in ${task.taskDir}/package.json, but there is baseCommand configured for the task '${task.taskName}'`,
       )
       process.exit(1)
     }
-    command = taskConfig.baseCommand + ' ' + command.slice('lazy :inherit'.length)
+    command = taskConfig.baseCommand + ' ' + command.slice('lazy inherit'.length)
     command = command.trim()
   }
 

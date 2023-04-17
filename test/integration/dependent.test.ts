@@ -40,7 +40,10 @@ test('dependent tasks run', async () => {
       expect(t.exists('packages/core/.out.txt')).toBe(true)
       expect(t.exists('packages/utils/.out.txt')).toBe(true)
       expect(firstRun.output).toMatchInlineSnapshot(`
-        "No config files found, using default configuration.
+        "lazyrepo @0.0.0-test
+        --------------------
+        No config files found, using default configuration.
+
         build::packages/utils Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
         build::packages/utils Finding files matching lazy.config.* took 1.00s
         build::packages/utils Finding files matching packages/utils/**/* took 1.00s
@@ -57,6 +60,7 @@ test('dependent tasks run', async () => {
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ done in 1.00s
+        ✔ Done in 1.00s
         "
       `)
 
@@ -68,7 +72,10 @@ test('dependent tasks run', async () => {
 
       expect(secondRun.status).toBe(0)
       expect(secondRun.output).toMatchInlineSnapshot(`
-        "No config files found, using default configuration.
+        "lazyrepo @0.0.0-test
+        --------------------
+        No config files found, using default configuration.
+
         build::packages/utils Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
         build::packages/utils Finding files matching lazy.config.* took 1.00s
         build::packages/utils Finding files matching packages/utils/**/* took 1.00s
@@ -83,6 +90,7 @@ test('dependent tasks run', async () => {
         build::packages/core ✔ cache hit ⚡️ in 1.00s
 
         >>> MAXIMUM LAZY
+        ✔ Done in 1.00s
         "
       `)
 
@@ -117,7 +125,10 @@ test('adding an input file causes the task to re-run', async () => {
 
       expect(secondRun.status).toBe(0)
       expect(secondRun.output).toMatchInlineSnapshot(`
-        "No config files found, using default configuration.
+        "lazyrepo @0.0.0-test
+        --------------------
+        No config files found, using default configuration.
+
         build::packages/utils Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
         build::packages/utils Finding files matching lazy.config.* took 1.00s
         build::packages/utils Finding files matching packages/utils/**/* took 1.00s
@@ -138,6 +149,7 @@ test('adding an input file causes the task to re-run', async () => {
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ done in 1.00s
+        ✔ Done in 1.00s
         "
       `)
 
@@ -154,7 +166,10 @@ test('adding an input file causes the task to re-run', async () => {
 
       expect(thirdRun.status).toBe(0)
       expect(thirdRun.output).toMatchInlineSnapshot(`
-        "No config files found, using default configuration.
+        "lazyrepo @0.0.0-test
+        --------------------
+        No config files found, using default configuration.
+
         build::packages/utils Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
         build::packages/utils Finding files matching lazy.config.* took 1.00s
         build::packages/utils Finding files matching packages/utils/**/* took 1.00s
@@ -171,6 +186,7 @@ test('adding an input file causes the task to re-run', async () => {
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ done in 1.00s
+        ✔ Done in 1.00s
         "
       `)
 
@@ -205,7 +221,10 @@ test('changing an input file causes the task to re-run', async () => {
 
       expect(secondRun.status).toBe(0)
       expect(secondRun.output).toMatchInlineSnapshot(`
-        "No config files found, using default configuration.
+        "lazyrepo @0.0.0-test
+        --------------------
+        No config files found, using default configuration.
+
         build::packages/utils Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
         build::packages/utils Finding files matching lazy.config.* took 1.00s
         build::packages/utils Finding files matching packages/utils/**/* took 1.00s
@@ -226,6 +245,7 @@ test('changing an input file causes the task to re-run', async () => {
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ done in 1.00s
+        ✔ Done in 1.00s
         "
       `)
 
@@ -243,7 +263,10 @@ test('changing an input file causes the task to re-run', async () => {
 
       expect(thirdRun.status).toBe(0)
       expect(thirdRun.output).toMatchInlineSnapshot(`
-        "No config files found, using default configuration.
+        "lazyrepo @0.0.0-test
+        --------------------
+        No config files found, using default configuration.
+
         build::packages/utils Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
         build::packages/utils Finding files matching lazy.config.* took 1.00s
         build::packages/utils Finding files matching packages/utils/**/* took 1.00s
@@ -260,6 +283,7 @@ test('changing an input file causes the task to re-run', async () => {
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ done in 1.00s
+        ✔ Done in 1.00s
         "
       `)
 
@@ -280,7 +304,10 @@ test('deleting an input file causes the task to re-run', async () => {
       const firstRun = await t.exec(['build'])
 
       expect(firstRun.output).toMatchInlineSnapshot(`
-        "No config files found, using default configuration.
+        "lazyrepo @0.0.0-test
+        --------------------
+        No config files found, using default configuration.
+
         build::packages/utils Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
         build::packages/utils Finding files matching lazy.config.* took 1.00s
         build::packages/utils Finding files matching packages/utils/**/* took 1.00s
@@ -297,6 +324,7 @@ test('deleting an input file causes the task to re-run', async () => {
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ done in 1.00s
+        ✔ Done in 1.00s
         "
       `)
 
@@ -315,7 +343,10 @@ test('deleting an input file causes the task to re-run', async () => {
 
       expect(secondRun.status).toBe(0)
       expect(secondRun.output).toMatchInlineSnapshot(`
-        "No config files found, using default configuration.
+        "lazyrepo @0.0.0-test
+        --------------------
+        No config files found, using default configuration.
+
         build::packages/utils Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
         build::packages/utils Finding files matching lazy.config.* took 1.00s
         build::packages/utils Finding files matching packages/utils/**/* took 1.00s
@@ -336,6 +367,7 @@ test('deleting an input file causes the task to re-run', async () => {
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ done in 1.00s
+        ✔ Done in 1.00s
         "
       `)
 
@@ -353,7 +385,10 @@ test('deleting an input file causes the task to re-run', async () => {
 
       expect(thirdRun.status).toBe(0)
       expect(thirdRun.output).toMatchInlineSnapshot(`
-        "No config files found, using default configuration.
+        "lazyrepo @0.0.0-test
+        --------------------
+        No config files found, using default configuration.
+
         build::packages/utils Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
         build::packages/utils Finding files matching lazy.config.* took 1.00s
         build::packages/utils Finding files matching packages/utils/**/* took 1.00s
@@ -370,6 +405,7 @@ test('deleting an input file causes the task to re-run', async () => {
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ done in 1.00s
+        ✔ Done in 1.00s
         "
       `)
 

@@ -31,10 +31,12 @@ test(`help prints with exit 0 when you pass --help`, async () => {
       const { output, status } = await t.exec(['--help'])
 
       expect(output).toMatchInlineSnapshot(`
-        "lazyrepo
+        "lazyrepo @0.0.0-test
+        --------------------
+        lazy
 
         Usage:
-          $ lazyrepo <task>
+          $ lazy <task>
 
         Commands:
           <task>      run task in all packages
@@ -44,16 +46,17 @@ test(`help prints with exit 0 when you pass --help`, async () => {
           inherit     run command from configuration file specified by script name
 
         For more info, run any command with the \`--help\` flag:
-          $ lazyrepo --help
-          $ lazyrepo run --help
-          $ lazyrepo init --help
-          $ lazyrepo clean --help
-          $ lazyrepo inherit --help
+          $ lazy --help
+          $ lazy run --help
+          $ lazy init --help
+          $ lazy clean --help
+          $ lazy inherit --help
 
         Options:
           --filter <paths>  [string] run task in packages specified by paths 
           --force           [boolean] ignore existing cached artifacts (default: false)
           -h, --help        Display this message 
+        ✔ Done in 1.00s
         "
       `)
       expect(status).toBe(0)
@@ -72,11 +75,14 @@ test(`help prints with exit 1 if you pass nothing`, async () => {
       const { output, status } = await t.exec([], { throwOnError: false })
 
       expect(output).toMatchInlineSnapshot(`
-        "missing required args for command \`<task>\`
-        lazyrepo
+        "lazyrepo @0.0.0-test
+        --------------------
+        Missing required args for command \`<task>\`
+
+        lazy
 
         Usage:
-          $ lazyrepo <task>
+          $ lazy <task>
 
         Commands:
           <task>      run task in all packages
@@ -86,11 +92,11 @@ test(`help prints with exit 1 if you pass nothing`, async () => {
           inherit     run command from configuration file specified by script name
 
         For more info, run any command with the \`--help\` flag:
-          $ lazyrepo --help
-          $ lazyrepo run --help
-          $ lazyrepo init --help
-          $ lazyrepo clean --help
-          $ lazyrepo inherit --help
+          $ lazy --help
+          $ lazy run --help
+          $ lazy init --help
+          $ lazy clean --help
+          $ lazy inherit --help
 
         Options:
           --filter <paths>  [string] run task in packages specified by paths 
