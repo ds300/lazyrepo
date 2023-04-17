@@ -1,10 +1,11 @@
 import { cac } from 'cac'
+import kleur from 'kleur'
 import { clean } from './commands/clean.js'
 import { inherit } from './commands/inherit.js'
 import { init } from './commands/init.js'
 import { run } from './commands/run.js'
 
-const cli = cac('lazyrepo')
+const cli = cac('lazy')
 
 cli
   .command('<task>', 'run task in all packages')
@@ -44,6 +45,10 @@ cli
 
 cli.help()
 
+const upperCaseFirst = (/** @type {string} */ str) => {
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
 /**
  *
  * @param {string[]} argv
@@ -56,9 +61,10 @@ export async function exec(argv) {
     // find out if this is a CACError instance
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (e.name === 'CACError') {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, no-console
-      console.error(e.message)
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+      const msg = upperCaseFirst(e.message)
       // eslint-disable-next-line no-console
+      console.error(kleur.red(msg) + '\n')
       cli.outputHelp()
       process.exit(1)
     } else {
