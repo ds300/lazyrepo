@@ -10,6 +10,8 @@ const exec = (/** @type {string} */ cmd) => {
     console.log('output: ' + output)
     return output
   } catch (/** @type {any} */ e) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    console.error(e.stderr?.toString())
     process.exit(1)
   }
 }
@@ -33,9 +35,9 @@ function getNextVersion(bump) {
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   // module was called directly
-  const bumpType = exec('pnpm auto version')
+  const bumpType = exec('pnpm auto version -v').split(/\s+/).pop()
 
-  if (bumpType === '') {
+  if (!bumpType) {
     console.log('No changes, skipping publish')
   } else if (['major', 'minor', 'patch'].includes(bumpType)) {
     console.log('bumpType: ' + bumpType)
