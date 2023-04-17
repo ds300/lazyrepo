@@ -18,7 +18,7 @@ function globCacheConfig({ includes, excludes, task, workspaceRoot }) {
     const timer = createTimer()
     for (const file of glob.sync(pattern, {
       cwd: task.taskDir,
-      ignore: ['/**/node_modules', ...excludes],
+      ignore: [join(workspaceRoot, '**/node_modules/**'), ...excludes],
       absolute: true,
     })) {
       if (statSync(file).isDirectory()) {
