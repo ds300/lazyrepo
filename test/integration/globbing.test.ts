@@ -1,34 +1,32 @@
-import { Dir, makeConfigFile, runIntegrationTest } from './runIntegrationTests.js'
+import { makeConfigFile, runIntegrationTest } from './runIntegrationTests.js'
 
-const simpleDir: Dir = {
-  'lazy.config.js': makeConfigFile({
-    baseCacheConfig: {
-      includes: ['<rootDir>/scripts/**/*'],
-      excludes: ['scripts/tsconfig.tsbuildinfo'],
-    },
-    tasks: {
-      build: {
-        cache: {
-          inputs: ['scripts/build.js'],
-        },
-        runType: 'top-level',
-        baseCommand: 'node scripts/build.js > .out.txt',
-      },
-    },
-  }),
-  scripts: {
-    'build.js': 'console.log("hello")',
-    'tsconfig.tsbuildinfo': 'blah',
-  },
-  packages: {},
-}
-
-test('dependent tasks run', async () => {
+test('excludes take precedence', async () => {
   await runIntegrationTest(
     {
       packageManager: 'npm',
       workspaceGlobs: ['packages/*'],
-      structure: simpleDir,
+      structure: {
+        'lazy.config.js': makeConfigFile({
+          baseCacheConfig: {
+            includes: ['<rootDir>/scripts/**/*'],
+            excludes: ['scripts/tsconfig.tsbuildinfo'],
+          },
+          tasks: {
+            build: {
+              cache: {
+                inputs: ['scripts/build.js'],
+              },
+              runType: 'top-level',
+              baseCommand: 'node scripts/build.js > .out.txt',
+            },
+          },
+        }),
+        scripts: {
+          'build.js': 'console.log("hello")',
+          'tsconfig.tsbuildinfo': 'blah',
+        },
+        packages: {},
+      },
     },
     async (t) => {
       const firstRun = await t.exec(['build'])
