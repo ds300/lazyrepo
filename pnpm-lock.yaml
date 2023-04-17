@@ -35,6 +35,9 @@ dependencies:
     version: 2.2.1
 
 devDependencies:
+  '@auto-it/core':
+    specifier: ^10.44.0
+    version: 10.44.0(@types/node@18.15.11)(typescript@5.0.3)
   '@types/cross-spawn':
     specifier: ^6.0.2
     version: 6.0.2

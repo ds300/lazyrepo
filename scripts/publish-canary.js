@@ -1,4 +1,16 @@
 /* eslint-disable no-console */
+import pkg from '@auto-it/core'
+
+const { Auto } = pkg
+
+const auto = new Auto({
+  plugins: ['npm'],
+  baseBranch: 'main',
+  owner: 'ds300',
+  repo: 'lazyrepo',
+  verbose: true,
+})
+
 import { execSync } from 'child_process'
 import { parse } from 'semver'
 import { pathToFileURL } from 'url'
@@ -35,12 +47,13 @@ function getNextVersion(bump) {
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   // module was called directly
-  const bumpType = exec('pnpm auto version -v').split(/\s+/).pop()
+  await auto.loadConfig()
+  const bumpType = await auto.getVersion()
 
+  console.log('bumpType: ' + JSON.stringify(bumpType))
   if (!bumpType) {
     console.log('No changes, skipping publish')
   } else if (['major', 'minor', 'patch'].includes(bumpType)) {
-    console.log('bumpType: ' + bumpType)
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     const nextVersion = getNextVersion(bumpType)
