@@ -109,6 +109,9 @@ export function getRepoDetails(workspaceRoot) {
   )
 
   return {
+    packagesByDir: Object.fromEntries(
+      Object.values(packages).map((packageDetails) => [packageDetails.dir, packageDetails]),
+    ),
     packagesByName: packages,
     packagesInTopologicalOrder: topologicalSortPackages(packages),
   }

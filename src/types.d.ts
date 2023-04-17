@@ -8,7 +8,6 @@ export interface ScheduledTask {
   taskName: string
   taskDir: string
   status: TaskStatus
-  filterPaths: string[]
   force: boolean
   extraArgs: string[]
   outputFiles: string[]
@@ -26,6 +25,7 @@ export type PackageDetails = {
 }
 
 export type RepoDetails = {
+  packagesByDir: Record<string, PackageDetails>
   packagesByName: Record<string, PackageDetails>
   packagesInTopologicalOrder: PackageDetails[]
 }

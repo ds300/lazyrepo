@@ -1,4 +1,4 @@
-import { match } from 'micromatch'
+import micromatch from 'micromatch'
 import { cpus } from 'os'
 import { isAbsolute, join } from 'path'
 import { isTest } from './isTest.js'
@@ -52,12 +52,12 @@ export class TaskGraph {
     this.config = config
 
     /**
-     * @param {{ requestedTask: import('./types.js').RequestedTask, dir: string, packageDetails: import('./types.js').PackageDetails | null }} arg
+     * @param {{ requestedTask: import('./types.js').RequestedTask, taskDir: string, packageDetails: import('./types.js').PackageDetails | null }} arg
      * @returns
      */
-    const visit = ({ requestedTask, dir, packageDetails }) => {
-      const taskConfig = this.config.getTaskConfig(dir, requestedTask.taskName)
-      const key = this.config.getTaskKey(dir, requestedTask.taskName)
+    const visit = ({ requestedTask, taskDir, packageDetails }) => {
+      const taskConfig = this.config.getTaskConfig(taskDir, requestedTask.taskName)
+      const key = this.config.getTaskKey(taskDir, requestedTask.taskName)
       if (this.allTasks[key]) {
         return
       }
@@ -66,9 +66,8 @@ export class TaskGraph {
         taskConfig: taskConfig,
         taskName: requestedTask.taskName,
         extraArgs: requestedTask.extraArgs,
-        filterPaths: requestedTask.filterPaths,
         force: requestedTask.force,
-        taskDir: dir,
+        taskDir,
         status: 'pending',
         outputFiles: [],
         dependencies: [],
@@ -80,8 +79,12 @@ export class TaskGraph {
 
       for (const depTaskName of Object.keys(taskConfig.runsAfter)) {
         enqueueTask(
-          dir,
-          { taskName: depTaskName, extraArgs: [], filterPaths: [], force: requestedTask.force },
+          {
+            taskName: depTaskName,
+            extraArgs: [],
+            force: requestedTask.force,
+            filterPaths: [taskDir],
+          },
           result.dependencies,
         )
       }
@@ -93,7 +96,7 @@ export class TaskGraph {
             result.dependencies.push(this.config.getTaskKey(pkg.dir, requestedTask.taskName))
             visit({
               requestedTask,
-              dir: pkg.dir,
+              taskDir: pkg.dir,
               packageDetails: pkg,
             })
           }
@@ -105,58 +108,51 @@ export class TaskGraph {
 
     /**
      *
-     * @param {string} dir
      * @param {import('./types.js').RequestedTask} requestedTask
      * @param {string[]} [dependencies]
      * @returns
      */
-    const enqueueTask = (dir, requestedTask, dependencies) => {
-      const rootTaskConfig = this.config.getTaskConfig(dir, requestedTask.taskName)
-      if (rootTaskConfig.execution === 'top-level') {
+    const enqueueTask = (requestedTask, dependencies) => {
+      if (this.isTopLevelTask(requestedTask.taskName)) {
         dependencies?.push(
           this.config.getTaskKey(this.config.workspaceRoot, requestedTask.taskName),
         )
         visit({
           requestedTask,
-          dir: this.config.workspaceRoot,
+          taskDir: this.config.workspaceRoot,
           packageDetails: null,
         })
         return
       }
 
-      /** @type {Array<string> | null} */
-      let filteredPackageNames = null
-      if (requestedTask.filterPaths.length) {
-        const packageDirs = this.config.repoDetails.packagesInTopologicalOrder.map((p) => p.dir)
-
-        const matchingPackages = uniq(
-          requestedTask.filterPaths.flatMap((pattern) =>
-            match(packageDirs, isAbsolute(pattern) ? pattern : join(dir, pattern)),
-          ),
-        )
-        filteredPackageNames = matchingPackages.map(
-          (dir) =>
-            this.config.repoDetails.packagesInTopologicalOrder[packageDirs.indexOf(dir)].name,
-        )
-      }
-
-      for (const packageName of filteredPackageNames ??
-        Object.keys(this.config.repoDetails.packagesByName)) {
-        const pkg = this.config.repoDetails.packagesByName[packageName]
-        if (pkg.scripts?.[requestedTask.taskName]) {
-          dependencies?.push(this.config.getTaskKey(pkg.dir, requestedTask.taskName))
+      const dirs = filterPackageDirs(
+        this.config.workspaceRoot,
+        this.config.repoDetails,
+        requestedTask.filterPaths,
+      )
+      for (const dir of dirs) {
+        const packageDetails = this.config.repoDetails.packagesByDir[dir]
+        if (packageDetails.scripts[requestedTask.taskName]) {
+          dependencies?.push(this.config.getTaskKey(dir, requestedTask.taskName))
           visit({
             requestedTask,
-            dir: pkg.dir,
-            packageDetails: pkg,
+            taskDir: dir,
+            packageDetails,
           })
         }
       }
     }
 
     for (const requestedTask of requestedTasks) {
-      enqueueTask(process.cwd(), requestedTask)
+      enqueueTask(requestedTask)
     }
+  }
+
+  /**
+   * @param {string} taskName
+   */
+  isTopLevelTask(taskName) {
+    return this.config.getTaskConfig(this.config.workspaceRoot, taskName).execution === 'top-level'
   }
 
   /**
@@ -267,4 +263,26 @@ export class TaskGraph {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return await promise
   }
+}
+
+/**
+ * Match a list of filter path globs against the list of package directories.
+ *
+ * @param {string} workspaceRoot
+ * @param {import('./types.js').RepoDetails} repoDetails
+ * @param {string[]} filterPaths
+ */
+function filterPackageDirs(workspaceRoot, repoDetails, filterPaths) {
+  /** @type {Array<string> | null} */
+  if (!filterPaths.length) {
+    return Object.keys(repoDetails.packagesByDir)
+  }
+
+  const packageDirs = Object.keys(repoDetails.packagesByDir)
+
+  return uniq(
+    filterPaths.flatMap((pattern) =>
+      micromatch.match(packageDirs, isAbsolute(pattern) ? pattern : join(workspaceRoot, pattern)),
+    ),
+  )
 }
