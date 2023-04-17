@@ -31,7 +31,7 @@ const makeRepo = ({
   },
 })
 
-test(`it loads .js config files`, async () => {
+test('it loads .js config files', async () => {
   await runIntegrationTest(
     {
       packageManager: 'npm',
@@ -47,7 +47,7 @@ test(`it loads .js config files`, async () => {
   )
 })
 
-test(`it loads .mjs config files`, async () => {
+test('it loads .mjs config files', async () => {
   await runIntegrationTest(
     {
       packageManager: 'npm',
@@ -175,6 +175,26 @@ test('it loads json files', async () => {
       expect(t.exists('packages/core/.out.txt')).toBe(true)
       expect(status).toBe(0)
       expect(output.includes('cache disabled')).toBe(true)
+    },
+  )
+})
+
+test('logs error with exit 1 when config is invalid', async () => {
+  await runIntegrationTest(
+    {
+      packageManager: 'npm',
+      structure: makeRepo({
+        configFileName: 'lazy.config.mjs',
+        configFileContent: `export default {foo: 'bar'}`,
+      }),
+      workspaceGlobs: ['packages/*'],
+    },
+    async (t) => {
+      const { status, output } = await t.exec(['build'], { throwOnError: false })
+      expect(status).toBe(1)
+      expect(
+        output.includes(`Failed reading config file at '${t.config.dir}/lazy.config.mjs'`),
+      ).toBe(true)
     },
   )
 })
