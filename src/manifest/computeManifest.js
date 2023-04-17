@@ -1,16 +1,8 @@
 import kleur from 'kleur'
 import path, { join } from 'path'
-import { taskKey } from '../TaskGraph.js'
-import {
-  getDiffPath,
-  getManifestPath,
-  getNextManifestPath,
-  getTask as getTaskConfig,
-} from '../config.js'
 import { createTimer } from '../createTimer.js'
 import { existsSync, mkdirSync, statSync } from '../fs.js'
 import { uniq } from '../uniq.js'
-import { workspaceRoot } from '../workspaceRoot.js'
 import { ManifestConstructor } from './ManifestConstructor.js'
 import { getInputFiles } from './getInputFiles.js'
 import { hashFile, hashString } from './hash.js'
@@ -44,13 +36,11 @@ export const compareManifestTypes = (a, b) => {
  * @returns
  */
 export async function computeManifest({ tasks, task }) {
-  const taskConfig = await getTaskConfig({ taskName: task.taskName })
+  if (task.taskConfig.cache === 'none') return null
 
-  if (taskConfig.cache === 'none') return null
-
-  const manifestPath = getManifestPath(task)
-  const nextManifestPath = getNextManifestPath(task)
-  const diffPath = getDiffPath(task)
+  const manifestPath = task.taskConfig.getManifestPath()
+  const nextManifestPath = task.taskConfig.getNextManifestPath()
+  const diffPath = task.taskConfig.getDiffPath()
 
   if (!existsSync(path.dirname(manifestPath))) {
     mkdirSync(path.dirname(manifestPath), { recursive: true })
@@ -70,11 +60,15 @@ export async function computeManifest({ tasks, task }) {
 
   const extraFiles = []
 
-  for (const [otherTaskName, depConfig] of Object.entries(taskConfig.runsAfter ?? {})) {
+  for (const [otherTaskName, depConfig] of Object.entries(task.taskConfig.runsAfter ?? {})) {
     if (!depConfig.inheritsInput && depConfig.usesOutput === false) continue
-    const isTopLevel = (await getTaskConfig({ taskName: otherTaskName })).runType === 'top-level'
+    const isTopLevel =
+      tasks.config.getTaskConfig(task.taskDir, otherTaskName).runType === 'top-level'
 
-    const key = taskKey(isTopLevel ? workspaceRoot : task.taskDir, otherTaskName)
+    const key = tasks.config.getTaskKey(
+      isTopLevel ? tasks.config.workspaceRoot : task.taskDir,
+      otherTaskName,
+    )
     const depTask = tasks.allTasks[key]
     if (isTopLevel && !depTask) throw new Error(`Missing task: ${key}.`)
     if (!depTask) continue
@@ -92,14 +86,14 @@ export async function computeManifest({ tasks, task }) {
   }
 
   if (
-    taskConfig.runType !== 'independent' &&
-    (taskConfig.cache?.inheritsInputFromDependencies ?? true)
+    task.taskConfig.runType !== 'independent' &&
+    (task.taskConfig.cache?.inheritsInputFromDependencies ?? true)
   ) {
     // TODO: test that localDeps is always sorted
     const upstreamTaskKeys = task.packageDetails?.localDeps
       ?.map((packageName) => {
-        const depPackage = tasks.repoDetails.packagesByName[packageName]
-        const key = taskKey(depPackage.dir, task.taskName)
+        const depPackage = tasks.config.repoDetails.packagesByName[packageName]
+        const key = tasks.config.getTaskKey(depPackage.dir, task.taskName)
         return key
       })
       .sort()
@@ -117,7 +111,9 @@ export async function computeManifest({ tasks, task }) {
   }
 
   const allEnvVars = uniq(
-    tasks.config.baseCacheConfig?.envInputs?.concat(taskConfig.cache?.envInputs ?? []) ?? [],
+    (tasks.config.getBaseCacheConfig(task.taskDir).envInputs ?? []).concat(
+      task.taskConfig.cache?.envInputs ?? [],
+    ),
   ).sort()
 
   for (const envVar of allEnvVars) {
@@ -129,13 +125,13 @@ export async function computeManifest({ tasks, task }) {
   let numHashed = 0
   // getInputFiles returns null for cache=none
   // TODO: make it clearer that's what's happening. Result type or something
-  const files = await getInputFiles(tasks, task, extraFiles.flat())
+  const files = getInputFiles(tasks, task, extraFiles.flat())
   if (!files) return null
 
   const timer = createTimer()
 
   for (const file of files.sort()) {
-    const fullPath = join(workspaceRoot, file)
+    const fullPath = join(tasks.config.workspaceRoot, file)
     const stat = statSync(fullPath)
     const timestamp = String(stat.mtimeMs)
 

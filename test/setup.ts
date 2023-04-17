@@ -1,6 +1,6 @@
-jest.mock('../src/workspaceRoot.js', () => {
+jest.mock('../src/getWorkspaceRoot.js', () => {
   return {
-    get workspaceRoot() {
+    getWorkspaceRoot() {
       return global.__test__workspaceRoot
     },
   }

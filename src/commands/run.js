@@ -1,23 +1,23 @@
-import { getConfig } from '../config.js'
+import { TaskGraph } from '../TaskGraph.js'
+import { Config } from '../config.js'
 import { InteractiveLogger } from '../logger/InteractiveLogger.js'
 import { logger } from '../logger/logger.js'
 import { rainbow } from '../rainbow.js'
-import { TaskGraph } from '../TaskGraph.js'
-import { getRepoDetails } from '../workspace.js'
-import { workspaceRoot } from '../workspaceRoot.js'
 
 /**
- * @param {string} taskName
- * @param {import('../types.js').CLIOption} options
+ * @param {{taskName: string, options: import('../types.js').CLIOption}} args
  */
-export async function run(taskName, options) {
+export async function run({ taskName, options }) {
+  const config = await Config.from(process.cwd())
+
   const filterPaths = options.filter
     ? Array.isArray(options.filter)
       ? options.filter
       : [options.filter]
     : []
-  /** @type {import('../types.js').CLITaskDescription[]} */
-  const taskDescriptors = [
+
+  /** @type {import('../types.js').RequestedTask[]} */
+  const requestedTasks = [
     {
       taskName: taskName,
       filterPaths,
@@ -27,16 +27,15 @@ export async function run(taskName, options) {
   ]
 
   const tasks = new TaskGraph({
-    config: await getConfig(),
-    taskDescriptors,
-    repoDetails: getRepoDetails(),
+    config,
+    requestedTasks,
   })
 
   if (tasks.sortedTaskKeys.length === 0) {
     logger.fail(
-      `No tasks found matching [${taskDescriptors
-        .map((t) => t.taskName)
-        .join(', ')}] in ${workspaceRoot}`,
+      `No tasks found matching [${requestedTasks.map((t) => t.taskName).join(', ')}] in ${
+        config.workspaceRoot
+      }`,
     )
   }
 

@@ -1,7 +1,10 @@
+import type { TaskConfig } from './config.js'
+
 export type TaskStatus = 'pending' | 'running' | 'success:eager' | 'success:lazy' | 'failure'
 
 export interface ScheduledTask {
   key: string
+  taskConfig: TaskConfig
   taskName: string
   taskDir: string
   status: TaskStatus
@@ -30,43 +33,41 @@ export type RepoDetails = {
 
 export type GlobConfig = string[] | { include?: string[]; exclude?: string[] }
 
-export type CacheConfig =
-  | 'none'
-  | {
-      /**
-       * Globs of files that this task depends on.
-       *
-       * If none are specified, all files in the package will be used.
-       */
-      inputs?: GlobConfig
-      /**
-       * Globs of files that this task produces.
-       *
-       * If none are specified, none will be tracked.
-       */
-      outputs?: GlobConfig
-      /**
-       * The names of any environment variables that should contribute to the cache key of this task.
-       * Note that it will not control which env vars are passed to the task in any way.
-       */
-      envInputs?: string[]
-      /**
-       * If this task is not independent, this controls whether or not the output created by
-       * upstream packages running this task counts towards the input for the current package.
-       *
-       * @default true
-       */
-      usesOutputFromDependencies?: boolean
-      /**
-       * If this task is not independent, this controls whether or not the inputs used by
-       * upstream packages running this task count towards the input for the current package.
-       *
-       * @default true
-       */
-      inheritsInputFromDependencies?: boolean
-    }
+export type CacheConfig = {
+  /**
+   * Globs of files that this task depends on.
+   *
+   * If none are specified, all files in the package will be used.
+   */
+  inputs?: GlobConfig
+  /**
+   * Globs of files that this task produces.
+   *
+   * If none are specified, none will be tracked.
+   */
+  outputs?: GlobConfig
+  /**
+   * The names of any environment variables that should contribute to the cache key of this task.
+   * Note that it will not control which env vars are passed to the task in any way.
+   */
+  envInputs?: string[]
+  /**
+   * If this task is not independent, this controls whether or not the output created by
+   * upstream packages running this task counts towards the input for the current package.
+   *
+   * @default true
+   */
+  usesOutputFromDependencies?: boolean
+  /**
+   * If this task is not independent, this controls whether or not the inputs used by
+   * upstream packages running this task count towards the input for the current package.
+   *
+   * @default true
+   */
+  inheritsInputFromDependencies?: boolean
+}
 
-type BaseTaskConfig = {
+type BaseTask = {
   /** The other commands that must be completed before this one can run. */
   runsAfter?: {
     [taskName: string]: {
@@ -94,7 +95,7 @@ type BaseTaskConfig = {
    *
    * @default { inputs: ["**\/*"] }
    */
-  cache?: CacheConfig
+  cache?: 'none' | CacheConfig
 
   /**
    * Whether this task can be safely executed in parallel with other instances of the same task.
@@ -104,7 +105,7 @@ type BaseTaskConfig = {
   parallel?: boolean
 }
 
-export interface TopLevelTaskConfig extends BaseTaskConfig {
+export interface TopLevelTask extends BaseTask {
   /**
    * The execution strategy for this task
    *
@@ -132,7 +133,7 @@ export interface TopLevelTaskConfig extends BaseTaskConfig {
   baseCommand: string
 }
 
-export interface PackageLevelTaskConfig extends BaseTaskConfig {
+export interface PackageLevelTask extends BaseTask {
   /**
    * The execution strategy for this task
    *
@@ -161,7 +162,7 @@ export interface PackageLevelTaskConfig extends BaseTaskConfig {
   baseCommand?: string
 }
 
-export type TaskConfig = TopLevelTaskConfig | PackageLevelTaskConfig
+export type LazyTask = TopLevelTask | PackageLevelTask
 
 export interface LazyConfig {
   /**
@@ -203,7 +204,7 @@ export interface LazyConfig {
   /**
    * Custom configuration for any tasks defined in your package.json "scripts" entries.
    */
-  tasks?: { [taskName: string]: TaskConfig }
+  tasks?: { [taskName: string]: LazyTask }
 }
 
 export type ManifestChange = {
@@ -211,7 +212,7 @@ export type ManifestChange = {
   value: string
 }
 
-export type CLITaskDescription = {
+export type RequestedTask = {
   taskName: string
   filterPaths: string[]
   extraArgs: string[]
