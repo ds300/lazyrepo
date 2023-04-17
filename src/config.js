@@ -1,5 +1,6 @@
 import slugify from '@sindresorhus/slugify'
 import glob from 'fast-glob'
+import kleur from 'kleur'
 import path, { isAbsolute, join, relative } from 'path'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from './fs.js'
 import { getWorkspaceRoot } from './getWorkspaceRoot.js'
@@ -230,12 +231,14 @@ export class Config {
     }
 
     if (allLoadedConfigFiles.length === 0) {
-      logger.log('No config files found, using default configuration.')
+      logger.log('No config files found, using default configuration.\n')
     } else {
       logger.log(
-        `Loaded config file${allLoadedConfigFiles.length > 1 ? 's' : ''}: ${allLoadedConfigFiles
-          .map((f) => relative(process.cwd(), f))
-          .join(', ')}`,
+        kleur.gray(
+          `Loaded config file${allLoadedConfigFiles.length > 1 ? 's' : ''}: ${allLoadedConfigFiles
+            .map((f) => relative(process.cwd(), f))
+            .join(', ')}\n`,
+        ),
       )
     }
 
