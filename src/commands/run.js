@@ -1,5 +1,5 @@
 import { TaskGraph } from '../TaskGraph.js'
-import { Config } from '../config.js'
+import { Config } from '../config/config.js'
 import { InteractiveLogger } from '../logger/InteractiveLogger.js'
 import { logger } from '../logger/logger.js'
 import { rainbow } from '../rainbow.js'

@@ -1,5 +1,5 @@
 import { spawnSync } from 'child_process'
-import { Config } from '../config.js'
+import { Config } from '../config/config.js'
 import { logger } from '../logger/logger.js'
 
 export async function inherit() {

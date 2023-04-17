@@ -1,4 +1,4 @@
-import type { TaskConfig } from './config.js'
+import type { TaskConfig } from './config/config.js'
 
 export type TaskStatus = 'pending' | 'running' | 'success:eager' | 'success:lazy' | 'failure'
 

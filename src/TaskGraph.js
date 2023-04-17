@@ -24,14 +24,14 @@ const maxConcurrentTasks = process.env.__test__FORCE_PARALLEL
 /**
  * @typedef {Object} TaskGraphProps
  *
- * @property {import('./config.js').Config} config
+ * @property {import('./config/config.js').Config} config
  * @property {import('./types.js').RequestedTask[]} requestedTasks
  */
 
 export class TaskGraph {
   /**
    * @readonly
-   * @type {import('./config.js').Config}
+   * @type {import('./config/config.js').Config}
    */
   config
   /**
