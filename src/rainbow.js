@@ -24,7 +24,7 @@ function rgb(i) {
  * @param {[number, number, number]} param1
  * @returns {string}
  */
-const char = (c, [r, g, b]) => `\x1b[1m\x1b[38;2;${r};${g};${b}m${c}\x1b[0m\x1b[0;1m`
+const char = (c, [r, g, b]) => `\x1b[1m\x1b[38;2;${r};${g};${b}m${c}\x1b[0m\x1b[0;1m\x1b[0m`
 
 /**
  * @param {string} text

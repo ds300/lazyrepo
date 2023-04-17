@@ -65,26 +65,26 @@ With no config, when you run `lazy test` in the project root:
 
 These are prefixed with a colon (`:`) to help avoid conflicts with your script names.
 
-- `lazy :init`
+- `lazy init`
 
   Creates a config file.
 
-- `lazy :clean`
+- `lazy clean`
 
   Deletes all local cache data.
 
-- `lazy :inherit`
+- `lazy inherit`
 
   In larger projects, you often end up with the same `"script"` entries duplicated in lots of package.json files. Keeping them in sync can be troublesome.
 
   `lazyrepo` lets you specify the command just once.
 
-  Replace the scripts entries with `lazy :inherit`:
+  Replace the scripts entries with `lazy inherit`:
 
   ```diff
    "scripts": {
   -  "test": "jest --runInBand --noCache --coverage",
-  +  "test": "lazy :inherit"
+  +  "test": "lazy inherit"
    }
   ```
 

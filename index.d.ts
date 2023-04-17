@@ -1,1 +1,1 @@
-export type { CacheConfig, GlobConfig, LazyConfig, TaskConfig } from './src/types.js'
+export type { CacheConfig, GlobConfig, LazyConfig, LazyTask as TaskConfig } from './src/types.js'
