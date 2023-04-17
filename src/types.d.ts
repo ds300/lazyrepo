@@ -86,7 +86,7 @@ type BaseTask = {
       inheritsInput?: boolean
 
       // API idea
-      // inPackages: 'all' | 'dependencies' | 'self-only' // default 'all'
+      // inPackages: 'all' | 'dependencies-only' | 'self-only' // default 'all'
     }
   }
 
