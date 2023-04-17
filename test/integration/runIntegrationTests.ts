@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, readFileSync, statSync, utimesSync, writeFileSyn
 import { nanoid } from 'nanoid'
 import { join } from 'path'
 import stripAnsi from 'strip-ansi'
-import { exec } from '../../src/cli.js'
+import { execCli } from '../../src/execCli.js'
 import { naiveRimraf } from '../../src/naiveRimraf.js'
 import { LazyConfig, PackageJson } from '../../src/types.js'
 
@@ -93,7 +93,7 @@ class TestHarness {
       ? join(this.config.dir, options.packageDir)
       : this.config.dir
     try {
-      await exec(['node', join(process.cwd(), 'bin.js'), ...args])
+      await execCli(['node', join(process.cwd(), 'bin.js'), ...args])
       if (!throwOnError || status === 0) {
         return { output: cleanup(output), status }
       } else {

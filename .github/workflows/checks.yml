@@ -31,5 +31,3 @@ jobs:
       - name: Test
         run: pnpm test
 
-      # - name: Check API declarations and docs work as intended
-      #   run: pnpm api:check
