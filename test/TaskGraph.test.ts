@@ -14,6 +14,7 @@ function createRepoDetails(): RepoDetails {
       scripts: {
         prepack: 'whatever',
         pack: 'whatever',
+        'core-build': 'whatever',
       },
     },
     {
@@ -23,6 +24,7 @@ function createRepoDetails(): RepoDetails {
       scripts: {
         prepack: 'whatever',
         pack: 'whatever',
+        'utils-build': 'whatever',
       },
     },
   ]
@@ -100,4 +102,35 @@ test("core's pack script should depend on everything", () => {
     'pack::packages/utils',
     'pack::packages/core',
   ])
+})
+
+test('core-build should depend on utils-build', () => {
+  const graph = new TaskGraph({
+    config: new Config({
+      workspaceRoot: cwd,
+      packageDirConfigs: {},
+      repoDetails: createRepoDetails(),
+      rootConfig: {
+        config: {
+          tasks: {
+            'core-build': {
+              runsAfter: { 'utils-build': {} },
+            },
+          },
+        },
+        filePath: null,
+      },
+    }),
+    requestedTasks: [
+      {
+        extraArgs: [],
+        force: false,
+        taskName: 'core-build',
+        filterPaths: ['packages/core'],
+      },
+    ],
+  })
+
+  expect(graph).toBeInstanceOf(TaskGraph)
+  expect(graph.sortedTaskKeys).toEqual(['utils-build::packages/utils', 'core-build::packages/core'])
 })
