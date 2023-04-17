@@ -1,99 +1,18 @@
 import slugify from '@sindresorhus/slugify'
-import glob from 'fast-glob'
 import kleur from 'kleur'
-import path, { isAbsolute, join, relative } from 'path'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from '../fs.js'
+import path, { isAbsolute, relative } from 'path'
 import { getWorkspaceRoot } from '../getWorkspaceRoot.js'
-import { isTest } from '../isTest.js'
 import { logger } from '../logger/logger.js'
 import { getPackageManager, getRepoDetails } from '../workspace.js'
-import { validateConfig } from './validateConfig.js'
+import { resolveConfig } from './resolveConfig.js'
 
 /**
  * @typedef {import('../../index.js').LazyConfig} LazyConfig
  */
 
 /**
- * @typedef {{config: LazyConfig, filePath: null | string}} LoadedConfig
+ * @typedef {import('./resolveConfig.js').ResolvedConfig} ResolvedConfig
  */
-
-/**
- * @returns {Promise<LoadedConfig>}
- * @param {string} dir
- */
-export async function getConfigFromDir(dir) {
-  const files = glob.sync('lazy.config.{js,cjs,mjs,ts,cts,mts,json}', {
-    absolute: true,
-    cwd: dir,
-  })
-
-  if (files.length > 1) {
-    logger.fail(`Found multiple lazy config files in dir '${dir}'.`, {
-      detail: `Remove all but one of the following files: ${files.join(', ')}`,
-    })
-    process.exit(1)
-  }
-
-  if (files.length === 0) {
-    return { filePath: null, config: {} }
-  } else {
-    const file = files[0]
-    let config = await loadConfigObject(dir, file)
-    config = validateConfig(config) || null
-
-    if (!config) {
-      throw new Error(`Invalid config file`)
-    }
-
-    // TODO: Proper validation
-    return { filePath: file, config }
-  }
-}
-
-/**
- * @param {string} dir
- * @param {string} file
- * @returns {Promise<LazyConfig>}
- */
-async function loadConfigObject(dir, file) {
-  if (file.endsWith('.json')) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return JSON.parse(readFileSync(file, 'utf8'))
-  }
-  if (file.endsWith('.js') || file.endsWith('.cjs') || file.endsWith('.mjs')) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-    return (await import(file)).default
-  }
-
-  const configDir = join(dir, '.lazy')
-  if (!existsSync(configDir)) {
-    mkdirSync(configDir)
-  }
-
-  const inFile = join(configDir, 'config.source.mjs')
-  writeFileSync(inFile, `import config from '${file}'; export default config`)
-  const outFile = join(configDir, 'config.cache.mjs')
-
-  const esbuild = await import('esbuild')
-  await esbuild.build({
-    entryPoints: [inFile],
-    outfile: outFile,
-    bundle: true,
-    platform: 'node',
-    packages: 'external',
-    sourcemap: 'inline',
-    sourcesContent: true,
-    format: 'esm',
-  })
-
-  if (!isTest) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    await import('source-map-support/register.js')
-  }
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-  return (await import(outFile)).default
-}
 
 export class TaskConfig {
   /**
@@ -186,8 +105,8 @@ export class Config {
    * @typedef {Object} ConfigWrapperOptions
    *
    * @property {string} workspaceRoot
-   * @property {LoadedConfig} rootConfig
-   * @property {Record<string, LoadedConfig>} packageDirConfigs
+   * @property {ResolvedConfig} rootConfig
+   * @property {Record<string, ResolvedConfig>} packageDirConfigs
    * @property {import('../types.js').RepoDetails} repoDetails
    */
   /** @param {ConfigWrapperOptions} options */
@@ -214,16 +133,16 @@ export class Config {
     }
 
     const repoDetails = getRepoDetails(workspaceRoot)
-    const rootConfig = await getConfigFromDir(workspaceRoot)
+    const rootConfig = await resolveConfig(workspaceRoot)
 
-    /** @type {Record<string, LoadedConfig>} */
+    /** @type {Record<string, ResolvedConfig>} */
     const packageDirConfigs = {}
     const allLoadedConfigFiles = rootConfig.filePath ? [rootConfig.filePath] : []
 
     for (const c of await Promise.all(
       Object.values(repoDetails.packagesByName).map(async (pkg) => ({
         dir: pkg.dir,
-        config: await getConfigFromDir(pkg.dir),
+        config: await resolveConfig(pkg.dir),
       })),
     )) {
       if (c.config.filePath !== null) {
