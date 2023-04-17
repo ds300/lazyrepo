@@ -22,7 +22,6 @@ export type PackageDetails = {
   name: string
   dir: string
   localDeps: string[]
-  version: string
   scripts: Record<string, string>
 }
 

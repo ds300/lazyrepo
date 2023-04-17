@@ -1,10 +1,10 @@
-import glob from 'fast-glob'
+import { match } from 'micromatch'
 import { cpus } from 'os'
-import { join } from 'path'
-import { existsSync, readFileSync } from './fs.js'
+import { isAbsolute, join } from 'path'
 import { isTest } from './isTest.js'
 import { logger } from './logger/logger.js'
 import { runTaskIfNeeded } from './runTask.js'
+import { uniq } from './uniq.js'
 
 /**
  * @typedef {Object} TaskKeyProps
@@ -125,13 +125,20 @@ export class TaskGraph {
       }
 
       /** @type {Array<string> | null} */
-      const filteredPackageNames = requestedTask.filterPaths.length
-        ? glob
-            .sync(requestedTask.filterPaths, { onlyDirectories: true })
-            .filter((dir) => existsSync(join(dir, 'package.json')))
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
-            .map((dir) => JSON.parse(readFileSync(join(dir, 'package.json'), 'utf-8')).name)
-        : null
+      let filteredPackageNames = null
+      if (requestedTask.filterPaths.length) {
+        const packageDirs = this.config.repoDetails.packagesInTopologicalOrder.map((p) => p.dir)
+
+        const matchingPackages = uniq(
+          requestedTask.filterPaths.flatMap((pattern) =>
+            match(packageDirs, isAbsolute(pattern) ? pattern : join(dir, pattern)),
+          ),
+        )
+        filteredPackageNames = matchingPackages.map(
+          (dir) =>
+            this.config.repoDetails.packagesInTopologicalOrder[packageDirs.indexOf(dir)].name,
+        )
+      }
 
       for (const packageName of filteredPackageNames ??
         Object.keys(this.config.repoDetails.packagesByName)) {

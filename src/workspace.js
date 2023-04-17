@@ -25,7 +25,6 @@ function getPackageDetails({ dir, allLocalPackageNames }) {
   return {
     name: packageJson.name,
     dir,
-    version: packageJson.version,
     scripts: packageJson.scripts ?? {},
     localDeps: Object.keys(deps ?? {})
       .filter((dep) => allLocalPackageNames.includes(dep))
