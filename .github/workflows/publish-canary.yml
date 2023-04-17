@@ -1,0 +1,25 @@
+name: Publish Canary Packages
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    name: 'Publish Canary Package'
+    timeout-minutes: 15
+    environment: npm deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup
+
+      - name: Publish Canary Packages
+        run: node scripts/publish-canary.js
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

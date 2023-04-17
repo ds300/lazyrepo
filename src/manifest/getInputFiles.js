@@ -61,13 +61,15 @@ export function getInputFiles(tasks, task, extraFiles) {
   const localFiles = globCacheConfig({
     task,
     workspaceRoot: tasks.config.workspaceRoot,
-    includes: replaceRootDirPragmas(
+    includes: makeGlobsAbsolute(
       uniq([...baseCacheConfig.includes, ...cacheConfig.inputs.include]),
       tasks.config.workspaceRoot,
+      task.taskDir,
     ),
-    excludes: replaceRootDirPragmas(
+    excludes: makeGlobsAbsolute(
       uniq([...baseCacheConfig.excludes, ...cacheConfig.inputs.exclude]),
       tasks.config.workspaceRoot,
+      task.taskDir,
     ),
   })
 
@@ -77,13 +79,19 @@ export function getInputFiles(tasks, task, extraFiles) {
 /**
  * @param {string[]} arr
  * @param {string} workspaceRoot
+ * @param {string} taskDir
  * @returns
  */
-const replaceRootDirPragmas = (arr, workspaceRoot) =>
-  arr.map((str) =>
-    str.startsWith('<rootDir>/') ? path.join(workspaceRoot, str.replace('<rootDir>/', '')) : str,
-  )
-
+const makeGlobsAbsolute = (arr, workspaceRoot, taskDir) =>
+  arr.map((str) => {
+    if (str.startsWith('<rootDir>/')) {
+      return path.join(workspaceRoot, str.replace('<rootDir>/', ''))
+    } else if (str.startsWith('/')) {
+      return str
+    } else {
+      return path.join(taskDir, str)
+    }
+  })
 /**
  *
  * @param {string} dir

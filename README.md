@@ -41,9 +41,9 @@ Run tasks defined in `"scripts"` entries using:
 
     lazy <script-name>
 
-Anything that comes after the script name will be forwarded to the script itself, so you can do stuff like:
+You can pass arguments to the task script after a `--`
 
-    lazy test --runInBand
+    lazy test -- --runInBand
 
 The default behavior is optimized for `"test"` scripts, where the order of execution matters if your packages depend on each other.
 
@@ -62,8 +62,6 @@ With no config, when you run `lazy test` in the project root:
 - If you change a source file in `utils` and run `lazy test` again, both `utils` and `core`'s tests will be executed, in that order.
 
 ### Other commands
-
-These are prefixed with a colon (`:`) to help avoid conflicts with your script names.
 
 - `lazy init`
 
@@ -100,21 +98,19 @@ These are prefixed with a colon (`:`) to help avoid conflicts with your script n
 
   Now when you run `npm test`, or whatever, in one of your package directories, it will look up the actual command to run from your lazy config file and run that.
 
-- `lazy :run <task> [...<filter-paths>] [-- <forward-args>]`
+- `lazy run <task> [-- <forward-args>]`
 
-  Runs the given task in all packages specified by `<paths>`
+  Runs the given task, forwarding any args passed after the `--`
+
+  You may filter the packages that a task
 
   e.g. to test only packages that end in `-utils`
 
-      lazy :run test packages/*-utils
+      lazy run test --filter packages/*-utils
 
-  To forward args to the script in `:run` mode, append the args after `--`, e.g.
+  You may force all tasks to execute by passing the `--force` option.
 
-      lazy :run test packages/core -- --runInBand
-
-  You can add more `:run` invocations at the end.
-
-      lazy :run test :run packages/core -- --watch
+      lazy run test --force
 
 ## Configuration
 
