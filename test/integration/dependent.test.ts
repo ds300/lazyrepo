@@ -60,11 +60,11 @@ test('dependent tasks run', async () => {
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ done in 1.00s
-      
+        
               Tasks:     2 successful, 2 Total
              Cached:     0 cached, 2 Total
            Laziness:     0%
-               Time:     1.00s 
+               Time:     1.00s
         "
       `)
 
