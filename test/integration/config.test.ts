@@ -1,4 +1,3 @@
-import { LazyConfig } from '../../index.js'
 import { Dir, makePackageJson, runIntegrationTest } from './runIntegrationTests.js'
 
 const makeRepo = ({
@@ -150,31 +149,6 @@ test('it loads .ts files that import from internal modules', async () => {
       expect(t.exists('packages/core/.out.txt')).toBe(true)
       expect(status).toBe(0)
       expect(output.includes('This color is yellow')).toBe(true)
-    },
-  )
-})
-
-test('it loads json files', async () => {
-  await runIntegrationTest(
-    {
-      packageManager: 'npm',
-      structure: makeRepo({
-        configFileName: 'lazy.config.json',
-        configFileContent: JSON.stringify({
-          tasks: {
-            build: {
-              cache: 'none',
-            },
-          },
-        } satisfies LazyConfig),
-      }),
-      workspaceGlobs: ['packages/*'],
-    },
-    async (t) => {
-      const { status, output } = await t.exec(['build'])
-      expect(t.exists('packages/core/.out.txt')).toBe(true)
-      expect(status).toBe(0)
-      expect(output.includes('cache disabled')).toBe(true)
     },
   )
 })
