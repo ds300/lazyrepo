@@ -1,6 +1,6 @@
 import glob from 'fast-glob'
 import { join } from 'path'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from '../fs.js'
+import { existsSync, mkdirSync, writeFileSync } from '../fs.js'
 import { isTest } from '../isTest.js'
 import { logger } from '../logger/logger.js'
 import { validateConfig } from './validateConfig.js'
@@ -22,7 +22,7 @@ import { validateConfig } from './validateConfig.js'
  * @param {string} dir
  */
 export async function resolveConfig(dir) {
-  const files = glob.sync('lazy.config.{js,cjs,mjs,ts,cts,mts,json}', {
+  const files = glob.sync('lazy.config.{js,cjs,mjs,ts,cts,mts}', {
     absolute: true,
     cwd: dir,
   })
@@ -59,10 +59,6 @@ export async function resolveConfig(dir) {
  * @returns {Promise<LoadedConfig>}
  */
 async function loadConfig(dir, file) {
-  if (file.endsWith('.json')) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return JSON.parse(readFileSync(file, 'utf8'))
-  }
   if (file.endsWith('.js') || file.endsWith('.cjs') || file.endsWith('.mjs')) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
     return (await import(file)).default
