@@ -118,7 +118,7 @@ export class TaskGraph {
           if (pkg.scripts?.[requestedTask.taskName]) {
             const depKey = this.config.getTaskKey(pkg.dir, requestedTask.taskName)
             result.dependencies.push(depKey)
-            visit([...path, depKey], {
+            visit(path, {
               requestedTask,
               taskDir: pkg.dir,
               packageDetails: pkg,

@@ -104,13 +104,13 @@ export type RunsAfter = {
   inheritsInput?: boolean
 
   /**
-   * Which packages to wait for.
+   * Which packages to wait for the specified script to execute in.
    *
-   * "all-packages" (default) - it will wait for this task to complete in all packages that implement this task as an npm script.
+   * "all-packages" (default) - it will wait for the specified script to execute in all packages that implement the script.
    *
-   * "self-and-dependencies" - it will wait for this task to complete in all packages that are dependencies of this package, and this package itself.
+   * "self-and-dependencies" - it will wait for the script to execute in all packages that are dependencies of the current package, and the current package itself.
    *
-   * "self-only" - it will wait for this task to complete in the current package only.
+   * "self-only" - it will wait for the specified script to complete in the current package only.
    *
    * @default 'all-packages'
    */
@@ -172,22 +172,23 @@ export interface TopLevelTask extends BaseTask {
 
 export interface PackageLevelTask extends BaseTask {
   /**
-   * The execution strategy for this task
+   * The execution strategy for this script
    *
    * "dependent" (default)
    *
-   *   The task will run in workspace package directories. It will run in topological order based
-   *   on the dependencies listed in package.json files.
+   *   Lazyrepo will run the script in workspace package directories. These will run in topological order based
+   *   on the dependencies listed in the respective package.json files.
    *
    *   Any tasks that do not depend on each other may be run in parallel, unless specified otherwise.
    *
    * "independent"
    *
-   *   The task will run in workspace package directories, in parallel unless specified otherwise.
+   *   Lazyrepo will run the script in workspace package directories. It will not schedule the tasks to complete in any particular order.
+   *   The tasks will run in parallel unless specified otherwise.
    *
    * "top-level"
    *
-   *   The task will run in the root directory of the repo.
+   *   Lazyrepo will run the script in the root directory of the repo.
    *   You must specify a command to run.
    *   You may also want to add a `package.json` script with the same name that calls `lazy`.
    *
@@ -198,6 +199,17 @@ export interface PackageLevelTask extends BaseTask {
    * The command to run for this task if the task uses `lazy inherit`
    */
   baseCommand?: string
+
+  // API idea
+  // packageOverrides: {
+  //   [dirGlob: string]: {
+  //     command?: string
+  //     cache?: 'none' | CacheConfig
+  //     runsAfter?: {
+  //       [taskName: string]: RunsAfter
+  //     }
+  //   }
+  // }
 }
 
 export type LazyTask = TopLevelTask | PackageLevelTask
