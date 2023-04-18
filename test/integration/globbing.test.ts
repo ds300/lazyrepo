@@ -8,8 +8,8 @@ test('excludes take precedence', async () => {
       structure: {
         'lazy.config.js': makeConfigFile({
           baseCacheConfig: {
-            includes: ['<rootDir>/scripts/**/*'],
-            excludes: ['scripts/tsconfig.tsbuildinfo'],
+            include: ['<rootDir>/scripts/**/*'],
+            exclude: ['scripts/tsconfig.tsbuildinfo'],
           },
           tasks: {
             build: {

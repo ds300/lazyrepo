@@ -12,18 +12,18 @@ export async function inherit() {
   }
   const config = await Config.from(process.cwd())
   const task = config.getTaskConfig(process.cwd(), scriptName)
-  if (!task._config.baseCommand) {
+  if (!task.baseCommand) {
     logger.fail(
       `No baseCommand found for task '${scriptName}'. Using 'lazy inherit' requires you to add a baseCommand for the relevant task in your lazy.config file!`,
     )
     process.exit(1)
   }
-  const result = spawnSync(task._config.baseCommand, process.argv.slice(3), {
+  const result = spawnSync(task.baseCommand, process.argv.slice(3), {
     stdio: 'inherit',
     shell: true,
   })
   if (result.status === null) {
-    logger.fail(`Failed to run '${task._config.baseCommand}'`, { error: result.error })
+    logger.fail(`Failed to run '${task.baseCommand}'`, { error: result.error })
     process.exit(1)
   }
   process.exit(result.status)

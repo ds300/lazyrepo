@@ -8,7 +8,6 @@ export interface ScheduledTask {
   taskName: string
   taskDir: string
   status: TaskStatus
-  filterPaths: string[]
   force: boolean
   extraArgs: string[]
   outputFiles: string[]
@@ -22,16 +21,37 @@ export type PackageDetails = {
   name: string
   dir: string
   localDeps: string[]
-  version: string
   scripts: Record<string, string>
 }
 
 export type RepoDetails = {
+  packagesByDir: Record<string, PackageDetails>
   packagesByName: Record<string, PackageDetails>
   packagesInTopologicalOrder: PackageDetails[]
 }
 
-export type GlobConfig = string[] | { include?: string[]; exclude?: string[] }
+/**
+ * Either a list of include globs, or an object with include and/or exclude globs.
+ *
+ * Note that dotfiles are excluded by default, and must be explicity added to an 'include' glob pattern.
+ * in order to be included.
+ */
+export type GlobConfig =
+  | string[]
+  | {
+      /**
+       * Globs of files that should be included.
+       *
+       * @default ['**\/*']
+       */
+      include?: string[]
+      /**
+       * Globs of files that should be excluded.
+       *
+       * @default []
+       */
+      exclude?: string[]
+    }
 
 export type CacheConfig = {
   /**
@@ -67,25 +87,40 @@ export type CacheConfig = {
   inheritsInputFromDependencies?: boolean
 }
 
+export type RunsAfter = {
+  /**
+   * Whether or not this task uses the files created by the named task.
+   * If true, they will be included as cache inputs.
+   *
+   * @default true
+   */
+  usesOutput?: boolean
+  /**
+   * Whether or not the input files of the named task should contribute to the
+   * cache inputs of this task.
+   *
+   * @default false
+   */
+  inheritsInput?: boolean
+
+  /**
+   * Which packages to wait for the specified script to execute in.
+   *
+   * "all-packages" (default) - it will wait for the specified script to execute in all packages that implement the script.
+   *
+   * "self-and-dependencies" - it will wait for the script to execute in all packages that are dependencies of the current package, and the current package itself.
+   *
+   * "self-only" - it will wait for the specified script to complete in the current package only.
+   *
+   * @default 'all-packages'
+   */
+  in?: 'all-packages' | 'self-and-dependencies' | 'self-only'
+}
+
 type BaseTask = {
   /** The other commands that must be completed before this one can run. */
   runsAfter?: {
-    [taskName: string]: {
-      /**
-       * Whether or not this task uses the files created by the named task.
-       * If true, they will be included as cache inputs.
-       *
-       * @default true
-       */
-      usesOutput?: boolean
-      /**
-       * Whether or not the input files of the named task should contribute to the
-       * cache inputs of this task.
-       *
-       * @default false
-       */
-      inheritsInput?: boolean
-    }
+    [taskName: string]: RunsAfter
   }
 
   /**
@@ -125,6 +160,8 @@ export interface TopLevelTask extends BaseTask {
    *   The task will run in the root directory of the repo.
    *   You must specify a command to run.
    *   You may also want to add a `package.json` script with the same name that calls `lazy`.
+   *
+   * @default 'dependent'
    */
   execution: 'top-level'
   /**
@@ -135,31 +172,44 @@ export interface TopLevelTask extends BaseTask {
 
 export interface PackageLevelTask extends BaseTask {
   /**
-   * The execution strategy for this task
+   * The execution strategy for this script
    *
    * "dependent" (default)
    *
-   *   The task will run in workspace package directories. It will run in topological order based
-   *   on the dependencies listed in package.json files.
+   *   Lazyrepo will run the script in workspace package directories. These will run in topological order based
+   *   on the dependencies listed in the respective package.json files.
    *
    *   Any tasks that do not depend on each other may be run in parallel, unless specified otherwise.
    *
    * "independent"
    *
-   *   The task will run in workspace package directories, in parallel unless specified otherwise.
+   *   Lazyrepo will run the script in workspace package directories. It will not schedule the tasks to complete in any particular order.
+   *   The tasks will run in parallel unless specified otherwise.
    *
    * "top-level"
    *
-   *   The task will run in the root directory of the repo.
+   *   Lazyrepo will run the script in the root directory of the repo.
    *   You must specify a command to run.
    *   You may also want to add a `package.json` script with the same name that calls `lazy`.
    *
+   * @default 'dependent'
    */
   execution?: 'dependent' | 'independent'
   /**
    * The command to run for this task if the task uses `lazy inherit`
    */
   baseCommand?: string
+
+  // API idea
+  // packageOverrides: {
+  //   [dirGlob: string]: {
+  //     command?: string
+  //     cache?: 'none' | CacheConfig
+  //     runsAfter?: {
+  //       [taskName: string]: RunsAfter
+  //     }
+  //   }
+  // }
 }
 
 export type LazyTask = TopLevelTask | PackageLevelTask
@@ -187,15 +237,18 @@ export interface LazyConfig {
      *
      * Note that these glob patterns are evaluated in the task's directory, which is usually not the workspace root directory.
      * If you want to specify a glob pattern that is relative to the root, prefix the pattern with `<rootDir>/`.
+     *
+     * Note also that dotfiles are excluded by default, and must be explicity added to an 'include' glob pattern.
+     * in order to be included.
      */
-    includes?: string[]
+    include?: string[]
     /**
      * Globs of files that should be excluded from every task's input manifest.
      *
      * Note that these glob patterns are evaluated in the task's directory, which is usually not the workspace root directory.
      * If you want to specify a glob pattern that is relative to the root, prefix the pattern with `<rootDir>/`.
      */
-    excludes?: string[]
+    exclude?: string[]
     /**
      * The names of any environment variables that should be included in every task's input manifest.
      */

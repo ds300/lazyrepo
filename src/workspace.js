@@ -25,7 +25,6 @@ function getPackageDetails({ dir, allLocalPackageNames }) {
   return {
     name: packageJson.name,
     dir,
-    version: packageJson.version,
     scripts: packageJson.scripts ?? {},
     localDeps: Object.keys(deps ?? {})
       .filter((dep) => allLocalPackageNames.includes(dep))
@@ -110,6 +109,9 @@ export function getRepoDetails(workspaceRoot) {
   )
 
   return {
+    packagesByDir: Object.fromEntries(
+      Object.values(packages).map((packageDetails) => [packageDetails.dir, packageDetails]),
+    ),
     packagesByName: packages,
     packagesInTopologicalOrder: topologicalSortPackages(packages),
   }

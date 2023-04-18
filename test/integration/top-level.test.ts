@@ -33,7 +33,7 @@ const makeDir = (): Dir => ({
   },
 })
 
-test('running independent tasks works', async () => {
+test('running a top-level tasks works', async () => {
   await runIntegrationTest(
     {
       packageManager: 'pnpm',

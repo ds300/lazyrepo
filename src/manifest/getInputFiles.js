@@ -62,12 +62,12 @@ export function getInputFiles(tasks, task, extraFiles) {
     task,
     workspaceRoot: tasks.config.workspaceRoot,
     includes: makeGlobsAbsolute(
-      uniq([...baseCacheConfig.includes, ...cacheConfig.inputs.include]),
+      uniq([...baseCacheConfig.include, ...cacheConfig.inputs.include]),
       tasks.config.workspaceRoot,
       task.taskDir,
     ),
     excludes: makeGlobsAbsolute(
-      uniq([...baseCacheConfig.excludes, ...cacheConfig.inputs.exclude]),
+      uniq([...baseCacheConfig.exclude, ...cacheConfig.inputs.exclude]),
       tasks.config.workspaceRoot,
       task.taskDir,
     ),
