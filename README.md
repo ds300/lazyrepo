@@ -118,7 +118,7 @@ Create a file called `lazy.config.js` or `lazy.config.json`
 
 To create a `.js` config file, in your project root run:
 
-    lazy :init
+    lazy init
 
 ```ts
 export default {
