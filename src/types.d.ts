@@ -108,13 +108,13 @@ export type RunsAfter = {
    *
    * "all-packages" (default) - it will wait for this task to complete in all packages that implement this task as an npm script.
    *
-   * "dependencies-only" - it will wait for this task to complete in all packages that are dependencies of this package.
+   * "self-and-dependencies" - it will wait for this task to complete in all packages that are dependencies of this package, and this package itself.
    *
    * "self-only" - it will wait for this task to complete in the current package only.
    *
    * @default 'all-packages'
    */
-  in?: 'all-packages' | 'dependencies-only' | 'self-only'
+  in?: 'all-packages' | 'self-and-dependencies' | 'self-only'
 }
 
 type BaseTask = {

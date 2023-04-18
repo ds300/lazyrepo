@@ -1,3 +1,4 @@
+import kleur from 'kleur'
 import micromatch from 'micromatch'
 import { cpus } from 'os'
 import { isAbsolute, join } from 'path'
@@ -52,15 +53,23 @@ export class TaskGraph {
     this.config = config
 
     /**
+     * @param {string[]} path
      * @param {{ requestedTask: import('./types.js').RequestedTask, taskDir: string, packageDetails: import('./types.js').PackageDetails | null }} arg
      * @returns
      */
-    const visit = ({ requestedTask, taskDir, packageDetails }) => {
+    const visit = (path, { requestedTask, taskDir, packageDetails }) => {
       const taskConfig = this.config.getTaskConfig(taskDir, requestedTask.taskName)
       const key = this.config.getTaskKey(taskDir, requestedTask.taskName)
       if (this.allTasks[key]) {
+        if (path.includes(key)) {
+          logger.fail(
+            `Circular dependency detected: \n${path.join('\n -> ')}\n -> ${kleur.bold(key)}`,
+          )
+          process.exit(1)
+        }
         return
       }
+      path = [...path, key]
       this.allTasks[key] = {
         key,
         taskConfig: taskConfig,
@@ -77,13 +86,27 @@ export class TaskGraph {
       }
       const result = this.allTasks[key]
 
-      for (const [taskName] of taskConfig.runsAfterEntries) {
+      for (const [upstreamTaskName, upstreamTaskConfig] of taskConfig.runsAfterEntries) {
+        /**
+         * @type {string[]}
+         */
+        let filterPaths = []
+        if (upstreamTaskConfig.in === 'self-and-dependencies') {
+          filterPaths = [taskDir].concat(
+            packageDetails?.localDeps.map(
+              (dep) => this.config.repoDetails.packagesByName[dep].dir,
+            ) ?? [],
+          )
+        } else if (upstreamTaskConfig.in === 'self-only') {
+          filterPaths = [taskDir]
+        }
         enqueueTask(
+          path,
           {
-            taskName,
+            taskName: upstreamTaskName,
             extraArgs: [],
             force: requestedTask.force,
-            filterPaths: [taskDir],
+            filterPaths,
           },
           result.dependencies,
         )
@@ -93,8 +116,9 @@ export class TaskGraph {
         for (const packageName of packageDetails?.localDeps ?? []) {
           const pkg = this.config.repoDetails.packagesByName[packageName]
           if (pkg.scripts?.[requestedTask.taskName]) {
-            result.dependencies.push(this.config.getTaskKey(pkg.dir, requestedTask.taskName))
-            visit({
+            const depKey = this.config.getTaskKey(pkg.dir, requestedTask.taskName)
+            result.dependencies.push(depKey)
+            visit([...path, depKey], {
               requestedTask,
               taskDir: pkg.dir,
               packageDetails: pkg,
@@ -108,16 +132,16 @@ export class TaskGraph {
 
     /**
      *
+     * @param {string[]} path
      * @param {import('./types.js').RequestedTask} requestedTask
      * @param {string[]} [dependencies]
      * @returns
      */
-    const enqueueTask = (requestedTask, dependencies) => {
+    const enqueueTask = (path, requestedTask, dependencies) => {
       if (this.isTopLevelTask(requestedTask.taskName)) {
-        dependencies?.push(
-          this.config.getTaskKey(this.config.workspaceRoot, requestedTask.taskName),
-        )
-        visit({
+        const key = this.config.getTaskKey(this.config.workspaceRoot, requestedTask.taskName)
+        dependencies?.push(key)
+        visit(path, {
           requestedTask,
           taskDir: this.config.workspaceRoot,
           packageDetails: null,
@@ -133,8 +157,9 @@ export class TaskGraph {
       for (const dir of dirs) {
         const packageDetails = this.config.repoDetails.packagesByDir[dir]
         if (packageDetails.scripts[requestedTask.taskName]) {
-          dependencies?.push(this.config.getTaskKey(dir, requestedTask.taskName))
-          visit({
+          const key = this.config.getTaskKey(dir, requestedTask.taskName)
+          dependencies?.push(key)
+          visit(path, {
             requestedTask,
             taskDir: dir,
             packageDetails,
@@ -144,7 +169,7 @@ export class TaskGraph {
     }
 
     for (const requestedTask of requestedTasks) {
-      enqueueTask(requestedTask)
+      enqueueTask([], requestedTask)
     }
   }
 

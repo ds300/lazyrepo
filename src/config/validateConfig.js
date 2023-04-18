@@ -34,7 +34,7 @@ const baseTaskSchema = z
             in: z
               .union([
                 z.literal('all-packages'),
-                z.literal('dependencies-only'),
+                z.literal('self-and-dependencies'),
                 z.literal('self-only'),
               ])
               .optional(),
