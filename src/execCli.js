@@ -7,6 +7,7 @@ import { run } from './commands/run.js'
 import { createTimer } from './createTimer.js'
 import { readFileSync } from './fs.js'
 import { isTest } from './isTest.js'
+import { padString } from './logger/formatting.js'
 import { logger } from './logger/logger.js'
 import { rainbow } from './rainbow.js'
 
@@ -72,7 +73,7 @@ export async function execCli(argv) {
   try {
     cli.parse(argv, { run: false })
     await cli.runMatchedCommand()
-    logger.log(`\t    Time:\t${timer.formatElapsedTime()}`)
+    logger.log(`${padString('Time:')} ${timer.formatElapsedTime()}`)
   } catch (/** @type {any} */ e) {
     // find out if this is a CACError instance
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

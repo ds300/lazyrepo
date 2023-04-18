@@ -45,10 +45,10 @@ test('excludes take precedence', async () => {
         build::<rootDir> input manifest saved: .lazy/manifests/build
         build::<rootDir> ✔ done in 1.00s
 
-        \t   Tasks:	1 successful, 1 Total
-        \t  Cached:	0 cached, 1 Total
-        \tLaziness:	0%
-        \t    Time:\t1.00s
+              Tasks:     1 successful, 1 Total
+             Cached:     0 cached, 1 Total
+           Laziness:     0%
+               Time:     1.00s
         "
       `)
 

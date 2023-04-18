@@ -74,10 +74,10 @@ test('running independent tasks works', async () => {
         build::packages/utils input manifest saved: packages/utils/.lazy/manifests/build
         build::packages/utils ✔ done in 1.00s
 
-        \t   Tasks:	2 successful, 2 Total
-        \t  Cached:	0 cached, 2 Total
-        \tLaziness:	0%
-        \t    Time:\t1.00s
+              Tasks:     2 successful, 2 Total
+             Cached:     0 cached, 2 Total
+           Laziness:     0%
+               Time:     1.00s
         "
       `)
 
@@ -102,10 +102,10 @@ test('running independent tasks works', async () => {
         build::packages/utils input manifest saved: packages/utils/.lazy/manifests/build
         build::packages/utils ✔ cache hit ⚡️ in 1.00s
 
-        \t   Tasks:	2 successful, 2 Total
-        \t  Cached:	2 cached, 2 Total
-        \tLaziness:	>>> MAXIMUM LAZY
-        \t    Time:\t1.00s
+              Tasks:     2 successful, 2 Total
+             Cached:     2 cached, 2 Total
+           Laziness:     >>> MAXIMUM LAZY
+               Time:     1.00s
         "
       `)
     },

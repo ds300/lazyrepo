@@ -93,3 +93,11 @@ export function decapitalize(str) {
 export const duration = (ms) => {
   return `${(ms / 1000).toFixed(2)}s`
 }
+
+/**
+ * @param {string} str
+ * @return {string}
+ */
+export function padString(str) {
+  return str.padStart(12).padEnd(16)
+}
