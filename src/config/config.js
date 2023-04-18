@@ -41,8 +41,8 @@ export class TaskConfig {
     return path.join(dir, slugify(this.name))
   }
 
-  get runType() {
-    return this._config.runType ?? 'dependent'
+  get execution() {
+    return this._config.execution ?? 'dependent'
   }
 
   get baseCommand() {

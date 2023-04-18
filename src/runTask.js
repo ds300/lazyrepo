@@ -99,9 +99,11 @@ async function runTask(task, tasks) {
   /** @type {string} */
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   let command =
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    taskConfig.runType === 'top-level' ? taskConfig.baseCommand : packageJson.scripts[task.taskName]
-  if (taskConfig.runType !== 'top-level' && command.startsWith('lazy inherit')) {
+    taskConfig.execution === 'top-level'
+      ? taskConfig.baseCommand
+      : // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        packageJson.scripts[task.taskName]
+  if (taskConfig.execution !== 'top-level' && command.startsWith('lazy inherit')) {
     if (!taskConfig.baseCommand) {
       // TODO: evaluate this stuff ahead-of-time
       logger.fail(

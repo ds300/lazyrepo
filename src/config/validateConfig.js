@@ -43,7 +43,7 @@ const baseTaskSchema = z
 /** @type {z.ZodType<import('../types.js').TopLevelTask>} */
 export const topLevelTaskSchema = baseTaskSchema
   .extend({
-    runType: z.literal('top-level'),
+    execution: z.literal('top-level'),
     baseCommand: z.string(),
   })
   .strict()
@@ -51,7 +51,7 @@ export const topLevelTaskSchema = baseTaskSchema
 /** @type {z.ZodType<import('../types.js').PackageLevelTask>} */
 export const packageLevelTaskSchema = baseTaskSchema
   .extend({
-    runType: z.union([z.literal('dependent'), z.literal('independent')]).optional(),
+    execution: z.union([z.literal('dependent'), z.literal('independent')]).optional(),
     baseCommand: z.string().optional(),
   })
   .strict()

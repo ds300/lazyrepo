@@ -126,7 +126,7 @@ export interface TopLevelTask extends BaseTask {
    *   You must specify a command to run.
    *   You may also want to add a `package.json` script with the same name that calls `lazy`.
    */
-  runType: 'top-level'
+  execution: 'top-level'
   /**
    * The command to run for this task
    */
@@ -155,7 +155,7 @@ export interface PackageLevelTask extends BaseTask {
    *   You may also want to add a `package.json` script with the same name that calls `lazy`.
    *
    */
-  runType?: 'dependent' | 'independent'
+  execution?: 'dependent' | 'independent'
   /**
    * The command to run for this task if the task uses `lazy inherit`
    */

@@ -63,7 +63,7 @@ export async function computeManifest({ tasks, task }) {
   for (const [otherTaskName, depConfig] of Object.entries(task.taskConfig.runsAfter ?? {})) {
     if (!depConfig.inheritsInput && depConfig.usesOutput === false) continue
     const isTopLevel =
-      tasks.config.getTaskConfig(task.taskDir, otherTaskName).runType === 'top-level'
+      tasks.config.getTaskConfig(task.taskDir, otherTaskName).execution === 'top-level'
 
     const key = tasks.config.getTaskKey(
       isTopLevel ? tasks.config.workspaceRoot : task.taskDir,
@@ -86,7 +86,7 @@ export async function computeManifest({ tasks, task }) {
   }
 
   if (
-    task.taskConfig.runType !== 'independent' &&
+    task.taskConfig.execution !== 'independent' &&
     (task.taskConfig.cache?.inheritsInputFromDependencies ?? true)
   ) {
     // TODO: test that localDeps is always sorted
