@@ -51,7 +51,9 @@ export async function run({ taskName, options }) {
 
   const stats = tasks.getTaskStats()
   logger.log(
-    `\n${padString('Tasks:')} ${kleur.green(stats.successful)} successful, ${stats.allTasks} Total`,
+    `\n${padString('Tasks:')} ${kleur.green(stats.successful.toString() + ' successful')}, ${
+      stats.allTasks
+    } Total`,
   )
   logger.log(`${padString('Cached:')} ${stats['success:lazy']} cached, ${stats.allTasks} Total`)
   if (stats.allTasks === stats['success:lazy']) {
