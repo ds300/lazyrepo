@@ -77,10 +77,10 @@ export class TaskGraph {
       }
       const result = this.allTasks[key]
 
-      for (const depTaskName of Object.keys(taskConfig.runsAfter)) {
+      for (const [taskName] of taskConfig.runsAfterEntries) {
         enqueueTask(
           {
-            taskName: depTaskName,
+            taskName,
             extraArgs: [],
             force: requestedTask.force,
             filterPaths: [taskDir],

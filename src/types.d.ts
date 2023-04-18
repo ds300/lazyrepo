@@ -30,7 +30,28 @@ export type RepoDetails = {
   packagesInTopologicalOrder: PackageDetails[]
 }
 
-export type GlobConfig = string[] | { include?: string[]; exclude?: string[] }
+/**
+ * Either a list of include globs, or an object with include and/or exclude globs.
+ *
+ * Note that dotfiles are excluded by default, and must be explicity added to an 'include' glob pattern.
+ * in order to be included.
+ */
+export type GlobConfig =
+  | string[]
+  | {
+      /**
+       * Globs of files that should be included.
+       *
+       * @default ['**\/*']
+       */
+      include?: string[]
+      /**
+       * Globs of files that should be excluded.
+       *
+       * @default []
+       */
+      exclude?: string[]
+    }
 
 export type CacheConfig = {
   /**
@@ -66,28 +87,40 @@ export type CacheConfig = {
   inheritsInputFromDependencies?: boolean
 }
 
+export type RunsAfter = {
+  /**
+   * Whether or not this task uses the files created by the named task.
+   * If true, they will be included as cache inputs.
+   *
+   * @default true
+   */
+  usesOutput?: boolean
+  /**
+   * Whether or not the input files of the named task should contribute to the
+   * cache inputs of this task.
+   *
+   * @default false
+   */
+  inheritsInput?: boolean
+
+  /**
+   * Which packages to wait for.
+   *
+   * "all-packages" (default) - it will wait for this task to complete in all packages that implement this task as an npm script.
+   *
+   * "dependencies-only" - it will wait for this task to complete in all packages that are dependencies of this package.
+   *
+   * "self-only" - it will wait for this task to complete in the current package only.
+   *
+   * @default 'all-packages'
+   */
+  in?: 'all-packages' | 'dependencies-only' | 'self-only'
+}
+
 type BaseTask = {
   /** The other commands that must be completed before this one can run. */
   runsAfter?: {
-    [taskName: string]: {
-      /**
-       * Whether or not this task uses the files created by the named task.
-       * If true, they will be included as cache inputs.
-       *
-       * @default true
-       */
-      usesOutput?: boolean
-      /**
-       * Whether or not the input files of the named task should contribute to the
-       * cache inputs of this task.
-       *
-       * @default false
-       */
-      inheritsInput?: boolean
-
-      // API idea
-      // inPackages: 'all' | 'dependencies-only' | 'self-only' // default 'all'
-    }
+    [taskName: string]: RunsAfter
   }
 
   /**
@@ -127,6 +160,8 @@ export interface TopLevelTask extends BaseTask {
    *   The task will run in the root directory of the repo.
    *   You must specify a command to run.
    *   You may also want to add a `package.json` script with the same name that calls `lazy`.
+   *
+   * @default 'dependent'
    */
   execution: 'top-level'
   /**
@@ -156,6 +191,7 @@ export interface PackageLevelTask extends BaseTask {
    *   You must specify a command to run.
    *   You may also want to add a `package.json` script with the same name that calls `lazy`.
    *
+   * @default 'dependent'
    */
   execution?: 'dependent' | 'independent'
   /**
@@ -189,15 +225,18 @@ export interface LazyConfig {
      *
      * Note that these glob patterns are evaluated in the task's directory, which is usually not the workspace root directory.
      * If you want to specify a glob pattern that is relative to the root, prefix the pattern with `<rootDir>/`.
+     *
+     * Note also that dotfiles are excluded by default, and must be explicity added to an 'include' glob pattern.
+     * in order to be included.
      */
-    includes?: string[]
+    include?: string[]
     /**
      * Globs of files that should be excluded from every task's input manifest.
      *
      * Note that these glob patterns are evaluated in the task's directory, which is usually not the workspace root directory.
      * If you want to specify a glob pattern that is relative to the root, prefix the pattern with `<rootDir>/`.
      */
-    excludes?: string[]
+    exclude?: string[]
     /**
      * The names of any environment variables that should be included in every task's input manifest.
      */

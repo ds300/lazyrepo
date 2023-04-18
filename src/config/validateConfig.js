@@ -31,6 +31,13 @@ const baseTaskSchema = z
           .object({
             usesOutput: z.boolean().optional(),
             inheritsInput: z.boolean().optional(),
+            in: z
+              .union([
+                z.literal('all-packages'),
+                z.literal('dependencies-only'),
+                z.literal('self-only'),
+              ])
+              .optional(),
           })
           .strict(),
       )
@@ -64,8 +71,8 @@ export const lazyConfigSchema = z
   .object({
     baseCacheConfig: z
       .object({
-        includes: z.array(z.string()).optional(),
-        excludes: z.array(z.string()).optional(),
+        include: z.array(z.string()).optional(),
+        exclude: z.array(z.string()).optional(),
         envInputs: z.array(z.string()).optional(),
       })
       .strict()
