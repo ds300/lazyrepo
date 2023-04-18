@@ -194,7 +194,6 @@ export async function runIntegrationTest(
 
   const t = new TestHarness({ dir, packageManager: config.packageManager, spawn: true })
   await fn(t)
-  naiveRimraf(dir)
 }
 
 export function makePackageJson(opts: Partial<PackageJson>) {

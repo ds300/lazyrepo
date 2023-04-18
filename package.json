@@ -12,7 +12,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "rimraf .test && jest",
     "update-snapshots": "jest -u",
     "clean": "rm -rf node_modules && pnpm install",
     "format": "prettier --write .",
