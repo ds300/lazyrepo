@@ -16,7 +16,7 @@ test('excludes take precedence', async () => {
               cache: {
                 inputs: ['scripts/build.js'],
               },
-              runType: 'top-level',
+              execution: 'top-level',
               baseCommand: 'node scripts/build.js > .out.txt',
             },
           },

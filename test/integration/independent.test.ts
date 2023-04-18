@@ -9,7 +9,7 @@ const makeDir = ({ buildCommand = 'echo $RANDOM > out.txt' } = {}): Dir => ({
             exclude: ['out.txt'],
           },
         },
-        runType: 'independent',
+        execution: 'independent',
       },
     },
   }),

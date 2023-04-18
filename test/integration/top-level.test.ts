@@ -4,7 +4,7 @@ const makeDir = (): Dir => ({
   'lazy.config.js': makeConfigFile({
     tasks: {
       build: {
-        runType: 'top-level',
+        execution: 'top-level',
         cache: {
           inputs: {
             exclude: ['out.txt'],

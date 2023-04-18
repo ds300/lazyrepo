@@ -86,7 +86,7 @@ export class TaskGraph {
         )
       }
 
-      if (taskConfig.runType !== 'independent') {
+      if (taskConfig.execution !== 'independent') {
         for (const packageName of packageDetails?.localDeps ?? []) {
           const pkg = this.config.repoDetails.packagesByName[packageName]
           if (pkg.scripts?.[requestedTask.taskName]) {
@@ -112,7 +112,7 @@ export class TaskGraph {
      */
     const enqueueTask = (dir, requestedTask, dependencies) => {
       const rootTaskConfig = this.config.getTaskConfig(dir, requestedTask.taskName)
-      if (rootTaskConfig.runType === 'top-level') {
+      if (rootTaskConfig.execution === 'top-level') {
         dependencies?.push(
           this.config.getTaskKey(this.config.workspaceRoot, requestedTask.taskName),
         )
