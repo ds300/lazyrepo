@@ -44,7 +44,11 @@ test('excludes take precedence', async () => {
         build::<rootDir> RUN node scripts/build.js > .out.txt in 
         build::<rootDir> input manifest saved: .lazy/manifests/build
         build::<rootDir> ✔ done in 1.00s
-        ✔ Done in 1.00s
+
+        \t   Tasks:	1 successful, 1 Total
+        \t  Cached:	0 cached, 1 Total
+        \tLaziness:	0%
+        \t    Time:\t1.00s
         "
       `)
 

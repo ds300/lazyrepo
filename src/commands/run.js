@@ -1,3 +1,4 @@
+import kleur from 'kleur'
 import { TaskGraph } from '../TaskGraph.js'
 import { Config } from '../config/config.js'
 import { InteractiveLogger } from '../logger/InteractiveLogger.js'
@@ -43,12 +44,18 @@ export async function run({ taskName, options }) {
   if (logger instanceof InteractiveLogger) logger.clearTasks()
 
   const failedTasks = tasks.allFailedTasks()
-
   if (failedTasks.length > 0) {
     logger.fail(`Failed tasks: ${failedTasks.join(', ')}`)
   }
 
-  if (Object.entries(tasks.allTasks).every(([, task]) => task.status === 'success:lazy')) {
-    logger.log('\n' + rainbow('>>> MAXIMUM LAZY'))
+  const stats = tasks.getTaskStats()
+  logger.log(`\n\t   Tasks:\t${kleur.green(stats.successful)} successful, ${stats.allTasks} Total`)
+  logger.log(`\t  Cached:\t${stats['success:lazy']} cached, ${stats.allTasks} Total`)
+  if (stats.allTasks === stats['success:lazy']) {
+    logger.log(`\tLaziness:\t${rainbow('>>> MAXIMUM LAZY')}`)
+  } else {
+    const laziness = Math.round((stats['success:lazy'] / stats.allTasks) * 100)
+    const color = laziness > 50 ? kleur.green : laziness > 25 ? kleur.yellow : kleur.red
+    logger.log(`\tLaziness:\t${color(laziness.toString() + '%')}`)
   }
 }
