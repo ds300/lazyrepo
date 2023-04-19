@@ -1,9 +1,6 @@
 lockfileVersion: '6.0'
 
 patchedDependencies:
-  cac@6.7.14:
-    hash: ve2272a2v5qqslnkvoqbdhrpfq
-    path: patches/cac@6.7.14.patch
   jest-resolve@29.5.0:
     hash: jgtycvkxekuiswmxc4tnz5vlqy
     path: patches/jest-resolve@29.5.0.patch
@@ -84,7 +81,7 @@ importers:
         version: 10.44.0(@types/node@18.15.11)(typescript@5.0.3)
       cac:
         specifier: ^6.7.14
-        version: 6.7.14(patch_hash=ve2272a2v5qqslnkvoqbdhrpfq)
+        version: 6.7.14
       esbuild:
         specifier: ^0.17.15
         version: 0.17.15
@@ -2143,11 +2140,10 @@ packages:
       semver: 7.4.0
     dev: true
 
-  /cac@6.7.14(patch_hash=ve2272a2v5qqslnkvoqbdhrpfq):
+  /cac@6.7.14:
     resolution: {integrity: sha512-b6Ilus+c3RrdDk+JhLKUAQfzzgLEPy6wcXqS7f/xe1EETvsDP6GORG7SFuOs6cID5YkqchW/LXZbX5bc8j7ZcQ==}
     engines: {node: '>=8'}
     dev: true
-    patched: true
 
   /cacache@16.1.3:
     resolution: {integrity: sha512-/+Emcj9DAXxX4cwlLmRI9c166RuL3w30zp4R7Joiv2cQTtTtA+jeuCAjH3ZlGnYS3tKENSrKhAzVVP9GVyzeYQ==}

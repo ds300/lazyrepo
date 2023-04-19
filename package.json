@@ -89,8 +89,7 @@
   },
   "pnpm": {
     "patchedDependencies": {
-      "jest-resolve@29.5.0": "patches/jest-resolve@29.5.0.patch",
-      "cac@6.7.14": "patches/cac@6.7.14.patch"
+      "jest-resolve@29.5.0": "patches/jest-resolve@29.5.0.patch"
     }
   },
   "auto": {

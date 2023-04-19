@@ -14,8 +14,6 @@ const cli = cac('lazy')
 
 cli
   .command('<task>', 'run task in all packages')
-  .option('--color', 'forces the use of color in the output')
-  .option('--no-color', 'suppresses the use of color in the output')
   .option('--filter <paths>', '[string] run task in packages specified by paths')
   .option('--force', '[boolean] ignore existing cached artifacts', {
     default: false,
@@ -27,8 +25,6 @@ cli
 
 cli
   .command('run <task>', 'run task in all packages')
-  .option('--color', 'forces the use of color in the output')
-  .option('--no-color', 'suppresses the use of color in the output')
   .option('--filter <paths>', '[string] run task in packages specified by paths')
   .option('--force', '[boolean] ignore existing cached artifacts', {
     default: false,
@@ -38,29 +34,19 @@ cli
     await run({ taskName, options })
   })
 
-cli
-  .command('init', 'create config file')
-  .action(() => {
-    init()
-  })
-  .option('--color', 'forces the use of color in the output')
-  .option('--no-color', 'suppresses the use of color in the output')
+cli.command('init', 'create config file').action(() => {
+  init()
+})
 
-cli
-  .command('clean', 'delete all local cache data')
-  .action(() => {
-    clean()
-  })
-  .option('--color', 'forces the use of color in the output')
-  .option('--no-color', 'suppresses the use of color in the output')
+cli.command('clean', 'delete all local cache data').action(() => {
+  clean()
+})
 
 cli
   .command('inherit', 'run command from configuration file specified by script name')
   .action(async () => {
     await inherit()
   })
-  .option('--color', 'forces the use of color in the output')
-  .option('--no-color', 'suppresses the use of color in the output')
 
 cli.help()
 
