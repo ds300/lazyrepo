@@ -90,7 +90,7 @@ export async function computeManifest({ tasks, task }) {
     (task.taskConfig.cache?.inheritsInputFromDependencies ?? true)
   ) {
     // TODO: test that localDeps is always sorted
-    const upstreamTaskKeys = task.workspace?.localDependencies
+    const upstreamTaskKeys = task.workspace.localDependencyWorkspaceNames
       .map((packageName) => {
         const depPackage = tasks.config.project.getWorkspaceByName(packageName)
         const key = tasks.config.getTaskKey(depPackage.dir, task.taskName)

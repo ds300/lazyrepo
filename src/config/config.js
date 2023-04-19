@@ -2,7 +2,7 @@ import slugify from '@sindresorhus/slugify'
 import path, { isAbsolute, relative } from 'path'
 import pc from 'picocolors'
 import { logger } from '../logger/logger.js'
-import { Project } from '../workspace.js'
+import { Project } from '../project/workspace.js'
 import { resolveConfig } from './resolveConfig.js'
 
 /**
@@ -140,10 +140,10 @@ export class Config {
   }
 
   /**
-   * @param {string} dir
+   * @param {string} cwd
    */
-  static async from(dir) {
-    const project = new Project(dir)
+  static async fromCwd(cwd) {
+    const project = Project.fromCwd(cwd)
     const rootConfig = await resolveConfig(project.root.dir)
 
     if (!rootConfig.filePath) {

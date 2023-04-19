@@ -1,5 +1,5 @@
 import type { TaskConfig } from './config/config.js'
-import { Workspace } from './workspace.js'
+import { Workspace } from './project/project-types.js'
 
 export type TaskStatus = 'pending' | 'running' | 'success:eager' | 'success:lazy' | 'failure'
 

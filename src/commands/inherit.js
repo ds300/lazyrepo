@@ -10,7 +10,7 @@ export async function inherit() {
     )
     process.exit(1)
   }
-  const config = await Config.from(process.cwd())
+  const config = await Config.fromCwd(process.cwd())
   const task = config.getTaskConfig(process.cwd(), scriptName)
   if (!task.baseCommand) {
     logger.fail(

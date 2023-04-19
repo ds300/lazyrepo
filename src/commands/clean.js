@@ -1,10 +1,10 @@
 import glob from 'fast-glob'
 import { logger } from '../logger/logger.js'
 import { naiveRimraf } from '../naiveRimraf.js'
-import { Project } from '../workspace.js'
+import { Project } from '../project/workspace.js'
 
 export function clean() {
-  const project = new Project(process.cwd())
+  const project = Project.fromCwd(process.cwd())
   const cacheDirs = glob.sync(['**/.lazy'], {
     ignore: ['**/node_modules'],
     absolute: true,

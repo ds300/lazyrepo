@@ -2,42 +2,60 @@ import { join } from 'path'
 import stripAnsi from 'strip-ansi'
 import { TaskGraph } from '../src/TaskGraph.js'
 import { Config } from '../src/config/config.js'
-import { LazyConfig, PackageDetails, RepoDetails } from '../src/types.js'
-import { topologicalSortPackages } from '../src/workspace.js'
+import { Workspace } from '../src/project/project-types.js'
+import { Project } from '../src/project/workspace.js'
+import { LazyConfig } from '../src/types.js'
 
 const cwd = process.cwd()
 
-function makePackage(name: string, localDeps: string[], scriptNames: string[]): PackageDetails {
+function makeWorkspace(name: string, localDeps: string[], scriptNames: string[]): Workspace {
   return {
     dir: join(cwd, `packages/${name}`),
-    localDeps,
     name,
     scripts: Object.fromEntries(scriptNames.map((name) => [name, 'whatever'])),
+    allDependencyNames: localDeps,
+    childWorkspaceGlobs: [],
+    childWorkspaceNames: [],
+    localDependencyWorkspaceNames: localDeps,
   }
 }
 
-function makeRepoDetails(packages: PackageDetails[]): RepoDetails {
-  const packagesByName = Object.fromEntries(packages.map((pkg) => [pkg.name, pkg]))
-  return {
-    packagesByDir: Object.fromEntries(packages.map((pkg) => [pkg.dir, pkg])),
-    packagesByName,
-    packagesInTopologicalOrder: topologicalSortPackages(packagesByName),
-  }
+function makeProject(workspaces: Workspace[]): Project {
+  const workspacesByName: Record<string, Workspace> = Object.fromEntries(
+    workspaces
+      .concat([
+        {
+          dir: cwd,
+          name: 'root',
+          scripts: {},
+          allDependencyNames: [],
+          childWorkspaceGlobs: [],
+          childWorkspaceNames: [],
+          localDependencyWorkspaceNames: [],
+        } satisfies Workspace,
+      ])
+      .map((pkg) => [pkg.name, pkg]),
+  )
+  return new Project(
+    {
+      rootWorkspaceName: 'root',
+      workspacesByName,
+    },
+    'npm',
+  )
 }
 
-function createRepoDetails(): RepoDetails {
-  const packages: PackageDetails[] = [
-    makePackage('core', ['utils'], ['prepack', 'pack', 'core-build']),
-    makePackage('utils', [], ['prepack', 'pack', 'utils-build']),
+function createProject(): Project {
+  const workspaces: Workspace[] = [
+    makeWorkspace('core', ['utils'], ['prepack', 'pack', 'core-build']),
+    makeWorkspace('utils', [], ['prepack', 'pack', 'utils-build']),
   ]
-  return makeRepoDetails(packages)
+  return makeProject(workspaces)
 }
 
-function makeConfig(repoDetails: RepoDetails, tasks: LazyConfig['tasks']): Config {
+function makeConfig(project: Project, tasks: LazyConfig['tasks']): Config {
   return new Config({
-    workspaceRoot: cwd,
-    packageDirConfigs: {},
-    repoDetails,
+    project,
     rootConfig: {
       config: {
         tasks,
@@ -48,7 +66,7 @@ function makeConfig(repoDetails: RepoDetails, tasks: LazyConfig['tasks']): Confi
 }
 
 function createConfig(tasks: LazyConfig['tasks']): Config {
-  return makeConfig(createRepoDetails(), tasks)
+  return makeConfig(createProject(), tasks)
 }
 
 function makeTask(
@@ -184,10 +202,10 @@ describe('running "pack" on its own in a package with dependencies', () => {
   const graph = (taskConfig: LazyConfig['tasks']) => {
     return new TaskGraph({
       config: makeConfig(
-        makeRepoDetails([
-          makePackage('app', ['utils', 'styles'], ['prepack', 'pack', 'core-build']),
-          makePackage('styles', ['utils'], ['prepack', 'pack', 'styles-build']),
-          makePackage('utils', [], ['prepack', 'pack', 'utils-build']),
+        makeProject([
+          makeWorkspace('app', ['utils', 'styles'], ['prepack', 'pack', 'core-build']),
+          makeWorkspace('styles', ['utils'], ['prepack', 'pack', 'styles-build']),
+          makeWorkspace('utils', [], ['prepack', 'pack', 'utils-build']),
         ]),
         taskConfig,
       ),
@@ -332,10 +350,10 @@ describe('running "pack" on its own in a package with both dependents and depend
   const graph = (taskConfig: LazyConfig['tasks']) => {
     return new TaskGraph({
       config: makeConfig(
-        makeRepoDetails([
-          makePackage('app', ['utils', 'styles'], ['prepack', 'pack', 'core-build']),
-          makePackage('styles', ['utils'], ['prepack', 'pack', 'styles-build']),
-          makePackage('utils', [], ['prepack', 'pack', 'utils-build']),
+        makeProject([
+          makeWorkspace('app', ['utils', 'styles'], ['prepack', 'pack', 'core-build']),
+          makeWorkspace('styles', ['utils'], ['prepack', 'pack', 'styles-build']),
+          makeWorkspace('utils', [], ['prepack', 'pack', 'utils-build']),
         ]),
         taskConfig,
       ),

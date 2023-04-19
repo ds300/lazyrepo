@@ -89,9 +89,6 @@ class TestHarness {
       status = code ?? 0
       return undefined as never
     })
-    global.__test__workspaceRoot = options?.packageDir
-      ? join(this.config.dir, options.packageDir)
-      : this.config.dir
     try {
       await execCli(['node', join(process.cwd(), 'bin.js'), ...args])
       if (!throwOnError || status === 0) {

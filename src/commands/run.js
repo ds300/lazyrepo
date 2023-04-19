@@ -12,7 +12,7 @@ import { rainbow } from '../rainbow.js'
  */
 export async function run({ taskName, options }) {
   const timer = createTimer()
-  const config = await Config.from(process.cwd())
+  const config = await Config.fromCwd(process.cwd())
 
   const filterPaths = options.filter
     ? Array.isArray(options.filter)

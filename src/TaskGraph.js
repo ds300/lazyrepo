@@ -54,7 +54,7 @@ export class TaskGraph {
 
     /**
      * @param {string[]} path
-     * @param {{ requestedTask: import('./types.js').RequestedTask, workspace: import('./workspace.js').Workspace }} arg
+     * @param {{ requestedTask: import('./types.js').RequestedTask, workspace: import('./project/project-types.js').Workspace }} arg
      * @returns
      */
     const visit = (path, { requestedTask, workspace }) => {
@@ -90,7 +90,7 @@ export class TaskGraph {
         let filterPaths = []
         if (upstreamTaskConfig.in === 'self-and-dependencies') {
           filterPaths = [workspace.dir].concat(
-            workspace.localDependencies.map(
+            workspace.localDependencyWorkspaceNames.map(
               (dep) => this.config.project.getWorkspaceByName(dep).dir,
             ) ?? [],
           )
@@ -110,8 +110,8 @@ export class TaskGraph {
       }
 
       if (taskConfig.execution === 'dependent') {
-        for (const packageName of workspace.localDependencies ?? []) {
-          const dependency = this.config.project.getWorkspaceByName(packageName)
+        for (const workspaceName of workspace.localDependencyWorkspaceNames ?? []) {
+          const dependency = this.config.project.getWorkspaceByName(workspaceName)
           if (dependency.scripts?.[requestedTask.taskName]) {
             const depKey = this.config.getTaskKey(dependency.dir, requestedTask.taskName)
             result.dependencies.push(depKey)
@@ -312,7 +312,7 @@ export class TaskGraph {
  * Match a list of filter path globs against the list of package directories.
  *
  * @param {string} workspaceRoot
- * @param {import('./workspace.js').Project} project
+ * @param {import('./project/workspace.js').Project} project
  * @param {string[]} filterPaths
  */
 function filterPackageDirs(workspaceRoot, project, filterPaths) {
