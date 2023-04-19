@@ -33,8 +33,8 @@ test('excludes take precedence', async () => {
 
       expect(firstRun.status).toBe(0)
       expect(firstRun.output).toMatchInlineSnapshot(`
-        "lazyrepo @0.0.0-test
-        --------------------
+        "lazyrepo 0.0.0-test
+        -------------------
         Loaded config file: lazy.config.js
 
         build::<rootDir> Finding files matching scripts/**/* took 1.00s
@@ -45,9 +45,9 @@ test('excludes take precedence', async () => {
         build::<rootDir> input manifest saved: .lazy/manifests/build
         build::<rootDir> ✔ done in 1.00s
 
-              Tasks:     1 successful, 1 total
-             Cached:     0 cached, 1 total
-               Time:     1.00s
+             Tasks:  1 successful, 1 total
+            Cached:  0/1 cached
+              Time:  1.00s
 
         "
       `)

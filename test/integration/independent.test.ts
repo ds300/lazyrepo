@@ -53,8 +53,8 @@ test('running independent tasks works', async () => {
       expect(firstRun.status).toBe(0)
       expect(t.exists('packages/core/out.txt')).toBe(true)
       expect(firstRun.output).toMatchInlineSnapshot(`
-        "lazyrepo @0.0.0-test
-        --------------------
+        "lazyrepo 0.0.0-test
+        -------------------
         Loaded config file: lazy.config.js
 
         build::packages/core Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
@@ -74,9 +74,9 @@ test('running independent tasks works', async () => {
         build::packages/utils input manifest saved: packages/utils/.lazy/manifests/build
         build::packages/utils ✔ done in 1.00s
 
-              Tasks:     2 successful, 2 total
-             Cached:     0 cached, 2 total
-               Time:     1.00s
+             Tasks:  2 successful, 2 total
+            Cached:  0/2 cached
+              Time:  1.00s
 
         "
       `)
@@ -85,8 +85,8 @@ test('running independent tasks works', async () => {
 
       expect(secondRun.status).toBe(0)
       expect(secondRun.output).toMatchInlineSnapshot(`
-        "lazyrepo @0.0.0-test
-        --------------------
+        "lazyrepo 0.0.0-test
+        -------------------
         Loaded config file: lazy.config.js
 
         build::packages/core Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
@@ -102,9 +102,9 @@ test('running independent tasks works', async () => {
         build::packages/utils input manifest saved: packages/utils/.lazy/manifests/build
         build::packages/utils ✔ cache hit ⚡️ in 1.00s
 
-              Tasks:     2 successful, 2 total
-             Cached:     >>> MAXIMUM LAZY
-               Time:     1.00s
+             Tasks:  2 successful, 2 total
+            Cached:  2/2 >>> MAXIMUM LAZY
+              Time:  1.00s
 
         "
       `)
