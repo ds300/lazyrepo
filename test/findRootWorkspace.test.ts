@@ -191,4 +191,27 @@ describe('findRootWorkspace', () => {
     expect(findRootWorkspace('/a/b/c')).toEqual(childWorkspace)
     expect(findRootWorkspace('/a/b/c')?.name).toEqual('hello')
   })
+
+  it('should skip the middle package.json if the middle one does not reference the grandchild but the root does', () => {
+    const rootWorkspace = makeWorkspace('/a', 'yo', ['b/*'])
+    const childWorkspace = makeWorkspace('/a/b', 'hello')
+    const grandWorkspace = makeWorkspace('/a/b/c', 'sup')
+    setPaths({
+      a: {
+        'package.json': JSON.stringify(rootWorkspace),
+        b: {
+          'package.json': JSON.stringify(childWorkspace),
+          c: {
+            'package.json': JSON.stringify(grandWorkspace),
+          },
+        },
+      },
+    })
+
+    expect(findRootWorkspace('/a/b/c')).toEqual(rootWorkspace)
+    expect(findRootWorkspace('/a/b/c')?.name).toEqual('yo')
+    expect(findRootWorkspace('/a/b')).toEqual(childWorkspace)
+    expect(findRootWorkspace('/a')).toEqual(rootWorkspace)
+    expect(findRootWorkspace('/')).toEqual(null)
+  })
 })

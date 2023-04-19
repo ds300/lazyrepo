@@ -1,4 +1,4 @@
-import { assert } from 'console'
+import assert from 'assert'
 import micromatch from 'micromatch'
 import { dirname, isAbsolute, join, sep } from 'path'
 import { existsSync } from '../fs.js'
@@ -9,7 +9,7 @@ import { loadWorkspace } from './loadWorkspace.js'
  * @returns {import('./project-types.js').PartialWorkspace | null}
  */
 function findContainingPackage(dir) {
-  assert(isAbsolute(dir), 'findContainingPackage: dir must be absolute')
+  assert(dir && isAbsolute(dir), 'findContainingPackage: dir must be absolute')
   let currentDir = dir
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -26,12 +26,12 @@ function findContainingPackage(dir) {
 
 /**
  * @param {import('./project-types.js').PartialWorkspace} parent
- * @param {import('./project-types.js').PartialWorkspace} child
+ * @param {string} childDir
  */
-function hasChildWorkspace(parent, child) {
+function hasChildWorkspace(parent, childDir) {
   for (const globDef of parent.childWorkspaceGlobs) {
     const absoluteGlob = isAbsolute(globDef) ? globDef : join(parent.dir, globDef)
-    if (micromatch([child.dir], absoluteGlob).length > 0) {
+    if (micromatch([childDir], absoluteGlob).length > 0) {
       return true
     }
   }
@@ -43,16 +43,24 @@ function hasChildWorkspace(parent, child) {
  * @returns
  */
 export function findRootWorkspace(dir) {
-  let workspace = findContainingPackage(dir)
-  if (!workspace) {
+  assert(dir && isAbsolute(dir), 'findRootWorkspace: dir must be absolute')
+  let rootWorkspace = findContainingPackage(dir)
+  if (!rootWorkspace) {
     return null
   }
+  let childDir = rootWorkspace.dir
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const parent = findContainingPackage(dirname(workspace.dir))
-    if (!parent || !hasChildWorkspace(parent, workspace)) {
-      return workspace
+    const parent = findContainingPackage(dirname(childDir))
+    if (!parent) {
+      return rootWorkspace
     }
-    workspace = parent
+    if (hasChildWorkspace(parent, rootWorkspace.dir)) {
+      rootWorkspace = parent
+    } else if (parent.dir === sep) {
+      return rootWorkspace
+    } else {
+      childDir = parent.dir
+    }
   }
 }
