@@ -248,22 +248,10 @@ export class TaskGraph {
     const tick = () => {
       const runningTasks = this.allRunningTasks()
       const readyTasks = this.allReadyTasks()
-      const failedTasks = this.allFailedTasks()
 
-      if (runningTasks.length === 0 && readyTasks.length === 0 && failedTasks.length === 0) {
+      if (runningTasks.length === 0 && readyTasks.length === 0) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return resolve(null)
-      }
-
-      if (failedTasks.length > 0 && runningTasks.length === 0) {
-        // some tasks failed, and there are no more running tasks
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return resolve(null)
-      }
-
-      if (failedTasks.length > 0) {
-        // don't start any more tasks, just wait for the running ones to finish
-        return
       }
 
       if (runningTasks.length >= maxConcurrentTasks) {

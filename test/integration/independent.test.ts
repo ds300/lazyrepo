@@ -159,3 +159,54 @@ test('running independent tasks works in parallel', async () => {
     },
   )
 })
+
+test('when a task fails it continues running the others', () => {
+  return runIntegrationTest(
+    {
+      packageManager: 'pnpm',
+      structure: makeDir({
+        buildCommand: 'echo $RANDOM > out.txt && exit 1',
+      }),
+      workspaceGlobs: ['packages/*'],
+    },
+    async (t) => {
+      expect(t.exists('packages/core/out.txt')).toBe(false)
+      expect(t.exists('packages/utils/out.txt')).toBe(false)
+      const firstRun = await t.exec(['build'], {
+        throwOnError: false,
+      })
+
+      expect(firstRun.status).toBe(1)
+      expect(t.exists('packages/core/out.txt')).toBe(true)
+      expect(t.exists('packages/utils/out.txt')).toBe(true)
+      expect(firstRun.output).toMatchInlineSnapshot(`
+        "lazyrepo 0.0.0-test
+        -------------------
+        Loaded config file: lazy.config.js
+
+        build::packages/core Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
+        build::packages/core Finding files matching lazy.config.* took 1.00s
+        build::packages/core Finding files matching packages/core/**/* took 1.00s
+        build::packages/core Hashed 4/4 files in 1.00s
+        build::packages/core cache miss, no previous manifest found
+        build::packages/core RUN echo $RANDOM > out.txt && exit 1 in packages/core
+        build::packages/core ∙ ERROR ∙ failed
+        build::packages/utils Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
+        build::packages/utils Finding files matching lazy.config.* took 1.00s
+        build::packages/utils Finding files matching packages/utils/**/* took 1.00s
+        build::packages/utils Hashed 4/4 files in 1.00s
+        build::packages/utils cache miss, no previous manifest found
+        build::packages/utils RUN echo $RANDOM > out.txt && exit 1 in packages/utils
+        build::packages/utils ∙ ERROR ∙ failed
+
+        Failed tasks: build::packages/core, build::packages/utils
+
+             Tasks:  0 successful, 2 failed, 2 total
+            Cached:  0/2 cached
+              Time:  1.00s
+
+        "
+      `)
+    },
+  )
+})
