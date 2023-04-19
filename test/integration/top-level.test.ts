@@ -59,7 +59,11 @@ test('running a top-level tasks works', async () => {
         build::<rootDir> RUN echo hello > out.txt in 
         build::<rootDir> input manifest saved: .lazy/manifests/build
         build::<rootDir> ✔ done in 1.00s
-        ✔ Done in 1.00s
+
+              Tasks:     1 successful, 1 total
+             Cached:     0 cached, 1 total
+               Time:     1.00s
+
         "
       `)
 
@@ -78,8 +82,10 @@ test('running a top-level tasks works', async () => {
         build::<rootDir> input manifest saved: .lazy/manifests/build
         build::<rootDir> ✔ cache hit ⚡️ in 1.00s
 
-        >>> MAXIMUM LAZY
-        ✔ Done in 1.00s
+              Tasks:     1 successful, 1 total
+             Cached:     >>> MAXIMUM LAZY
+               Time:     1.00s
+
         "
       `)
     },
