@@ -1,7 +1,7 @@
-import kleur from 'kleur'
 import micromatch from 'micromatch'
 import { cpus } from 'os'
 import { isAbsolute, join } from 'path'
+import pc from 'picocolors'
 import { isTest } from './isTest.js'
 import { logger } from './logger/logger.js'
 import { runTaskIfNeeded } from './runTask.js'
@@ -62,9 +62,7 @@ export class TaskGraph {
       const key = this.config.getTaskKey(taskDir, requestedTask.taskName)
       if (this.allTasks[key]) {
         if (path.includes(key)) {
-          logger.fail(
-            `Circular dependency detected: \n${path.join('\n -> ')}\n -> ${kleur.bold(key)}`,
-          )
+          logger.fail(`Circular dependency detected: \n${path.join('\n -> ')}\n -> ${pc.bold(key)}`)
           process.exit(1)
         }
         return

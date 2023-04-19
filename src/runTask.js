@@ -1,6 +1,7 @@
 import { spawn } from 'cross-spawn'
-import kleur from 'kleur'
+
 import path, { relative } from 'path'
+import pc from 'picocolors'
 import stripAnsi from 'strip-ansi'
 import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from './fs.js'
 import { logger } from './logger/logger.js'
@@ -116,10 +117,10 @@ async function runTask(task, tasks) {
   }
 
   task.logger.log(
-    kleur.bold('RUN ') +
-      kleur.green().bold(command) +
-      (task.extraArgs.length ? kleur.cyan().bold(' ' + task.extraArgs.join(' ')) : '') +
-      kleur.gray(' in ' + relative(process.cwd(), task.taskDir)),
+    pc.bold('RUN ') +
+      pc.green(pc.bold(command)) +
+      (task.extraArgs.length ? pc.cyan(pc.bold(' ' + task.extraArgs.join(' '))) : '') +
+      pc.gray(' in ' + relative(process.cwd(), task.taskDir)),
   )
 
   const proc = spawn(command, task.extraArgs, {

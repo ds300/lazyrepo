@@ -1,5 +1,5 @@
 import { cac } from 'cac'
-import kleur from 'kleur'
+import pc from 'picocolors'
 import { clean } from './commands/clean.js'
 import { inherit } from './commands/inherit.js'
 import { init } from './commands/init.js'
@@ -64,7 +64,7 @@ export async function execCli(argv) {
     ? '0.0.0-test'
     : // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version
-  logger.log(kleur.bold('lazyrepo'), kleur.gray(`@${version}`))
+  logger.log(pc.bold('lazyrepo'), pc.gray(`@${version}`))
   logger.log(rainbow('-'.repeat(`lazyrepo @${version}`.length)))
 
   try {
@@ -77,7 +77,7 @@ export async function execCli(argv) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
       const msg = upperCaseFirst(e.message)
       // eslint-disable-next-line no-console
-      console.error(kleur.red(msg) + '\n')
+      console.error(pc.red(msg) + '\n')
       cli.outputHelp()
       process.exit(1)
     } else {

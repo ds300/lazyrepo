@@ -2,7 +2,7 @@
 // Copyright (c) 2017 Raphael Amorim
 // Source: https://github.com/raphamorim/go-rainbow
 
-import { isatty } from 'tty'
+import pc from 'picocolors'
 
 // SPDX-License-Identifier: MIT
 /**
@@ -31,7 +31,7 @@ const char = (c, [r, g, b]) => `\x1b[1m\x1b[38;2;${r};${g};${b}m${c}\x1b[0m\x1b[
  * @returns {string}
  */
 export function rainbow(text) {
-  if (!isatty(process.stdout.fd)) {
+  if (!pc.isColorSupported) {
     return text
   }
   let rainbowStr = ''

@@ -1,14 +1,14 @@
-import k from 'kleur'
+import pc from 'picocolors'
 
 /**
- * @type {Array<{fg: import('kleur').Color, bg: import('kleur').Color}>}
+ * @type {Array<{fg: import('picocolors/types.js').Formatter, bg: import('picocolors/types.js').Formatter}>}
  */
 const colors = [
-  { fg: k.cyan, bg: k.bgCyan },
-  { fg: k.magenta, bg: k.bgMagenta },
-  { fg: k.yellow, bg: k.bgYellow },
-  { fg: k.blue, bg: k.bgBlue },
-  { fg: k.green, bg: k.bgGreen },
+  { fg: pc.cyan, bg: pc.bgCyan },
+  { fg: pc.magenta, bg: pc.bgMagenta },
+  { fg: pc.yellow, bg: pc.bgYellow },
+  { fg: pc.blue, bg: pc.bgBlue },
+  { fg: pc.green, bg: pc.bgGreen },
 ]
 /**
  * @param {string} str
@@ -47,7 +47,7 @@ export function lastNonEmptyLineIfPossible(str) {
  * @param {{ error?: Error, detail?: string }} [more]
  */
 export function formatFailMessage(headline, more) {
-  let result = k.red().bold('∙ ERROR ∙') + ' ' + k.red(headline)
+  let result = pc.red(pc.bold('∙ ERROR ∙')) + ' ' + pc.red(headline)
   if (more?.detail) {
     result += '\n' + more.detail
   }
@@ -68,14 +68,14 @@ export function formatInfoMessage(...args) {
  * @param {string[]} args
  */
 export function formatNoteMessage(...args) {
-  return k.gray(args.join(' '))
+  return pc.gray(args.join(' '))
 }
 
 /**
  * @param {string[]} args
  */
 export function formatSuccessMessage(...args) {
-  return `${k.green('✔')} ${args.join(' ')}`
+  return `${pc.green('✔')} ${args.join(' ')}`
 }
 
 /**

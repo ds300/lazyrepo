@@ -1,6 +1,6 @@
 import glob from 'fast-glob'
-import kleur from 'kleur'
 import path, { isAbsolute, join } from 'path'
+import pc from 'picocolors'
 import { createTimer } from '../createTimer.js'
 import { readdirSync, statSync } from '../fs.js'
 import { uniq } from '../uniq.js'
@@ -33,7 +33,7 @@ function globCacheConfig({ includes, excludes, task, workspaceRoot }) {
         `Finding files matching ${path.relative(
           process.cwd(),
           isAbsolute(pattern) ? pattern : join(task.taskDir, pattern),
-        )} took ${kleur.cyan(timer.formatElapsedTime())}`,
+        )} took ${pc.cyan(timer.formatElapsedTime())}`,
       )
     }
   }

@@ -1,5 +1,5 @@
 /** @typedef {import('../types.js').CliLogger} CliLogger */
-import k from 'kleur'
+import pc from 'picocolors'
 import { createTimer } from '../createTimer.js'
 import {
   formatFailMessage,
@@ -107,7 +107,7 @@ export class RealtimeLogger {
         isDone = true
       },
       success: (message) => {
-        log(formatSuccessMessage(message, k.gray(`in ${timer.formatElapsedTime()}`)))
+        log(formatSuccessMessage(message, pc.gray(`in ${timer.formatElapsedTime()}`)))
         isDone = true
       },
       info: (...args) => {

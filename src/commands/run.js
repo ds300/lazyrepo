@@ -1,4 +1,4 @@
-import kleur from 'kleur'
+import pc from 'picocolors'
 import { dedent } from 'ts-dedent'
 import { TaskGraph } from '../TaskGraph.js'
 import { Config } from '../config/config.js'
@@ -52,7 +52,7 @@ export async function run({ taskName, options }) {
   }
 
   const stats = tasks.getTaskStats()
-  const successOutput = `${kleur.green(stats.successful.toString() + ' successful')}, ${
+  const successOutput = `${pc.green(stats.successful.toString() + ' successful')}, ${
     stats.allTasks
   } total`
 
