@@ -75,7 +75,7 @@ export function formatNoteMessage(...args) {
  * @param {string[]} args
  */
 export function formatWarningMessage(...args) {
-  return `⚠️ ${k.yellow(args.join(' '))}`
+  return `⚠️ ${pc.yellow(args.join(' '))}`
 }
 
 /**
