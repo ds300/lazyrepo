@@ -1,6 +1,6 @@
 import { Dir, makePackageJson, runIntegrationTest } from './runIntegrationTests.js'
 
-const simpleDir: Dir = {
+const simpleDir = {
   packages: {
     core: {
       'index.js': 'console.log("hello world")',
@@ -24,7 +24,7 @@ const simpleDir: Dir = {
       }),
     },
   },
-}
+} satisfies Dir
 
 test('dependent tasks run', async () => {
   await runIntegrationTest(
@@ -445,6 +445,62 @@ test('deleting an input file causes the task to re-run', async () => {
 
       expect(t.getMtime('packages/core/.out.txt')).toBeGreaterThan(mTimeCore)
       expect(t.getMtime('packages/utils/.out.txt')).toBe(mTimeUtils)
+    },
+  )
+})
+
+test('when an upstream task fails the downstream tasks do not run', async () => {
+  const dir: Dir = {
+    packages: {
+      core: simpleDir.packages.core,
+      utils: {
+        'index.js': 'console.log("hello world")',
+        'package.json': makePackageJson({
+          name: '@test/utils',
+          scripts: {
+            build: 'echo $RANDOM > .out.txt && exit 1',
+          },
+        }),
+      },
+    },
+  }
+
+  await runIntegrationTest(
+    {
+      packageManager: 'npm',
+      workspaceGlobs: ['packages/*'],
+      structure: dir,
+    },
+    async (t) => {
+      const firstRun = await t.exec(['build'], {
+        throwOnError: false,
+      })
+
+      expect(firstRun.output).toMatchInlineSnapshot(`
+        "lazyrepo 0.0.0-test
+        -------------------
+        No config files found, using default configuration.
+
+        build::packages/utils Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
+        build::packages/utils Finding files matching lazy.config.* took 1.00s
+        build::packages/utils Finding files matching packages/utils/**/* took 1.00s
+        build::packages/utils Hashed 3/3 files in 1.00s
+        build::packages/utils cache miss, no previous manifest found
+        build::packages/utils RUN echo $RANDOM > .out.txt && exit 1 in packages/utils
+        build::packages/utils ∙ ERROR ∙ failed
+
+        Failed tasks: build::packages/utils
+
+             Tasks:  0 successful, 1 failed, 2 total
+            Cached:  0/2 cached
+              Time:  1.00s
+
+        "
+      `)
+
+      expect(firstRun.status).toBe(1)
+      expect(t.exists('packages/utils/.out.txt')).toBe(true)
+      expect(t.exists('packages/core/.out.txt')).toBe(false)
     },
   )
 })

@@ -76,4 +76,9 @@ export async function run({ taskName, options }) {
     
   `
   logger.log(output)
+  if (failedTasks.length > 0) {
+    process.exit(1)
+  } else {
+    process.exit(0)
+  }
 }
