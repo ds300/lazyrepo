@@ -5,7 +5,6 @@ import { fromZodError } from 'zod-validation-error'
 import { readFileSync } from '../fs.js'
 import { uniq } from '../uniq.js'
 
-// will this allow other keys when parsing?
 const packageJsonSchema = z.object({
   name: z.string(),
   version: z.string(),
