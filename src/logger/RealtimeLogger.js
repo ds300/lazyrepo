@@ -2,6 +2,7 @@
 import pc from 'picocolors'
 import { createTimer } from '../createTimer.js'
 import {
+  formatDiffMessage,
   formatFailMessage,
   formatInfoMessage,
   formatNoteMessage,
@@ -123,6 +124,9 @@ export class RealtimeLogger {
       },
       note: (...args) => {
         log(formatInfoMessage(...args))
+      },
+      diff: (diffLine) => {
+        log(formatDiffMessage(diffLine))
       },
       warn: (...args) => {
         log(formatWarningMessage(...args))

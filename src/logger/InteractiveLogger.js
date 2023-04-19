@@ -4,6 +4,7 @@ import pc from 'picocolors'
 import _sliceAnsi from 'slice-ansi'
 import { createTimer } from '../createTimer.js'
 import {
+  formatDiffMessage,
   formatFailMessage,
   formatInfoMessage,
   formatNoteMessage,
@@ -254,6 +255,9 @@ export class InteractiveLogger {
       },
       note: (...args) => {
         log('running', formatNoteMessage(...args))
+      },
+      diff: (diff) => {
+        log('running', formatDiffMessage(diff))
       },
     }
   }
