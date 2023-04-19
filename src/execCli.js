@@ -73,7 +73,7 @@ export async function execCli(argv) {
   try {
     cli.parse(argv, { run: false })
     await cli.runMatchedCommand()
-    logger.log(`${padString('Time:')} ${timer.formatElapsedTime()}`)
+    logger.log(`${padString('Time:')} ${timer.formatElapsedTime()}\n`)
   } catch (/** @type {any} */ e) {
     // find out if this is a CACError instance
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

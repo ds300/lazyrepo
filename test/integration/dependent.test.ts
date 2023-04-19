@@ -61,10 +61,10 @@ test('dependent tasks run', async () => {
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ done in 1.00s
         
-              Tasks:     2 successful, 2 Total
-             Cached:     0 cached, 2 Total
-           Laziness:     0%
+              Tasks:     2 successful, 2 total
+             Cached:     0 cached, 2 total
                Time:     1.00s
+
         "
       `)
 
@@ -93,10 +93,10 @@ test('dependent tasks run', async () => {
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ cache hit ⚡️ in 1.00s
         
-              Tasks:     2 successful, 2 Total
-             Cached:     2 cached, 2 Total
-           Laziness:     >>> MAXIMUM LAZY
+              Tasks:     2 successful, 2 total
+             Cached:     >>> MAXIMUM LAZY
                Time:     1.00s
+
         "
       `)
 
@@ -156,10 +156,10 @@ test('adding an input file causes the task to re-run', async () => {
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ done in 1.00s
         
-              Tasks:     2 successful, 2 Total
-             Cached:     0 cached, 2 Total
-           Laziness:     0%
+              Tasks:     2 successful, 2 total
+             Cached:     0 cached, 2 total
                Time:     1.00s
+
         "
       `)
 
@@ -197,10 +197,10 @@ test('adding an input file causes the task to re-run', async () => {
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ done in 1.00s
 
-              Tasks:     2 successful, 2 Total
-             Cached:     1 cached, 2 Total
-           Laziness:     50%
+              Tasks:     2 successful, 2 total
+             Cached:     1 cached, 2 total
                Time:     1.00s
+
         "
       `)
 
@@ -260,10 +260,10 @@ test('changing an input file causes the task to re-run', async () => {
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ done in 1.00s
 
-              Tasks:     2 successful, 2 Total
-             Cached:     0 cached, 2 Total
-           Laziness:     0%
+              Tasks:     2 successful, 2 total
+             Cached:     0 cached, 2 total
                Time:     1.00s
+
         "
       `)
 
@@ -302,10 +302,10 @@ test('changing an input file causes the task to re-run', async () => {
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ done in 1.00s
 
-              Tasks:     2 successful, 2 Total
-             Cached:     1 cached, 2 Total
-           Laziness:     50%
+              Tasks:     2 successful, 2 total
+             Cached:     1 cached, 2 total
                Time:     1.00s
+
         "
       `)
 
@@ -347,10 +347,10 @@ test('deleting an input file causes the task to re-run', async () => {
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ done in 1.00s
         
-              Tasks:     2 successful, 2 Total
-             Cached:     0 cached, 2 Total
-           Laziness:     0%
+              Tasks:     2 successful, 2 total
+             Cached:     0 cached, 2 total
                Time:     1.00s
+
         "
       `)
 
@@ -394,10 +394,10 @@ test('deleting an input file causes the task to re-run', async () => {
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ done in 1.00s
 
-              Tasks:     2 successful, 2 Total
-             Cached:     0 cached, 2 Total
-           Laziness:     0%
+              Tasks:     2 successful, 2 total
+             Cached:     0 cached, 2 total
                Time:     1.00s
+
         "
       `)
 
@@ -436,10 +436,10 @@ test('deleting an input file causes the task to re-run', async () => {
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ done in 1.00s
 
-              Tasks:     2 successful, 2 Total
-             Cached:     1 cached, 2 Total
-           Laziness:     50%
+              Tasks:     2 successful, 2 total
+             Cached:     1 cached, 2 total
                Time:     1.00s
+
         "
       `)
 

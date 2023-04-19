@@ -60,10 +60,10 @@ test('running a top-level tasks works', async () => {
         build::<rootDir> input manifest saved: .lazy/manifests/build
         build::<rootDir> ✔ done in 1.00s
 
-              Tasks:     1 successful, 1 Total
-             Cached:     0 cached, 1 Total
-           Laziness:     0%
+              Tasks:     1 successful, 1 total
+             Cached:     0 cached, 1 total
                Time:     1.00s
+
         "
       `)
 
@@ -82,10 +82,10 @@ test('running a top-level tasks works', async () => {
         build::<rootDir> input manifest saved: .lazy/manifests/build
         build::<rootDir> ✔ cache hit ⚡️ in 1.00s
 
-              Tasks:     1 successful, 1 Total
-             Cached:     1 cached, 1 Total
-           Laziness:     >>> MAXIMUM LAZY
+              Tasks:     1 successful, 1 total
+             Cached:     >>> MAXIMUM LAZY
                Time:     1.00s
+
         "
       `)
     },
