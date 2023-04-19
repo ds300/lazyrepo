@@ -1,6 +1,6 @@
 /** @typedef {import('../types.js').CliLogger} CliLogger */
 
-import k from 'kleur'
+import pc from 'picocolors'
 import _sliceAnsi from 'slice-ansi'
 import { createTimer } from '../createTimer.js'
 import {
@@ -14,7 +14,9 @@ import {
 
 const sliceAnsi = _sliceAnsi.default || _sliceAnsi
 
-const spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'].map((s) => k.cyan(s + ' '))
+const spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'].map((s) =>
+  pc.cyan(s + ' '),
+)
 
 /** @typedef {'waiting' | 'running' | 'done' | 'failed'} TaskStatus */
 
@@ -73,7 +75,7 @@ export class InteractiveLogger {
 
     const spinnerFrame = spinnerFrames[Math.floor(Date.now() / 60) % spinnerFrames.length]
     for (const task of this.getTasksToPrint()) {
-      let message = task.lastLogLine || k.gray(task.status)
+      let message = task.lastLogLine || pc.gray(task.status)
       if (task.status === 'running') {
         message = spinnerFrame + message
       }
@@ -206,7 +208,9 @@ export class InteractiveLogger {
         }
 
         bufferedLogLines.push(message)
-        this.tty.write(color.fg(':: ') + color.bg().bold(` ${taskName} `) + color.fg(' ::') + '\n')
+        this.tty.write(
+          color.fg(':: ') + color.bg(pc.bold(` ${taskName} `)) + color.fg(' ::') + '\n',
+        )
         for (const line of bufferedLogLines) {
           this.tty.write(line + '\n')
         }
@@ -232,7 +236,7 @@ export class InteractiveLogger {
         complete('failed', formatFailMessage(headline, more))
       },
       success: (message) => {
-        complete('done', formatSuccessMessage(message, k.gray(`in ${timer.formatElapsedTime()}`)))
+        complete('done', formatSuccessMessage(message, pc.gray(`in ${timer.formatElapsedTime()}`)))
       },
       info: (...args) => {
         log('running', formatInfoMessage(...args))

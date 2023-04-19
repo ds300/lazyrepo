@@ -1,6 +1,9 @@
 lockfileVersion: '6.0'
 
 patchedDependencies:
+  cac@6.7.14:
+    hash: ve2272a2v5qqslnkvoqbdhrpfq
+    path: patches/cac@6.7.14.patch
   jest-resolve@29.5.0:
     hash: jgtycvkxekuiswmxc4tnz5vlqy
     path: patches/jest-resolve@29.5.0.patch
@@ -21,9 +24,9 @@ importers:
       fast-json-stable-stringify:
         specifier: ^2.1.0
         version: 2.1.0
-      kleur:
-        specifier: ^4.1.5
-        version: 4.1.5
+      picocolors:
+        specifier: ^1.0.0
+        version: 1.0.0
       slice-ansi:
         specifier: ^6.0.0
         version: 6.0.0
@@ -75,7 +78,7 @@ importers:
         version: 10.44.0(@types/node@18.15.11)(typescript@5.0.3)
       cac:
         specifier: ^6.7.14
-        version: 6.7.14
+        version: 6.7.14(patch_hash=ve2272a2v5qqslnkvoqbdhrpfq)
       esbuild:
         specifier: ^0.17.15
         version: 0.17.15
@@ -2124,10 +2127,11 @@ packages:
       semver: 7.4.0
     dev: true
 
-  /cac@6.7.14:
+  /cac@6.7.14(patch_hash=ve2272a2v5qqslnkvoqbdhrpfq):
     resolution: {integrity: sha512-b6Ilus+c3RrdDk+JhLKUAQfzzgLEPy6wcXqS7f/xe1EETvsDP6GORG7SFuOs6cID5YkqchW/LXZbX5bc8j7ZcQ==}
     engines: {node: '>=8'}
     dev: true
+    patched: true
 
   /cacache@16.1.3:
     resolution: {integrity: sha512-/+Emcj9DAXxX4cwlLmRI9c166RuL3w30zp4R7Joiv2cQTtTtA+jeuCAjH3ZlGnYS3tKENSrKhAzVVP9GVyzeYQ==}
@@ -4272,11 +4276,6 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
-  /kleur@4.1.5:
-    resolution: {integrity: sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==}
-    engines: {node: '>=6'}
-    dev: false
-
   /leven@3.1.0:
     resolution: {integrity: sha512-qsda+H8jTaUaN/x5vzW2rzc+8Rw4TAQ/4KjB46IwK5VH+IlVeeeje/EoZRpiXvIqjFgK84QffqPztGI3VBLG1A==}
     engines: {node: '>=6'}
@@ -5020,7 +5019,6 @@ packages:
 
   /picocolors@1.0.0:
     resolution: {integrity: sha512-1fygroTLlHu66zi26VoTDv8yRgm0Fccecssto+MhsZ0D/DGW2sm8E8AjW7NU5VVTRt5GxbeZ5qBuJr+HyLYkjQ==}
-    dev: true
 
   /picomatch@2.3.1:
     resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}

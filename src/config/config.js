@@ -1,6 +1,6 @@
 import slugify from '@sindresorhus/slugify'
-import kleur from 'kleur'
 import path, { isAbsolute, relative } from 'path'
+import pc from 'picocolors'
 import { getWorkspaceRoot } from '../getWorkspaceRoot.js'
 import { logger } from '../logger/logger.js'
 import { getPackageManager, getRepoDetails } from '../workspace.js'
@@ -155,7 +155,7 @@ export class Config {
       logger.log('No config files found, using default configuration.\n')
     } else {
       logger.log(
-        kleur.gray(
+        pc.gray(
           `Loaded config file${allLoadedConfigFiles.length > 1 ? 's' : ''}: ${allLoadedConfigFiles
             .map((f) => relative(process.cwd(), f))
             .join(', ')}\n`,

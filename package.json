@@ -49,7 +49,7 @@
     "cross-spawn": "^7.0.3",
     "fast-glob": "^3.2.12",
     "fast-json-stable-stringify": "^2.1.0",
-    "kleur": "^4.1.5",
+    "picocolors": "^1.0.0",
     "slice-ansi": "^6.0.0",
     "source-map-support": "^0.5.21",
     "strip-ansi": "^7.0.1",
@@ -82,12 +82,13 @@
     "prettier": "^2.8.7",
     "prettier-plugin-organize-imports": "^3.2.2",
     "rimraf": "^5.0.0",
-    "typescript": "^5.0.3",
-    "semver": "^7.4.0"
+    "semver": "^7.4.0",
+    "typescript": "^5.0.3"
   },
   "pnpm": {
     "patchedDependencies": {
-      "jest-resolve@29.5.0": "patches/jest-resolve@29.5.0.patch"
+      "jest-resolve@29.5.0": "patches/jest-resolve@29.5.0.patch",
+      "cac@6.7.14": "patches/cac@6.7.14.patch"
     }
   },
   "auto": {

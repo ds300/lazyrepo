@@ -1,5 +1,5 @@
-import kleur from 'kleur'
 import path, { join } from 'path'
+import pc from 'picocolors'
 import { createTimer } from '../createTimer.js'
 import { existsSync, mkdirSync, statSync } from '../fs.js'
 import { uniq } from '../uniq.js'
@@ -150,7 +150,7 @@ export async function computeManifest({ tasks, task }) {
   // todo: always log this if verbose
   if (timer.getElapsedMs() > 100) {
     task.logger.note(
-      `Hashed ${numHashed}/${numSkipped + numHashed} files in ${kleur.cyan(
+      `Hashed ${numHashed}/${numSkipped + numHashed} files in ${pc.cyan(
         timer.formatElapsedTime(),
       )}`,
     )

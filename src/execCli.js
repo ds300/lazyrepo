@@ -1,5 +1,5 @@
 import { cac } from 'cac'
-import kleur from 'kleur'
+import pc from 'picocolors'
 import { clean } from './commands/clean.js'
 import { inherit } from './commands/inherit.js'
 import { init } from './commands/init.js'
@@ -14,6 +14,8 @@ const cli = cac('lazy')
 
 cli
   .command('<task>', 'run task in all packages')
+  .option('--color', 'forces the use of color in the output')
+  .option('--no-color', 'suppresses the use of color in the output')
   .option('--filter <paths>', '[string] run task in packages specified by paths')
   .option('--force', '[boolean] ignore existing cached artifacts', {
     default: false,
@@ -25,6 +27,8 @@ cli
 
 cli
   .command('run <task>', 'run task in all packages')
+  .option('--color', 'forces the use of color in the output')
+  .option('--no-color', 'suppresses the use of color in the output')
   .option('--filter <paths>', '[string] run task in packages specified by paths')
   .option('--force', '[boolean] ignore existing cached artifacts', {
     default: false,
@@ -34,19 +38,29 @@ cli
     await run({ taskName, options })
   })
 
-cli.command('init', 'create config file').action(() => {
-  init()
-})
+cli
+  .command('init', 'create config file')
+  .action(() => {
+    init()
+  })
+  .option('--color', 'forces the use of color in the output')
+  .option('--no-color', 'suppresses the use of color in the output')
 
-cli.command('clean', 'delete all local cache data').action(() => {
-  clean()
-})
+cli
+  .command('clean', 'delete all local cache data')
+  .action(() => {
+    clean()
+  })
+  .option('--color', 'forces the use of color in the output')
+  .option('--no-color', 'suppresses the use of color in the output')
 
 cli
   .command('inherit', 'run command from configuration file specified by script name')
   .action(async () => {
     await inherit()
   })
+  .option('--color', 'forces the use of color in the output')
+  .option('--no-color', 'suppresses the use of color in the output')
 
 cli.help()
 
@@ -66,7 +80,7 @@ export async function execCli(argv) {
     : // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version
   const timer = createTimer()
-  logger.log(kleur.bold('lazyrepo'), kleur.gray(`@${version}`))
+  logger.log(pc.bold('lazyrepo'), pc.gray(`@${version}`))
   logger.log(rainbow('-'.repeat(`lazyrepo @${version}`.length)))
 
   try {
@@ -80,7 +94,7 @@ export async function execCli(argv) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
       const msg = upperCaseFirst(e.message)
       // eslint-disable-next-line no-console
-      console.error(kleur.red(msg) + '\n')
+      console.error(pc.red(msg) + '\n')
       cli.outputHelp()
       process.exit(1)
     } else {

@@ -53,6 +53,8 @@ test(`help prints with exit 0 when you pass --help`, async () => {
           $ lazy inherit --help
 
         Options:
+          --color           forces the use of color in the output 
+          --no-color        suppresses the use of color in the output 
           --filter <paths>  [string] run task in packages specified by paths 
           --force           [boolean] ignore existing cached artifacts (default: false)
           -h, --help        Display this message 
@@ -99,6 +101,8 @@ test(`help prints with exit 1 if you pass nothing`, async () => {
           $ lazy inherit --help
 
         Options:
+          --color           forces the use of color in the output 
+          --no-color        suppresses the use of color in the output 
           --filter <paths>  [string] run task in packages specified by paths 
           --force           [boolean] ignore existing cached artifacts (default: false)
           -h, --help        Display this message 
