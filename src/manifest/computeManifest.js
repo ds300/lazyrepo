@@ -60,7 +60,7 @@ export async function computeManifest({ tasks, task }) {
 
   const extraFiles = []
 
-  for (const [otherTaskName, depConfig] of Object.entries(task.taskConfig.runsAfter ?? {})) {
+  for (const [otherTaskName, depConfig] of task.taskConfig.runsAfterEntries) {
     if (!depConfig.inheritsInput && depConfig.usesOutput === false) continue
     const isTopLevel =
       tasks.config.getTaskConfig(task.taskDir, otherTaskName).execution === 'top-level'

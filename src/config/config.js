@@ -14,7 +14,33 @@ import { resolveConfig } from './resolveConfig.js'
  * @typedef {import('./resolveConfig.js').ResolvedConfig} ResolvedConfig
  */
 
+export class RunsAfterConfig {
+  /**
+   * @private
+   * @type {import('../types.js').RunsAfter}
+   */
+  _runsAfter
+
+  constructor(/** @type {import('../types.js').RunsAfter} */ runsAfter) {
+    this._runsAfter = runsAfter
+  }
+
+  get usesOutput() {
+    return this._runsAfter.usesOutput ?? true
+  }
+
+  get inheritsInput() {
+    return this._runsAfter.inheritsInput ?? false
+  }
+
+  get in() {
+    return this._runsAfter.in ?? 'all-packages'
+  }
+}
+
 export class TaskConfig {
+  /** @private  */
+  _config
   /**
    * @param {string} dir
    * @param {string} name
@@ -49,8 +75,11 @@ export class TaskConfig {
     return this._config.baseCommand
   }
 
-  get runsAfter() {
-    return this._config.runsAfter ?? {}
+  /** @type {[string, RunsAfterConfig][]} */
+  get runsAfterEntries() {
+    return Object.entries(this._config.runsAfter ?? {}).map(([name, config]) => {
+      return [name, new RunsAfterConfig(config)]
+    })
   }
 
   get parallel() {
@@ -191,21 +220,21 @@ export class Config {
 
   /**
    * @param {string} taskDir
-   * @returns {{includes: string[], excludes: string[], envInputs: string[]}}
+   * @returns {{include: string[], exclude: string[], envInputs: string[]}}
    */
   getBaseCacheConfig(taskDir) {
     const config =
       this.packageDirConfigs[taskDir]?.config.baseCacheConfig ??
       this.rootConfig.config.baseCacheConfig
 
-    const includes = config?.includes ?? [
+    const include = config?.include ?? [
       '<rootDir>/{yarn.lock,pnpm-lock.yaml,package-lock.json}',
       '<rootDir>/lazy.config.*',
     ]
-    const excludes = config?.excludes ?? []
+    const exclude = config?.exclude ?? []
     return {
-      includes,
-      excludes,
+      include,
+      exclude,
       envInputs: config?.envInputs ?? [],
     }
   }
