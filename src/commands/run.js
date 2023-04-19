@@ -53,7 +53,7 @@ export async function run({ taskName, options }) {
   logger.log(
     `\n${padString('Tasks:')} ${kleur.green(stats.successful.toString() + ' successful')}, ${
       stats.allTasks
-    } Total`,
+    } total`,
   )
   logger.log(`${padString('Cached:')} ${stats['success:lazy']} cached, ${stats.allTasks} total`)
   if (stats.allTasks === stats['success:lazy']) {
