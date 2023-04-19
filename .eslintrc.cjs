@@ -28,6 +28,7 @@ module.exports = {
         'no-restricted-imports': 'off',
         '@typescript-eslint/no-unsafe-call': 'off',
         '@typescript-eslint/no-extra-semi': 'off',
+        '@typescript-eslint/no-non-null-assertion': 'off',
       },
     },
   ],
