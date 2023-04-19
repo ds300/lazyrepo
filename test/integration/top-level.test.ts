@@ -47,8 +47,8 @@ test('running a top-level tasks works', async () => {
       expect(firstRun.status).toBe(0)
       expect(t.exists('/out.txt')).toBe(true)
       expect(firstRun.output).toMatchInlineSnapshot(`
-        "lazyrepo @0.0.0-test
-        --------------------
+        "lazyrepo 0.0.0-test
+        -------------------
         Loaded config file: lazy.config.js
 
         build::<rootDir> Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
@@ -60,9 +60,9 @@ test('running a top-level tasks works', async () => {
         build::<rootDir> input manifest saved: .lazy/manifests/build
         build::<rootDir> ✔ done in 1.00s
 
-              Tasks:     1 successful, 1 total
-             Cached:     0 cached, 1 total
-               Time:     1.00s
+             Tasks:  1 successful, 1 total
+            Cached:  0/1 cached
+              Time:  1.00s
 
         "
       `)
@@ -71,8 +71,8 @@ test('running a top-level tasks works', async () => {
 
       expect(secondRun.status).toBe(0)
       expect(secondRun.output).toMatchInlineSnapshot(`
-        "lazyrepo @0.0.0-test
-        --------------------
+        "lazyrepo 0.0.0-test
+        -------------------
         Loaded config file: lazy.config.js
 
         build::<rootDir> Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
@@ -82,9 +82,9 @@ test('running a top-level tasks works', async () => {
         build::<rootDir> input manifest saved: .lazy/manifests/build
         build::<rootDir> ✔ cache hit ⚡️ in 1.00s
 
-              Tasks:     1 successful, 1 total
-             Cached:     >>> MAXIMUM LAZY
-               Time:     1.00s
+             Tasks:  1 successful, 1 total
+            Cached:  1/1 >>> MAXIMUM LAZY
+              Time:  1.00s
 
         "
       `)

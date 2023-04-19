@@ -64,8 +64,8 @@ export async function execCli(argv) {
     ? '0.0.0-test'
     : // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version
-  logger.log(pc.bold('lazyrepo'), pc.gray(`@${version}`))
-  logger.log(rainbow('-'.repeat(`lazyrepo @${version}`.length)))
+  logger.log(pc.bold('lazyrepo'), pc.gray(`${version}`))
+  logger.log(rainbow('-'.repeat(`lazyrepo ${version}`.length)))
 
   try {
     cli.parse(argv, { run: false })

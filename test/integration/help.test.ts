@@ -31,8 +31,8 @@ test(`help prints with exit 0 when you pass --help`, async () => {
       const { output, status } = await t.exec(['--help'])
 
       expect(output).toMatchInlineSnapshot(`
-        "lazyrepo @0.0.0-test
-        --------------------
+        "lazyrepo 0.0.0-test
+        -------------------
         lazy
 
         Usage:
@@ -74,10 +74,8 @@ test(`help prints with exit 1 if you pass nothing`, async () => {
       const { output, status } = await t.exec([], { throwOnError: false })
 
       expect(output).toMatchInlineSnapshot(`
-        "lazyrepo @0.0.0-test
-        --------------------
-        Missing required args for command \`<task>\`
-
+        "lazyrepo 0.0.0-test
+        -------------------
         lazy
 
         Usage:
@@ -101,6 +99,8 @@ test(`help prints with exit 1 if you pass nothing`, async () => {
           --filter <paths>  [string] run task in packages specified by paths 
           --force           [boolean] ignore existing cached artifacts (default: false)
           -h, --help        Display this message 
+        Missing required args for command \`<task>\`
+
         "
       `)
       expect(status).toBe(1)
