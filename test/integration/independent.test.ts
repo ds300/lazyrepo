@@ -73,7 +73,11 @@ test('running independent tasks works', async () => {
         build::packages/utils RUN echo $RANDOM > out.txt in packages/utils
         build::packages/utils input manifest saved: packages/utils/.lazy/manifests/build
         build::packages/utils ✔ done in 1.00s
-        ✔ Done in 1.00s
+
+              Tasks:     2 successful, 2 total
+             Cached:     0 cached, 2 total
+               Time:     1.00s
+
         "
       `)
 
@@ -98,8 +102,10 @@ test('running independent tasks works', async () => {
         build::packages/utils input manifest saved: packages/utils/.lazy/manifests/build
         build::packages/utils ✔ cache hit ⚡️ in 1.00s
 
-        >>> MAXIMUM LAZY
-        ✔ Done in 1.00s
+              Tasks:     2 successful, 2 total
+             Cached:     >>> MAXIMUM LAZY
+               Time:     1.00s
+
         "
       `)
     },

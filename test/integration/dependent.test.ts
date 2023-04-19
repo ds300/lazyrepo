@@ -60,7 +60,11 @@ test('dependent tasks run', async () => {
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ done in 1.00s
-        ✔ Done in 1.00s
+        
+              Tasks:     2 successful, 2 total
+             Cached:     0 cached, 2 total
+               Time:     1.00s
+
         "
       `)
 
@@ -88,9 +92,11 @@ test('dependent tasks run', async () => {
         build::packages/core Hashed 0/3 files in 1.00s
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ cache hit ⚡️ in 1.00s
+        
+              Tasks:     2 successful, 2 total
+             Cached:     >>> MAXIMUM LAZY
+               Time:     1.00s
 
-        >>> MAXIMUM LAZY
-        ✔ Done in 1.00s
         "
       `)
 
@@ -149,7 +155,11 @@ test('adding an input file causes the task to re-run', async () => {
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ done in 1.00s
-        ✔ Done in 1.00s
+        
+              Tasks:     2 successful, 2 total
+             Cached:     0 cached, 2 total
+               Time:     1.00s
+
         "
       `)
 
@@ -186,7 +196,11 @@ test('adding an input file causes the task to re-run', async () => {
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ done in 1.00s
-        ✔ Done in 1.00s
+
+              Tasks:     2 successful, 2 total
+             Cached:     1 cached, 2 total
+               Time:     1.00s
+
         "
       `)
 
@@ -245,7 +259,11 @@ test('changing an input file causes the task to re-run', async () => {
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ done in 1.00s
-        ✔ Done in 1.00s
+
+              Tasks:     2 successful, 2 total
+             Cached:     0 cached, 2 total
+               Time:     1.00s
+
         "
       `)
 
@@ -283,7 +301,11 @@ test('changing an input file causes the task to re-run', async () => {
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ done in 1.00s
-        ✔ Done in 1.00s
+
+              Tasks:     2 successful, 2 total
+             Cached:     1 cached, 2 total
+               Time:     1.00s
+
         "
       `)
 
@@ -324,7 +346,11 @@ test('deleting an input file causes the task to re-run', async () => {
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ done in 1.00s
-        ✔ Done in 1.00s
+        
+              Tasks:     2 successful, 2 total
+             Cached:     0 cached, 2 total
+               Time:     1.00s
+
         "
       `)
 
@@ -367,7 +393,11 @@ test('deleting an input file causes the task to re-run', async () => {
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ done in 1.00s
-        ✔ Done in 1.00s
+
+              Tasks:     2 successful, 2 total
+             Cached:     0 cached, 2 total
+               Time:     1.00s
+
         "
       `)
 
@@ -405,7 +435,11 @@ test('deleting an input file causes the task to re-run', async () => {
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
         build::packages/core input manifest saved: packages/core/.lazy/manifests/build
         build::packages/core ✔ done in 1.00s
-        ✔ Done in 1.00s
+
+              Tasks:     2 successful, 2 total
+             Cached:     1 cached, 2 total
+               Time:     1.00s
+
         "
       `)
 

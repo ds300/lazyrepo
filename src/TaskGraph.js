@@ -208,6 +208,27 @@ export class TaskGraph {
       .sort()
   }
 
+  getTaskStats() {
+    const stats = {
+      pending: 0,
+      running: 0,
+      'success:lazy': 0,
+      'success:eager': 0,
+      successful: 0,
+      failure: 0,
+      allTasks: 0,
+    }
+    for (const key of this.sortedTaskKeys) {
+      const status = this.allTasks[key].status
+      if (status.startsWith('success')) {
+        stats.successful++
+      }
+      stats[this.allTasks[key].status]++
+      stats.allTasks++
+    }
+    return stats
+  }
+
   allRunningTasks() {
     return this.sortedTaskKeys.filter((key) => this.allTasks[key].status === 'running')
   }
