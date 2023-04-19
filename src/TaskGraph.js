@@ -312,7 +312,7 @@ export class TaskGraph {
  * Match a list of filter path globs against the list of package directories.
  *
  * @param {string} workspaceRoot
- * @param {import('./project/workspace.js').Project} project
+ * @param {import('./project/Project.js').Project} project
  * @param {string[]} filterPaths
  */
 function filterPackageDirs(workspaceRoot, project, filterPaths) {

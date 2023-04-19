@@ -2,8 +2,8 @@ import { join } from 'path'
 import stripAnsi from 'strip-ansi'
 import { TaskGraph } from '../src/TaskGraph.js'
 import { Config } from '../src/config/config.js'
+import { Project } from '../src/project/Project.js'
 import { Workspace } from '../src/project/project-types.js'
-import { Project } from '../src/project/workspace.js'
 import { LazyConfig } from '../src/types.js'
 
 const cwd = process.cwd()

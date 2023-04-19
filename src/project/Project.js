@@ -165,9 +165,13 @@ export class Project {
     this.root = config.workspacesByName[config.rootWorkspaceName]
     assert(this.root, 'Root workspace not found')
 
-    this.workspacesByName = new Map(Object.entries(config.workspacesByName))
+    this.workspacesByName = new Map(
+      Object.entries(config.workspacesByName).filter(([name]) => name !== config.rootWorkspaceName),
+    )
     this.workspacesByDir = new Map(
-      Object.values(config.workspacesByName).map((workspace) => [workspace.dir, workspace]),
+      Object.values(config.workspacesByName)
+        .filter((w) => w.name !== config.rootWorkspaceName)
+        .map((workspace) => [workspace.dir, workspace]),
     )
 
     this.topologicallySortedWorkspaces = topologicallySortWorkspaces(config.workspacesByName)

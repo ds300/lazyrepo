@@ -2,7 +2,7 @@ import slugify from '@sindresorhus/slugify'
 import path, { isAbsolute, relative } from 'path'
 import pc from 'picocolors'
 import { logger } from '../logger/logger.js'
-import { Project } from '../project/workspace.js'
+import { Project } from '../project/Project.js'
 import { resolveConfig } from './resolveConfig.js'
 
 /**

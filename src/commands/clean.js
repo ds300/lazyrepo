@@ -1,7 +1,7 @@
 import glob from 'fast-glob'
 import { logger } from '../logger/logger.js'
 import { naiveRimraf } from '../naiveRimraf.js'
-import { Project } from '../project/workspace.js'
+import { Project } from '../project/Project.js'
 
 export function clean() {
   const project = Project.fromCwd(process.cwd())
