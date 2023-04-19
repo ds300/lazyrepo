@@ -77,7 +77,7 @@ export async function execCli(argv) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
       const msg = upperCaseFirst(e.message)
       // eslint-disable-next-line no-console
-      console.error(pc.red(msg) + '\n')
+      console.log(pc.red(msg) + '\n')
       cli.outputHelp()
       process.exit(1)
     } else {

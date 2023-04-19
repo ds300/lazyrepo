@@ -76,6 +76,8 @@ test(`help prints with exit 1 if you pass nothing`, async () => {
       expect(output).toMatchInlineSnapshot(`
         "lazyrepo 0.0.0-test
         -------------------
+        Missing required args for command \`<task>\`
+
         lazy
 
         Usage:
@@ -99,8 +101,6 @@ test(`help prints with exit 1 if you pass nothing`, async () => {
           --filter <paths>  [string] run task in packages specified by paths 
           --force           [boolean] ignore existing cached artifacts (default: false)
           -h, --help        Display this message 
-        Missing required args for command \`<task>\`
-
         "
       `)
       expect(status).toBe(1)
