@@ -54,18 +54,14 @@ export async function run({ taskName, options }) {
     stats.allTasks
   } total`
 
-  let output = ''
-  if (stats['success:lazy'] === stats.allTasks) {
-    output = dedent`
+  const cachedOutput =
+    stats.allTasks === stats['success:lazy']
+      ? rainbow('>>> MAXIMUM LAZY')
+      : `${stats['success:lazy']} cached, ${stats.allTasks} total`
+
+  const output = dedent`
     
           Tasks:     ${successOutput}
-         Cached:     ${rainbow('>>> MAXIMUM LAZY')}`
-  } else {
-    output = dedent`
-    
-          Tasks:     ${successOutput}
-         Cached:     ${stats['success:lazy']} cached, ${stats.allTasks} total
-    `
-  }
+         Cached:     ${cachedOutput}`
   logger.log(output)
 }
