@@ -173,61 +173,125 @@ test('logs error with exit 1 when config is invalid', async () => {
   )
 })
 
-test('it loads config files from nested workspaces', async () => {
-  await runIntegrationTest(
-    {
-      packageManager: 'npm',
-      structure: {
-        'package.json': makePackageJson({
-          name: 'root',
-          scripts: {
-            build: 'echo "root build"',
-          },
-          workspaces: ['child'],
-        }),
-        'lazy.config.mjs': `
-          console.log('root config')
+describe('in nested workspaces', () => {
+  const structure: Dir = {
+    'package.json': makePackageJson({
+      name: 'root',
+      scripts: {
+        build: 'echo "ROOT_BUILD"',
+      },
+      workspaces: ['child'],
+    }),
+    'lazy.config.mjs': `
+          console.log('ROOT_CONFIG')
           export default {}
         `,
-        child: {
-          'package.json': makePackageJson({
-            name: 'child',
-            workspaces: ['packages/*'],
-            scripts: {
-              build: 'echo "child build"',
-            },
-          }),
-          'lazy.config.mjs': `
-            console.log('child config')
+    child: {
+      'package.json': makePackageJson({
+        name: 'child',
+        workspaces: ['packages/*'],
+        scripts: {
+          build: 'echo "CHILD_BUILD"',
+        },
+      }),
+      'lazy.config.mjs': `
+            console.log('CHILD_CONFIG')
             export default {}
           `,
-          packages: {
-            a: {
-              'package.json': makePackageJson({
-                name: 'a',
-                scripts: {
-                  build: 'echo "a build"',
-                },
-              }),
+      packages: {
+        a: {
+          'package.json': makePackageJson({
+            name: 'a',
+            scripts: {
+              build: 'echo "A_BUILD"',
             },
-            b: {
-              'package.json': makePackageJson({
-                name: 'b',
-                scripts: {
-                  build: 'echo "b build"',
-                },
-              }),
+          }),
+        },
+        b: {
+          'package.json': makePackageJson({
+            name: 'b',
+            scripts: {
+              build: 'echo "B_BUILD"',
             },
-          },
+          }),
         },
       },
-      workspaceGlobs: ['child'],
     },
-    async (t) => {
-      const { status } = await t.exec(['build'])
-      expect(status).toBe(0)
-      // console.log(status, output)
-      // todo: check output
-    },
-  )
+  }
+
+  it('loads the root config when when from the root dir', async () => {
+    await runIntegrationTest(
+      {
+        packageManager: 'npm',
+        structure,
+        workspaceGlobs: ['child'],
+      },
+      async (t) => {
+        const { status, output } = await t.exec(['build'])
+        expect(status).toBe(0)
+        // it uses the root config
+        expect(output.includes('ROOT_CONFIG')).toBe(true)
+        // it does not use the child config
+        expect(output.includes('CHILD_CONFIG')).toBe(false)
+        // it does not run the root build script
+        expect(output.includes('ROOT_BUILD')).toBe(false)
+        // it does run the child build script
+        expect(output.includes('CHILD_BUILD')).toBe(true)
+        // it does run the child package build scripts
+        expect(output.includes('A_BUILD')).toBe(true)
+        expect(output.includes('B_BUILD')).toBe(true)
+      },
+    )
+  })
+
+  it('loads the root config when when from the child dir', async () => {
+    await runIntegrationTest(
+      {
+        packageManager: 'npm',
+        structure,
+        workspaceGlobs: ['child'],
+      },
+      async (t) => {
+        const { status, output } = await t.exec(['build'], { packageDir: 'child' })
+        expect(status).toBe(0)
+        // it uses the root config
+        expect(output.includes('ROOT_CONFIG')).toBe(true)
+        // it does not use the child config
+        expect(output.includes('CHILD_CONFIG')).toBe(false)
+        // it does not run the root build script
+        expect(output.includes('ROOT_BUILD')).toBe(false)
+        // it does run the child build script
+        expect(output.includes('CHILD_BUILD')).toBe(true)
+        // it does run the child package build scripts
+        expect(output.includes('A_BUILD')).toBe(true)
+        expect(output.includes('B_BUILD')).toBe(true)
+      },
+    )
+  })
+
+  it('loads the root config when run from a grandchild dir', async () => {
+    await runIntegrationTest(
+      {
+        packageManager: 'npm',
+        structure,
+        workspaceGlobs: ['child'],
+      },
+      async (t) => {
+        const { status, output } = await t.exec(['build'], { packageDir: 'child/packages/a' })
+        expect(status).toBe(0)
+        // it uses the root config
+        expect(output.includes('ROOT_CONFIG')).toBe(true)
+        // it does not use the child config
+        expect(output.includes('CHILD_CONFIG')).toBe(false)
+        // it does not run the root build script
+        expect(output.includes('ROOT_BUILD')).toBe(false)
+        // it does not run the child build script
+        expect(output.includes('CHILD_BUILD')).toBe(false)
+        // it does run the A package build scripts
+        expect(output.includes('A_BUILD')).toBe(true)
+        // it does not run the B package build scripts
+        expect(output.includes('B_BUILD')).toBe(false)
+      },
+    )
+  })
 })

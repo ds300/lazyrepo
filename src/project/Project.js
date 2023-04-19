@@ -1,6 +1,7 @@
 import assert from 'assert'
 import glob from 'fast-glob'
 import path from 'path'
+import { findRootWorkspace } from './findRootWorkspace.js'
 import { getPackageManager } from './getPackageManager.js'
 import { loadWorkspace } from './loadWorkspace.js'
 
@@ -149,10 +150,12 @@ export class Project {
    * @param {string} cwd
    */
   static fromCwd(cwd) {
-    const rootWorkspace = loadWorkspace(cwd)
+    const rootWorkspace = findRootWorkspace(cwd)
+    if (!rootWorkspace) throw new Error('Could not find root workspace from directory ' + cwd)
     const config = hydrateWorkspaces(rootWorkspace)
     const packageManager = getPackageManager(rootWorkspace.dir)
-    if (!packageManager) throw new Error('Could not find package manager lockfile')
+    if (!packageManager)
+      throw new Error('Could not find package manager lockfile in directory ' + rootWorkspace.dir)
     return new Project(config, packageManager)
   }
 

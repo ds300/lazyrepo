@@ -18,7 +18,8 @@ export async function run({ taskName, options }) {
     ? Array.isArray(options.filter)
       ? options.filter
       : [options.filter]
-    : []
+    : // match the directory or any of its descendants
+      [process.cwd() + `{,**/*}`]
 
   /** @type {import('../types.js').RequestedTask[]} */
   const requestedTasks = [
