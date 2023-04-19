@@ -55,7 +55,7 @@ export async function run({ taskName, options }) {
       stats.allTasks
     } Total`,
   )
-  logger.log(`${padString('Cached:')} ${stats['success:lazy']} cached, ${stats.allTasks} Total`)
+  logger.log(`${padString('Cached:')} ${stats['success:lazy']} cached, ${stats.allTasks} total`)
   if (stats.allTasks === stats['success:lazy']) {
     logger.log(`${padString('Laziness:')} ${rainbow('>>> MAXIMUM LAZY')}`)
   } else {
