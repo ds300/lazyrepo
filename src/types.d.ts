@@ -1,4 +1,5 @@
 import type { TaskConfig } from './config/config.js'
+import { Workspace } from './workspace.js'
 
 export type TaskStatus = 'pending' | 'running' | 'success:eager' | 'success:lazy' | 'failure'
 
@@ -6,28 +7,14 @@ export interface ScheduledTask {
   key: string
   taskConfig: TaskConfig
   taskName: string
-  taskDir: string
   status: TaskStatus
   force: boolean
   extraArgs: string[]
   outputFiles: string[]
   dependencies: string[]
   inputManifestCacheKey: string | null
-  packageDetails: PackageDetails | null
+  workspace: Workspace
   logger: TaskLogger
-}
-
-export type PackageDetails = {
-  name: string
-  dir: string
-  localDeps: string[]
-  scripts: Record<string, string>
-}
-
-export type RepoDetails = {
-  packagesByDir: Record<string, PackageDetails>
-  packagesByName: Record<string, PackageDetails>
-  packagesInTopologicalOrder: PackageDetails[]
 }
 
 /**
@@ -284,6 +271,7 @@ export interface Logger {
 
   info(...message: string[]): void
   note(...message: string[]): void
+  warn(...message: string[]): void
   success(...message: string[]): void
   fail(headline: string, more?: { error?: Error; detail?: string }): void
 }

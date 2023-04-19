@@ -38,7 +38,7 @@ export async function run({ taskName, options }) {
   if (tasks.sortedTaskKeys.length === 0) {
     logger.fail(
       `No tasks found matching [${requestedTasks.map((t) => t.taskName).join(', ')}] in ${
-        config.workspaceRoot
+        config.project.root.dir
       }`,
     )
   }

@@ -172,3 +172,62 @@ test('logs error with exit 1 when config is invalid', async () => {
     },
   )
 })
+
+test('it loads config files from nested workspaces', async () => {
+  await runIntegrationTest(
+    {
+      packageManager: 'npm',
+      structure: {
+        'package.json': makePackageJson({
+          name: 'root',
+          scripts: {
+            build: 'echo "root build"',
+          },
+          workspaces: ['child'],
+        }),
+        'lazy.config.mjs': `
+          console.log('root config')
+          export default {}
+        `,
+        child: {
+          'package.json': makePackageJson({
+            name: 'child',
+            workspaces: ['packages/*'],
+            scripts: {
+              build: 'echo "child build"',
+            },
+          }),
+          'lazy.config.mjs': `
+            console.log('child config')
+            export default {}
+          `,
+          packages: {
+            a: {
+              'package.json': makePackageJson({
+                name: 'a',
+                scripts: {
+                  build: 'echo "a build"',
+                },
+              }),
+            },
+            b: {
+              'package.json': makePackageJson({
+                name: 'b',
+                scripts: {
+                  build: 'echo "b build"',
+                },
+              }),
+            },
+          },
+        },
+      },
+      workspaceGlobs: ['child'],
+    },
+    async (t) => {
+      const { status } = await t.exec(['build'])
+      expect(status).toBe(0)
+      // console.log(status, output)
+      // todo: check output
+    },
+  )
+})

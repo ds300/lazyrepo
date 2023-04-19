@@ -106,6 +106,9 @@ importers:
       jest:
         specifier: ^29.5.0
         version: 29.5.0(@types/node@18.15.11)
+      jest-resolve:
+        specifier: ^29.5.0
+        version: 29.5.0(patch_hash=jgtycvkxekuiswmxc4tnz5vlqy)
       lint-staged:
         specifier: ^13.2.1
         version: 13.2.1

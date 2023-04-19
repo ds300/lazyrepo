@@ -1,131 +1,364 @@
+import assert from 'assert'
 import glob from 'fast-glob'
 import path from 'path'
 import yaml from 'yaml'
+import { z } from 'zod'
+import { fromZodError } from 'zod-validation-error'
 import { existsSync, readFileSync } from './fs.js'
+import { logger } from './logger/logger.js'
+
+const packageJsonSchema = z.object({
+  name: z.string(),
+  version: z.string(),
+  workspaces: z.array(z.string()).optional(),
+  scripts: z.record(z.string()).default({}),
+  dependencies: z.record(z.string()).default({}),
+  devDependencies: z.record(z.string()).default({}),
+  peerDependencies: z.record(z.string()).default({}),
+  optionalDependencies: z.record(z.string()).default({}),
+})
+
+const pnpmWorkspaceYamlSchema = z.object({
+  packages: z.array(z.string()),
+})
+
+/** @typedef {z.infer<typeof packageJsonSchema>} PackageJson */
+/** @typedef {z.infer<typeof pnpmWorkspaceYamlSchema>} PnpmWorkspaceYaml */
 
 /**
- *
- * @param {{ dir: string, allLocalPackageNames: string[] }} param
- * @returns {import('./types.js').PackageDetails | null}
+ * @param {string} dir
  */
-function getPackageDetails({ dir, allLocalPackageNames }) {
+function readPackageJsonIfExists(dir) {
   const packageJsonPath = path.join(dir, 'package.json')
-  if (!existsSync(packageJsonPath)) {
+  let packageJsonString
+  try {
+    packageJsonString = readFileSync(packageJsonPath, 'utf8')
+  } catch {
     return null
   }
-  /** @type {import('./types.js').PackageJson} */
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const packageJson = JSON.parse(readFileSync(path.join(dir, 'package.json'), 'utf8'))
-  const deps = {
-    ...packageJson.dependencies,
-    ...packageJson.devDependencies,
-    ...packageJson.peerDependencies,
-    ...packageJson.optionalDependencies,
-  }
-  return {
-    name: packageJson.name,
-    dir,
-    scripts: packageJson.scripts ?? {},
-    localDeps: Object.keys(deps ?? {})
-      .filter((dep) => allLocalPackageNames.includes(dep))
-      // TODO: This sort is depended upon, test it!!!
-      .sort(),
-  }
-}
 
-/**
- * @returns {string[]}
- * @param {string} workspaceRoot
- */
-function getWorkspaceGlobs(workspaceRoot) {
   try {
-    const pnpmWorkspaceYamlPath = path.join(workspaceRoot, 'pnpm-workspace.yaml')
-    if (existsSync(pnpmWorkspaceYamlPath)) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const workspaceConfig = yaml.parse(readFileSync(pnpmWorkspaceYamlPath, 'utf8').toString())
-
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-      return workspaceConfig?.packages || []
-    } else {
-      /** @type {import('./types.js').PackageJson} */
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const packageJson = JSON.parse(readFileSync(path.join(workspaceRoot, 'package.json'), 'utf8'))
-      return packageJson?.workspaces || []
+    return packageJsonSchema.parse(JSON.parse(packageJsonString))
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      const validationError = fromZodError(err, {
+        issueSeparator: '\n',
+        prefix: '',
+        prefixSeparator: '',
+      })
+      throw new Error(validationError.message)
     }
-  } catch (e) {
-    return []
+    throw err
   }
 }
 
 /**
- * @returns {'yarn' | 'pnpm' | 'npm' | null}
- * @param {string} workspaceRoot
+ * @param {string} dir
  */
-export function getPackageManager(workspaceRoot) {
-  if (existsSync(path.join(workspaceRoot, 'pnpm-lock.yaml'))) {
-    return 'pnpm'
-  } else if (existsSync(path.join(workspaceRoot, 'yarn.lock'))) {
-    return 'yarn'
-  } else if (existsSync(path.join(workspaceRoot, 'package-lock.json'))) {
-    return 'npm'
+function readPnpmWorkspaceYamlIfExists(dir) {
+  const pnpmWorkspaceYamlPath = path.join(dir, 'pnpm-workspace.yaml')
+  let pnpmWorkspaceYamlString
+  try {
+    pnpmWorkspaceYamlString = readFileSync(pnpmWorkspaceYamlPath, 'utf8')
+  } catch {
+    return null
+  }
+
+  try {
+    return pnpmWorkspaceYamlSchema.parse(yaml.parse(pnpmWorkspaceYamlString))
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      const validationError = fromZodError(err, {
+        issueSeparator: '\n',
+        prefix: '',
+        prefixSeparator: '',
+      })
+      throw new Error(validationError.message)
+    }
+    throw err
+  }
+}
+
+/**
+ * @param {string} dir
+ * @returns {Workspace | null}
+ */
+function findContainingPackage(dir) {
+  let currentDir = dir
+  while (currentDir !== path.dirname(currentDir)) {
+    if (existsSync(path.join(currentDir, 'package.json'))) {
+      return new Workspace(currentDir)
+    }
+    currentDir = path.dirname(currentDir)
   }
   return null
 }
 
-/**
- * @param {string} workspaceRoot
- */
-function getPackageJsonPaths(workspaceRoot) {
-  const workspaceGlobs = getWorkspaceGlobs(workspaceRoot)
-  const workspacePaths = workspaceGlobs.flatMap((pattern) => {
-    return glob.sync(path.join(workspaceRoot, pattern, 'package.json'))
-  })
-  return workspacePaths
+/** @param {Workspace} workspace */
+function findDirectChildWorkspaces(workspace) {
+  if (workspace.pnpmWorkspaceYaml && workspace.packageJson.workspaces) {
+    throw new Error(
+      `Both pnpm-workspace.yaml and package.json workspaces are defined in ${workspace.dir}`,
+    )
+  }
+
+  const workspaceGlobs = workspace.pnpmWorkspaceYaml
+    ? workspace.pnpmWorkspaceYaml.packages
+    : workspace.packageJson.workspaces
+
+  if (!workspaceGlobs || !workspaceGlobs.length) return []
+
+  const directChildWorkspaces = []
+
+  for (const workspaceGlob of workspaceGlobs) {
+    for (const foundWorkspacePackageJsonPath of glob.sync(
+      path.join(workspace.dir, workspaceGlob, 'package.json'),
+    )) {
+      const foundWorkspaceDir = path.dirname(foundWorkspacePackageJsonPath)
+      const foundWorkspace = new Workspace(foundWorkspaceDir)
+
+      if (foundWorkspace.pnpmWorkspaceYaml) {
+        throw new Error(
+          `pnpm-workspace.yaml is not allowed in child workspaces. Found in ${foundWorkspace.dir}`,
+        )
+      }
+
+      directChildWorkspaces.push(foundWorkspace)
+    }
+  }
+
+  return directChildWorkspaces
 }
 
 /**
- * @returns {import('./types.js').RepoDetails}
- * @param {string} workspaceRoot
+ * A workspace represents a single directory that contains a package.json within a project.
+ * Workspaces can contain other workspaces.
  */
-export function getRepoDetails(workspaceRoot) {
-  const packageJsonPaths = getPackageJsonPaths(workspaceRoot)
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  const packageJsonObjects = packageJsonPaths.map((path) => JSON.parse(readFileSync(path, 'utf8')))
+export class Workspace {
+  /**
+   * @type {readonly string[] | null}
+   * @private
+   */
+  _childWorkspaceNames = null
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
-  const allLocalPackageNames = packageJsonObjects.map((packageJson) => packageJson.name)
+  /**
+   * @type {readonly string[] | null}
+   * @private
+   */
+  _localDependencies = null
 
-  /** @type {Object.<string, import('./types.js').PackageDetails>} */
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const packages = Object.fromEntries(
-    packageJsonPaths
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      .map((path, i) => [
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        packageJsonObjects[i].name,
-        getPackageDetails({ dir: path.replace('/package.json', ''), allLocalPackageNames }),
-      ])
-      .filter(([, result]) => result !== null),
-  )
+  /** @param {string} dir */
+  constructor(dir) {
+    this.dir = dir
+    const packageJson = readPackageJsonIfExists(dir)
+    if (!packageJson) {
+      throw new Error(`Could not find package.json in ${dir}`)
+    }
+    this.packageJson = packageJson
+    this.pnpmWorkspaceYaml = readPnpmWorkspaceYamlIfExists(dir)
+  }
 
-  return {
-    packagesByDir: Object.fromEntries(
-      Object.values(packages).map((packageDetails) => [packageDetails.dir, packageDetails]),
-    ),
-    packagesByName: packages,
-    packagesInTopologicalOrder: topologicalSortPackages(packages),
+  get name() {
+    return this.packageJson.name
+  }
+
+  get version() {
+    return this.packageJson.version
+  }
+
+  get scripts() {
+    return this.packageJson.scripts
+  }
+
+  get localDependencies() {
+    assert(this._localDependencies !== null)
+    return this._localDependencies
+  }
+
+  get childWorkspaceNames() {
+    assert(this._childWorkspaceNames !== null)
+    return this._childWorkspaceNames
+  }
+
+  /**
+   * @param {readonly string[]} childWorkspaceNames
+   */
+  setChildWorkspaceNames(childWorkspaceNames) {
+    assert(this._childWorkspaceNames === null)
+    this._childWorkspaceNames = childWorkspaceNames
+  }
+
+  /**
+   * @param {readonly string[]} localDependencies
+   */
+  setLocalDependencies(localDependencies) {
+    assert(this._localDependencies === null)
+    this._localDependencies = localDependencies
+  }
+}
+
+export class Project {
+  /**
+   * @type {Workspace}
+   * @readonly
+   */
+  root
+
+  /**
+   * @type {ReadonlyMap<string, Workspace>}
+   * @readonly
+   */
+  workspacesByName
+
+  /**
+   * @type {ReadonlyMap<string, Workspace>}
+   * @readonly
+   */
+  workspacesByDir
+
+  /**
+   * @type {ReadonlyArray<Workspace>}
+   * @readonly
+   */
+  topologicallySortedWorkspaces
+
+  /**
+   *
+   * @param {string} cwd
+   */
+  constructor(cwd) {
+    /** @type {Map<string, Workspace>} */
+    const workspacesByName = new Map()
+    /** @type {Map<string, Workspace>} */
+    const workspacesByDir = new Map()
+
+    let workspace = findContainingPackage(cwd)
+    if (!workspace) {
+      throw new Error('Could not find containing package.json')
+    }
+
+    do {
+      addChildWorkspaces(workspace, findDirectChildWorkspaces(workspace))
+      workspacesByDir.set(workspace.dir, workspace)
+      workspacesByName.set(workspace.packageJson.name, workspace)
+
+      // if we have a pnpm-workspace.yaml, we don't need to look for a parent - pnpm workspace must exist at the root
+      if (workspace.pnpmWorkspaceYaml) break
+      // if we're at the top of the directory structure, we can't go any higher
+      if (workspace.dir === path.dirname(workspace.dir)) break
+
+      const parent = findContainingPackage(path.dirname(workspace.dir))
+      // if we can't find a parent, we're at the top of the directory structure
+      if (!parent) break
+
+      const siblingWorkspaces = findDirectChildWorkspaces(parent)
+      const currentWorkspaceDir = workspace.dir
+
+      // does this parent contain the workspace we're currently looking at? if not, we're at the top of the project
+      if (!siblingWorkspaces.some((sibling) => sibling.dir === currentWorkspaceDir)) {
+        logger.warn(
+          `Found parent package.json ${parent.packageJson.name} at ${parent.dir} but it does not contain the current workspace ${workspace.packageJson.name}`,
+        )
+        break
+      }
+
+      workspace = parent
+      // eslint-disable-next-line no-constant-condition
+    } while (true)
+
+    this.root = workspace
+    this.workspacesByName = workspacesByName
+    this.workspacesByDir = workspacesByDir
+
+    for (const workspace of this.workspacesByName.values()) {
+      const allDependencies = {
+        ...workspace.packageJson.dependencies,
+        ...workspace.packageJson.devDependencies,
+        ...workspace.packageJson.peerDependencies,
+        ...workspace.packageJson.optionalDependencies,
+      }
+      /** @type {Set<string>} */
+      const localDependencies = new Set()
+      for (const dependencyName of Object.keys(allDependencies)) {
+        const dependencyWorkspace = this.workspacesByName.get(dependencyName)
+        if (!dependencyWorkspace) continue
+        localDependencies.add(dependencyName)
+      }
+      workspace.setLocalDependencies([...localDependencies].sort())
+    }
+
+    this.topologicallySortedWorkspaces = topologicallySortWorkspaces(this.workspacesByName)
+
+    /**
+     * @param {Workspace} workspace
+     * @param {Workspace[]} directChildWorkspaces
+     */
+    function addChildWorkspaces(workspace, directChildWorkspaces) {
+      const childWorkspaceNames = new Set()
+      for (const childWorkspace of directChildWorkspaces) {
+        if (workspacesByDir.has(childWorkspace.dir)) continue
+
+        const existingWorkspaceWithSameName = workspacesByName.get(childWorkspace.name)
+        if (existingWorkspaceWithSameName) {
+          throw new Error(
+            `Duplicate workspace name ${childWorkspace.name} found in ${childWorkspace.dir} and ${existingWorkspaceWithSameName.dir}`,
+          )
+        }
+
+        workspacesByName.set(childWorkspace.name, childWorkspace)
+        workspacesByDir.set(childWorkspace.dir, childWorkspace)
+        childWorkspaceNames.add(childWorkspace.name)
+
+        addChildWorkspaces(childWorkspace, findDirectChildWorkspaces(childWorkspace))
+      }
+      workspace.setChildWorkspaceNames([...childWorkspaceNames].sort())
+    }
+  }
+
+  /**
+   * @param {string} name
+   */
+  getWorkspaceByName(name) {
+    const workspace = this.workspacesByName.get(name)
+    if (!workspace) {
+      throw new Error(`Could not find workspace named ${name}`)
+    }
+    return workspace
+  }
+
+  /**
+   * @param {string} dir
+   */
+  getWorkspaceByDir(dir) {
+    const workspace = this.workspacesByDir.get(dir)
+    if (!workspace) {
+      throw new Error(`Could not find workspace at ${dir}`)
+    }
+    return workspace
+  }
+
+  /**
+   * @returns {'yarn' | 'pnpm' | 'npm' | null}
+   */
+  getPackageManager() {
+    if (existsSync(path.join(this.root.dir, 'pnpm-lock.yaml'))) {
+      return 'pnpm'
+    } else if (existsSync(path.join(this.root.dir, 'yarn.lock'))) {
+      return 'yarn'
+    } else if (existsSync(path.join(this.root.dir, 'package-lock.json'))) {
+      return 'npm'
+    }
+    return null
   }
 }
 
 /**
- *
- * @param {Record<string, import('./types.js').PackageDetails>} packages
- * @returns {import('./types.js').PackageDetails[]}
+ * @param {ReadonlyMap<string, Workspace>} workspacesByName
+ * @returns {Workspace[]}
  */
-
-export function topologicalSortPackages(packages) {
+function topologicallySortWorkspaces(workspacesByName) {
   /**
-   * @type {import('./types.js').PackageDetails[]}
+   * @type {Workspace[]}
    */
   const sorted = []
   /**
@@ -144,15 +377,20 @@ export function topologicalSortPackages(packages) {
       return
     }
     visited.add(packageName)
-    const packageDetails = packages[packageName]
-    if (!packageDetails) {
+
+    const workspace = workspacesByName.get(packageName)
+    if (!workspace) {
       throw new Error(`Could not find package ${packageName}. path: ${path.join(' -> ')}`)
     }
-    packageDetails.localDeps.forEach((dep) => visit(dep, [...path, dep]))
-    sorted.push(packageDetails)
+    for (const childWorkspaceName of workspace.childWorkspaceNames) {
+      visit(childWorkspaceName, [...path, childWorkspaceName])
+    }
+    sorted.push(workspace)
   }
 
-  Object.keys(packages).forEach((packageName) => visit(packageName, [packageName]))
+  for (const name of workspacesByName.keys()) {
+    visit(name, [name])
+  }
 
   return sorted
 }

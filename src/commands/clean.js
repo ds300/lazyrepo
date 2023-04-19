@@ -1,14 +1,15 @@
 import glob from 'fast-glob'
-import { getWorkspaceRoot } from '../getWorkspaceRoot.js'
 import { logger } from '../logger/logger.js'
 import { naiveRimraf } from '../naiveRimraf.js'
+import { Project } from '../workspace.js'
 
 export function clean() {
+  const project = new Project(process.cwd())
   const cacheDirs = glob.sync(['**/.lazy'], {
     ignore: ['**/node_modules'],
     absolute: true,
     onlyDirectories: true,
-    cwd: getWorkspaceRoot(process.cwd()) ?? './',
+    cwd: project.root.dir,
   })
 
   logger.log(`Cleaning ${cacheDirs.length} cache directories...`)

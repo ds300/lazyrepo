@@ -17,7 +17,7 @@ function globCacheConfig({ includes, excludes, task, workspaceRoot }) {
   for (const pattern of includes) {
     const timer = createTimer()
     for (const file of glob.sync(pattern, {
-      cwd: task.taskDir,
+      cwd: task.workspace.dir,
       ignore: [join(workspaceRoot, '**/node_modules/**'), ...excludes],
       absolute: true,
     })) {
@@ -32,7 +32,7 @@ function globCacheConfig({ includes, excludes, task, workspaceRoot }) {
       task.logger.note(
         `Finding files matching ${path.relative(
           process.cwd(),
-          isAbsolute(pattern) ? pattern : join(task.taskDir, pattern),
+          isAbsolute(pattern) ? pattern : join(task.workspace.dir, pattern),
         )} took ${pc.cyan(timer.formatElapsedTime())}`,
       )
     }
@@ -49,27 +49,27 @@ function globCacheConfig({ includes, excludes, task, workspaceRoot }) {
  * @returns
  */
 export function getInputFiles(tasks, task, extraFiles) {
-  const taskConfig = tasks.config.getTaskConfig(task.taskDir, task.taskName)
+  const taskConfig = tasks.config.getTaskConfig(task.workspace.dir, task.taskName)
 
   const cacheConfig = taskConfig.cache
   if (cacheConfig === 'none') {
     return null
   }
 
-  const baseCacheConfig = tasks.config.getBaseCacheConfig(task.taskDir)
+  const baseCacheConfig = tasks.config.getBaseCacheConfig()
 
   const localFiles = globCacheConfig({
     task,
-    workspaceRoot: tasks.config.workspaceRoot,
+    workspaceRoot: tasks.config.project.root.dir,
     includes: makeGlobsAbsolute(
       uniq([...baseCacheConfig.include, ...cacheConfig.inputs.include]),
-      tasks.config.workspaceRoot,
-      task.taskDir,
+      tasks.config.project.root.dir,
+      task.workspace.dir,
     ),
     excludes: makeGlobsAbsolute(
       uniq([...baseCacheConfig.exclude, ...cacheConfig.inputs.exclude]),
-      tasks.config.workspaceRoot,
-      task.taskDir,
+      tasks.config.project.root.dir,
+      task.workspace.dir,
     ),
   })
 

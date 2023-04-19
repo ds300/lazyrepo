@@ -1,9 +1,8 @@
 import slugify from '@sindresorhus/slugify'
 import path, { isAbsolute, relative } from 'path'
 import pc from 'picocolors'
-import { getWorkspaceRoot } from '../getWorkspaceRoot.js'
 import { logger } from '../logger/logger.js'
-import { getPackageManager, getRepoDetails } from '../workspace.js'
+import { Project } from '../workspace.js'
 import { resolveConfig } from './resolveConfig.js'
 
 /**
@@ -126,77 +125,36 @@ function extractGlobPattern(glob) {
 
 export class Config {
   /** @private */ rootConfig
-  /** @private */ packageDirConfigs
-  /** @readonly */ workspaceRoot
-  /** @readonly */ repoDetails
+  /** @readonly */ project
 
   /**
    * @typedef {Object} ConfigWrapperOptions
    *
-   * @property {string} workspaceRoot
+   * @property {Project} project
    * @property {ResolvedConfig} rootConfig
-   * @property {Record<string, ResolvedConfig>} packageDirConfigs
-   * @property {import('../types.js').RepoDetails} repoDetails
    */
   /** @param {ConfigWrapperOptions} options */
-  constructor({ workspaceRoot, rootConfig, packageDirConfigs, repoDetails }) {
-    this.workspaceRoot = workspaceRoot
+  constructor({ project, rootConfig }) {
+    this.project = project
     this.rootConfig = rootConfig
-    this.packageDirConfigs = packageDirConfigs
-    this.repoDetails = repoDetails
   }
 
   /**
    * @param {string} dir
    */
   static async from(dir) {
-    const workspaceRoot = getWorkspaceRoot(dir)
-    if (!workspaceRoot) {
-      logger.fail(`Could not find workspace root for dir '${dir}'`)
-      process.exit(1)
-    }
+    const project = new Project(dir)
+    const rootConfig = await resolveConfig(project.root.dir)
 
-    const packageManager = getPackageManager(workspaceRoot)
-    if (!packageManager) {
-      logger.fail(`Could not determine which package manager is in use '${dir}' '${workspaceRoot}'`)
-    }
-
-    const repoDetails = getRepoDetails(workspaceRoot)
-    const rootConfig = await resolveConfig(workspaceRoot)
-
-    /** @type {Record<string, ResolvedConfig>} */
-    const packageDirConfigs = {}
-    const allLoadedConfigFiles = rootConfig.filePath ? [rootConfig.filePath] : []
-
-    for (const c of await Promise.all(
-      Object.values(repoDetails.packagesByName).map(async (pkg) => ({
-        dir: pkg.dir,
-        config: await resolveConfig(pkg.dir),
-      })),
-    )) {
-      if (c.config.filePath !== null) {
-        allLoadedConfigFiles.push(c.config.filePath)
-        packageDirConfigs[c.dir] = c.config
-      }
-    }
-
-    if (allLoadedConfigFiles.length === 0) {
+    if (!rootConfig.filePath) {
       logger.log('No config files found, using default configuration.\n')
     } else {
-      logger.log(
-        pc.gray(
-          `Loaded config file${allLoadedConfigFiles.length > 1 ? 's' : ''}: ${allLoadedConfigFiles
-            .map((f) => relative(process.cwd(), f))
-            .join(', ')}\n`,
-        ),
-      )
+      logger.log(pc.gray(`Loaded config file: ${relative(process.cwd(), rootConfig.filePath)}\n`))
     }
 
     return new Config({
-      workspaceRoot,
+      project,
       rootConfig,
-      packageDirConfigs,
-      repoDetails,
     })
   }
   /**
@@ -205,7 +163,7 @@ export class Config {
    * @returns {TaskConfig}
    */
   getTaskConfig(taskDir, taskName) {
-    const config = this.packageDirConfigs[taskDir]?.config ?? this.rootConfig.config
+    const config = this.rootConfig.config
     return new TaskConfig(taskDir, taskName, config?.tasks?.[taskName] ?? {})
   }
 
@@ -215,17 +173,14 @@ export class Config {
    */
   getTaskKey(taskDir, taskName) {
     if (!isAbsolute(taskDir)) throw new Error(`taskKey: taskDir must be absolute: ${taskDir}`)
-    return `${taskName}::${relative(this.workspaceRoot, taskDir) || '<rootDir>'}`
+    return `${taskName}::${relative(this.project.root.dir, taskDir) || '<rootDir>'}`
   }
 
   /**
-   * @param {string} taskDir
    * @returns {{include: string[], exclude: string[], envInputs: string[]}}
    */
-  getBaseCacheConfig(taskDir) {
-    const config =
-      this.packageDirConfigs[taskDir]?.config.baseCacheConfig ??
-      this.rootConfig.config.baseCacheConfig
+  getBaseCacheConfig() {
+    const config = this.rootConfig.config.baseCacheConfig
 
     const include = config?.include ?? [
       '<rootDir>/{yarn.lock,pnpm-lock.yaml,package-lock.json}',

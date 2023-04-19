@@ -8,6 +8,7 @@ import {
   formatInfoMessage,
   formatNoteMessage,
   formatSuccessMessage,
+  formatWarningMessage,
   getColorForString,
   lastNonEmptyLineIfPossible,
 } from './formatting.js'
@@ -138,6 +139,13 @@ export class InteractiveLogger {
   }
 
   /**
+   * @param {string[]} args
+   */
+  warn(...args) {
+    this.log(formatWarningMessage(...args))
+  }
+
+  /**
    * @param {string} message
    */
   success(message) {
@@ -240,6 +248,9 @@ export class InteractiveLogger {
       },
       info: (...args) => {
         log('running', formatInfoMessage(...args))
+      },
+      warn: (...args) => {
+        log('running', formatWarningMessage(...args))
       },
       note: (...args) => {
         log('running', formatNoteMessage(...args))
