@@ -61,7 +61,12 @@ class TestHarness {
 
   exec(
     args: string[],
-    options?: { packageDir?: string; env?: NodeJS.ProcessEnv; throwOnError?: boolean },
+    options?: {
+      packageDir?: string
+      env?: NodeJS.ProcessEnv
+      throwOnError?: boolean
+      inspect?: boolean
+    },
   ) {
     return this.config.spawn
       ? this.execInSpawnedProc(args, options)
@@ -89,9 +94,6 @@ class TestHarness {
       status = code ?? 0
       return undefined as never
     })
-    global.__test__workspaceRoot = options?.packageDir
-      ? join(this.config.dir, options.packageDir)
-      : this.config.dir
     try {
       await execCli(['node', join(process.cwd(), 'bin.js'), ...args])
       if (!throwOnError || status === 0) {
@@ -111,17 +113,26 @@ class TestHarness {
 
   private execInSpawnedProc(
     args: string[],
-    options?: { packageDir?: string; env?: NodeJS.ProcessEnv; throwOnError?: boolean },
+    options?: {
+      packageDir?: string
+      env?: NodeJS.ProcessEnv
+      throwOnError?: boolean
+      inspect?: boolean
+    },
   ): Promise<{ output: string; status: number }> {
     const throwOnError = options?.throwOnError ?? true
     return new Promise((resolve, reject) => {
-      const proc = spawn('node', [join(process.cwd(), 'bin.js'), ...args], {
-        cwd: options?.packageDir ? join(this.config.dir, options.packageDir) : this.config.dir,
-        env: {
-          ...process.env,
-          ...options?.env,
+      const proc = spawn(
+        'node',
+        [...(options?.inspect ? ['--inspect'] : []), join(process.cwd(), 'bin.js'), ...args],
+        {
+          cwd: options?.packageDir ? join(this.config.dir, options.packageDir) : this.config.dir,
+          env: {
+            ...process.env,
+            ...options?.env,
+          },
         },
-      })
+      )
 
       let output = ''
       proc.stdout?.on('data', (data) => {

@@ -12,13 +12,14 @@ import { rainbow } from '../rainbow.js'
  */
 export async function run({ taskName, options }) {
   const timer = createTimer()
-  const config = await Config.from(process.cwd())
+  const config = await Config.fromCwd(process.cwd())
 
   const filterPaths = options.filter
     ? Array.isArray(options.filter)
       ? options.filter
       : [options.filter]
-    : []
+    : // match the directory or any of its descendants
+      [process.cwd() + `{,**/*}`]
 
   /** @type {import('../types.js').RequestedTask[]} */
   const requestedTasks = [
@@ -38,7 +39,7 @@ export async function run({ taskName, options }) {
   if (tasks.sortedTaskKeys.length === 0) {
     logger.fail(
       `No tasks found matching [${requestedTasks.map((t) => t.taskName).join(', ')}] in ${
-        config.workspaceRoot
+        config.project.root.dir
       }`,
     )
   }

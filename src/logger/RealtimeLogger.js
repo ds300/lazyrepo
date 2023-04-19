@@ -6,6 +6,7 @@ import {
   formatInfoMessage,
   formatNoteMessage,
   formatSuccessMessage,
+  formatWarningMessage,
   getColorForString,
   prefixLines,
 } from './formatting.js'
@@ -64,6 +65,13 @@ export class RealtimeLogger {
   }
 
   /**
+   * @param {string[]} args
+   */
+  warn(...args) {
+    this.log(formatWarningMessage(...args))
+  }
+
+  /**
    * @param {string} message
    */
   success(message) {
@@ -115,6 +123,9 @@ export class RealtimeLogger {
       },
       note: (...args) => {
         log(formatInfoMessage(...args))
+      },
+      warn: (...args) => {
+        log(formatWarningMessage(...args))
       },
     }
   }

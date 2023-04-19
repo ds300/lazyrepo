@@ -63,10 +63,10 @@ export async function computeManifest({ tasks, task }) {
   for (const [otherTaskName, depConfig] of task.taskConfig.runsAfterEntries) {
     if (!depConfig.inheritsInput && depConfig.usesOutput === false) continue
     const isTopLevel =
-      tasks.config.getTaskConfig(task.taskDir, otherTaskName).execution === 'top-level'
+      tasks.config.getTaskConfig(task.workspace.dir, otherTaskName).execution === 'top-level'
 
     const key = tasks.config.getTaskKey(
-      isTopLevel ? tasks.config.workspaceRoot : task.taskDir,
+      isTopLevel ? tasks.config.project.root.dir : task.workspace.dir,
       otherTaskName,
     )
     const depTask = tasks.allTasks[key]
@@ -90,9 +90,9 @@ export async function computeManifest({ tasks, task }) {
     (task.taskConfig.cache?.inheritsInputFromDependencies ?? true)
   ) {
     // TODO: test that localDeps is always sorted
-    const upstreamTaskKeys = task.packageDetails?.localDeps
-      ?.map((packageName) => {
-        const depPackage = tasks.config.repoDetails.packagesByName[packageName]
+    const upstreamTaskKeys = task.workspace.localDependencyWorkspaceNames
+      .map((packageName) => {
+        const depPackage = tasks.config.project.getWorkspaceByName(packageName)
         const key = tasks.config.getTaskKey(depPackage.dir, task.taskName)
         return key
       })
@@ -111,7 +111,7 @@ export async function computeManifest({ tasks, task }) {
   }
 
   const allEnvVars = uniq(
-    (tasks.config.getBaseCacheConfig(task.taskDir).envInputs ?? []).concat(
+    (tasks.config.getBaseCacheConfig().envInputs ?? []).concat(
       task.taskConfig.cache?.envInputs ?? [],
     ),
   ).sort()
@@ -131,7 +131,7 @@ export async function computeManifest({ tasks, task }) {
   const timer = createTimer()
 
   for (const file of files.sort()) {
-    const fullPath = join(tasks.config.workspaceRoot, file)
+    const fullPath = join(tasks.config.project.root.dir, file)
     const stat = statSync(fullPath)
     const timestamp = String(stat.mtimeMs)
 

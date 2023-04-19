@@ -74,6 +74,13 @@ export function formatNoteMessage(...args) {
 /**
  * @param {string[]} args
  */
+export function formatWarningMessage(...args) {
+  return `⚠️ ${pc.yellow(args.join(' '))}`
+}
+
+/**
+ * @param {string[]} args
+ */
 export function formatSuccessMessage(...args) {
   return `${pc.green('✔')} ${args.join(' ')}`
 }

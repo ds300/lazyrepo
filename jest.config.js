@@ -1,6 +1,6 @@
 export default {
   transform: {
-    '^.+\\.(j|t)s?$': ['esbuild-jest', { sourcemap: true }],
+    '^.+\\.(j|t)s?$': '@swc/jest',
   },
   transformIgnorePatterns: ['ckafojisfew'],
   modulePathIgnorePatterns: ['<rootDir>/node_modules', '<rootDir>/.test'],
