@@ -4,10 +4,8 @@ import { clean } from './commands/clean.js'
 import { inherit } from './commands/inherit.js'
 import { init } from './commands/init.js'
 import { run } from './commands/run.js'
-import { createTimer } from './createTimer.js'
 import { readFileSync } from './fs.js'
 import { isTest } from './isTest.js'
-import { padString } from './logger/formatting.js'
 import { logger } from './logger/logger.js'
 import { rainbow } from './rainbow.js'
 
@@ -66,14 +64,12 @@ export async function execCli(argv) {
     ? '0.0.0-test'
     : // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version
-  const timer = createTimer()
   logger.log(kleur.bold('lazyrepo'), kleur.gray(`@${version}`))
   logger.log(rainbow('-'.repeat(`lazyrepo @${version}`.length)))
 
   try {
     cli.parse(argv, { run: false })
     await cli.runMatchedCommand()
-    logger.log(`${padString('Time:')} ${timer.formatElapsedTime()}\n`)
   } catch (/** @type {any} */ e) {
     // find out if this is a CACError instance
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

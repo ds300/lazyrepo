@@ -2,6 +2,7 @@ import kleur from 'kleur'
 import { dedent } from 'ts-dedent'
 import { TaskGraph } from '../TaskGraph.js'
 import { Config } from '../config/config.js'
+import { createTimer } from '../createTimer.js'
 import { InteractiveLogger } from '../logger/InteractiveLogger.js'
 import { logger } from '../logger/logger.js'
 import { rainbow } from '../rainbow.js'
@@ -10,6 +11,7 @@ import { rainbow } from '../rainbow.js'
  * @param {{taskName: string, options: import('../types.js').CLIOption}} args
  */
 export async function run({ taskName, options }) {
+  const timer = createTimer()
   const config = await Config.from(process.cwd())
 
   const filterPaths = options.filter
@@ -62,6 +64,9 @@ export async function run({ taskName, options }) {
   const output = dedent`
     
           Tasks:     ${successOutput}
-         Cached:     ${cachedOutput}`
+         Cached:     ${cachedOutput}
+           Time:     ${timer.formatElapsedTime()}
+
+`
   logger.log(output)
 }

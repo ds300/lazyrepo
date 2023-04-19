@@ -56,8 +56,6 @@ test(`help prints with exit 0 when you pass --help`, async () => {
           --filter <paths>  [string] run task in packages specified by paths 
           --force           [boolean] ignore existing cached artifacts (default: false)
           -h, --help        Display this message 
-               Time:     1.00s
-
         "
       `)
       expect(status).toBe(0)
