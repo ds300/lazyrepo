@@ -1,5 +1,6 @@
+import { assert } from 'console'
 import micromatch from 'micromatch'
-import { dirname, isAbsolute, join } from 'path'
+import { dirname, isAbsolute, join, sep } from 'path'
 import { existsSync } from '../fs.js'
 import { loadWorkspace } from './loadWorkspace.js'
 
@@ -8,10 +9,15 @@ import { loadWorkspace } from './loadWorkspace.js'
  * @returns {import('./project-types.js').PartialWorkspace | null}
  */
 function findContainingPackage(dir) {
+  assert(isAbsolute(dir), 'findContainingPackage: dir must be absolute')
   let currentDir = dir
-  while (currentDir !== dirname(currentDir)) {
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
     if (existsSync(join(currentDir, 'package.json'))) {
       return loadWorkspace(currentDir)
+    }
+    if (currentDir === sep) {
+      break
     }
     currentDir = dirname(currentDir)
   }

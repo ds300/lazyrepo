@@ -27,6 +27,7 @@ module.exports = {
       rules: {
         'no-restricted-imports': 'off',
         '@typescript-eslint/no-unsafe-call': 'off',
+        '@typescript-eslint/no-extra-semi': 'off',
       },
     },
   ],
