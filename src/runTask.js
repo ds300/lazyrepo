@@ -114,6 +114,7 @@ async function runTask(task, tasks) {
       }`,
       FORCE_COLOR: '1',
       npm_lifecycle_event: task.taskName,
+      __LAZY_WORKFLOW__: 'true',
     },
   })
 

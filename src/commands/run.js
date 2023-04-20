@@ -10,10 +10,11 @@ import { rainbow } from '../rainbow.js'
 
 /**
  * @param {{taskName: string, options: import('../types.js').CLIOption}} args
+ * @param {import('../config/config.js').Config} [_config]
  */
-export async function run({ taskName, options }) {
+export async function run({ taskName, options }, _config) {
   const timer = createTimer()
-  const config = await Config.fromCwd(process.cwd())
+  const config = _config ?? (await Config.fromCwd(process.cwd()))
 
   const filterPaths = options.filter
     ? Array.isArray(options.filter)
@@ -28,7 +29,7 @@ export async function run({ taskName, options }) {
       taskName: taskName,
       filterPaths,
       force: options.force,
-      extraArgs: options['--'],
+      extraArgs: options['--'] ?? [],
     },
   ]
 

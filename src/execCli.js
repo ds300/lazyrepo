@@ -43,8 +43,10 @@ cli.command('clean', 'delete all local cache data').action(() => {
 
 cli
   .command('inherit', 'run command from configuration file specified by script name')
-  .action(async () => {
-    await inherit()
+  .option('--force', '[boolean] ignore existing cached artifacts', { default: false })
+  .action(async (options) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    await inherit(options)
   })
 
 cli.help()

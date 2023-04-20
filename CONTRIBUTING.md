@@ -40,3 +40,9 @@ At the time of writing we have one `types.d.ts` file to make it easier to define
 Feel free to submit pull requests! Ask before working on big stuff otherwise you might be disappointed if it gets rejected for some reason.
 
 If there's an issue for the thing you're working on, please let folks know that you're working on it in the issue. Do a quick search in discussions too.
+
+## Testing Locally
+
+If you want to test lazyrepo locally, you can run `pnpm pack-test-version` and then use the resulting tarball to add `lazyrepo` to a local test project.
+
+This test tarball will read the source files from your local git checkout, so you can make changes and test them without having to publish a new version or do any tricky linking.

@@ -9,7 +9,10 @@ import { execCli } from '../../src/execCli.js'
 import { naiveRimraf } from '../../src/naiveRimraf.js'
 import { PackageJson } from '../../src/types.js'
 
-const cleanup = (text: string) => stripAnsi(text).replace(/DEBUG.*\n/g, '')
+const cleanup = ({ text, rootDir }: { text: string; rootDir: string }) =>
+  stripAnsi(text)
+    .replace(/DEBUG.*\n/g, '')
+    .replaceAll(rootDir, '__ROOT_DIR__')
 
 class TestHarness {
   constructor(readonly config: { dir: string; packageManager: PackageManager; spawn?: boolean }) {}
@@ -98,11 +101,13 @@ class TestHarness {
     try {
       await execCli(['node', join(process.cwd(), 'bin.js'), ...args])
       if (!throwOnError || status === 0) {
-        return { output: cleanup(output), status }
+        return { output: cleanup({ text: output, rootDir: this.config.dir }), status }
       } else {
         // eslint-disable-next-line no-console
-        console.error(cleanup(output))
-        throw new Error(`Exited with code ${status} ${cleanup(output)}`)
+        console.error(cleanup({ text: output, rootDir: this.config.dir }))
+        throw new Error(
+          `Exited with code ${status} ${cleanup({ text: output, rootDir: this.config.dir })}`,
+        )
       }
     } finally {
       cwd.mockRestore()
@@ -144,7 +149,10 @@ class TestHarness {
       })
       proc.on('exit', (code) => {
         if (!throwOnError || code === 0) {
-          resolve({ output: cleanup(output), status: code ?? 1 })
+          resolve({
+            output: cleanup({ text: output, rootDir: this.config.dir }),
+            status: code ?? 1,
+          })
         } else {
           // eslint-disable-next-line no-console
           console.error(output)

@@ -18,6 +18,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --list-different .",
     "lint": "eslint -f compact '**/*.{js,ts}'",
+    "pack-test-version": "node scripts/pack-test-version.js",
     "prepare": "husky install"
   },
   "packageManager": "pnpm@8.3.1",
