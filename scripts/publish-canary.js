@@ -14,11 +14,12 @@ const auto = new Auto({
 import { parse } from 'semver'
 import { pathToFileURL } from 'url'
 import { exec } from './lib/exec.js'
+import { getCurrentVersion } from './lib/getCurrentVersion.js'
 /**
  * @param {import('semver').ReleaseType} bump
  */
 function getNextVersion(bump) {
-  const currentVersion = parse(exec('pnpm view . version'))
+  const currentVersion = parse(getCurrentVersion())
   const gitSha = exec('git rev-parse --short HEAD')
   if (!currentVersion) {
     throw new Error('Could not parse current version')

@@ -3,6 +3,7 @@ import { execSync } from 'child_process'
 import { parse } from 'semver'
 import { pathToFileURL } from 'url'
 import { exec } from './lib/exec.js'
+import { getCurrentVersion } from './lib/getCurrentVersion.js'
 
 const { Auto } = autopkg
 
@@ -18,7 +19,7 @@ const auto = new Auto({
  * @param {import('semver').ReleaseType} bump
  */
 function getNextVersion(bump) {
-  const currentVersion = parse(exec('pnpm view . version'))
+  const currentVersion = parse(getCurrentVersion())
   if (!currentVersion) {
     throw new Error('Could not parse current version')
   }
