@@ -58,7 +58,7 @@ export class TaskGraph {
      * @returns
      */
     const visit = (path, { requestedTask, workspace }) => {
-      const taskConfig = this.config.getTaskConfig(workspace.dir, requestedTask.taskName)
+      const taskConfig = this.config.getTaskConfig(workspace, requestedTask.taskName)
       const key = this.config.getTaskKey(workspace.dir, requestedTask.taskName)
       if (this.allTasks[key]) {
         if (path.includes(key)) {
@@ -172,9 +172,7 @@ export class TaskGraph {
    * @param {string} taskName
    */
   isTopLevelTask(taskName) {
-    return (
-      this.config.getTaskConfig(this.config.project.root.dir, taskName).execution === 'top-level'
-    )
+    return this.config.getTaskConfig(this.config.project.root, taskName).execution === 'top-level'
   }
 
   /**

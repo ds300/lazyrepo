@@ -20,7 +20,7 @@
     "lint": "eslint -f compact '**/*.{js,ts}'",
     "prepare": "husky install"
   },
-  "packageManager": "pnpm@latest",
+  "packageManager": "pnpm@8.3.1",
   "lint-staged": {
     "*.{js,ts}": [
       "eslint --fix"

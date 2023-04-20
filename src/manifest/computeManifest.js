@@ -63,7 +63,7 @@ export async function computeManifest({ tasks, task }) {
   for (const [otherTaskName, depConfig] of task.taskConfig.runsAfterEntries) {
     if (!depConfig.inheritsInput && depConfig.usesOutput === false) continue
     const isTopLevel =
-      tasks.config.getTaskConfig(task.workspace.dir, otherTaskName).execution === 'top-level'
+      tasks.config.getTaskConfig(task.workspace, otherTaskName).execution === 'top-level'
 
     const key = tasks.config.getTaskKey(
       isTopLevel ? tasks.config.project.root.dir : task.workspace.dir,
