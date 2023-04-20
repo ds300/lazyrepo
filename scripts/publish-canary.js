@@ -11,22 +11,9 @@ const auto = new Auto({
   verbose: true,
 })
 
-import { execSync } from 'child_process'
 import { parse } from 'semver'
 import { pathToFileURL } from 'url'
-
-const exec = (/** @type {string} */ cmd) => {
-  try {
-    console.log('running command: ' + cmd)
-    const output = execSync(cmd).toString().trim()
-    console.log('output: ' + output)
-    return output
-  } catch (/** @type {any} */ e) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    console.error(e.stderr?.toString())
-    process.exit(1)
-  }
-}
+import { exec } from './lib/exec.js'
 /**
  * @param {import('semver').ReleaseType} bump
  */
@@ -70,7 +57,7 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     exec(`npm whoami`)
 
     exec(`npm version ${nextVersion} --no-git-tag-version`)
-    exec(`npm publish --tag canary --access public`)
+    // exec(`npm publish --tag canary --access public`)
   } else {
     throw new Error('Invalid bump type provided')
   }
