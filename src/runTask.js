@@ -4,7 +4,6 @@ import path, { relative } from 'path'
 import pc from 'picocolors'
 import stripAnsi from 'strip-ansi'
 import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from './fs.js'
-import { logger } from './logger/logger.js'
 import { computeManifest } from './manifest/computeManifest.js'
 
 /**
@@ -94,27 +93,8 @@ export async function runTaskIfNeeded(task, tasks) {
  * @returns {Promise<{didSucceed: boolean;}>}
  */
 async function runTask(task, tasks) {
-  const taskConfig = tasks.config.getTaskConfig(task.workspace.dir, task.taskName)
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const packageJson = JSON.parse(readFileSync(`${task.workspace.dir}/package.json`, 'utf8'))
-  /** @type {string} */
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  let command =
-    taskConfig.execution === 'top-level'
-      ? taskConfig.baseCommand
-      : // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        packageJson.scripts[task.taskName]
-  if (taskConfig.execution !== 'top-level' && command.startsWith('lazy inherit')) {
-    if (!taskConfig.baseCommand) {
-      // TODO: evaluate this stuff ahead-of-time
-      logger.fail(
-        `Encountered 'lazy inherit' for scripts#${task.taskName} in ${task.workspace.dir}/package.json, but there is baseCommand configured for the task '${task.taskName}'`,
-      )
-      process.exit(1)
-    }
-    command = taskConfig.baseCommand + ' ' + command.slice('lazy inherit'.length)
-    command = command.trim()
-  }
+  const taskConfig = tasks.config.getTaskConfig(task.workspace, task.taskName)
+  const command = taskConfig.command
 
   task.logger.log(
     pc.bold('RUN ') +
