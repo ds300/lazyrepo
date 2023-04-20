@@ -1,3 +1,20 @@
+# v0.0.0-alpha.16 (Thu Apr 20 2023)
+
+#### 🚀 Enhancement
+
+- Improve lazy inherit [#67](https://github.com/ds300/lazyrepo/pull/67) ([@ds300](https://github.com/ds300))
+
+#### 🐛 Bug Fix
+
+- Interpolate <rootDir> in commands [#66](https://github.com/ds300/lazyrepo/pull/66) ([@SomeHats](https://github.com/SomeHats))
+
+#### Authors: 2
+
+- alex ([@SomeHats](https://github.com/SomeHats))
+- David Sheldrick ([@ds300](https://github.com/ds300))
+
+---
+
 # v0.0.0-alpha.15 (Thu Apr 20 2023)
 
 #### 🐛 Bug Fix
