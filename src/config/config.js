@@ -106,22 +106,40 @@ export class TaskConfig {
       process.exit(1)
     }
 
-    if (this.execution !== 'top-level' && command.startsWith('lazy inherit')) {
-      if (!baseCommand) {
-        // TODO: evaluate this stuff ahead-of-time
-        logger.fail(
-          `Encountered 'lazy inherit' for scripts#${this.name} in ${this.workspace.dir}/package.json, but there is baseCommand configured for the task '${this.name}'`,
-        )
-        process.exit(1)
+    if (this.execution !== 'top-level') {
+      const inheritMatch = extractInheritMatch(command)
+
+      if (inheritMatch) {
+        if (!baseCommand) {
+          // TODO: evaluate this stuff ahead-of-time
+          logger.fail(
+            `Encountered 'lazy inherit' for scripts#${this.name} in ${this.workspace.dir}/package.json, but there is no baseCommand configured for the task '${this.name}'`,
+          )
+          process.exit(1)
+        } else {
+          command = `${inheritMatch.envVars ?? ''} ${baseCommand} ${inheritMatch.extraArgs ?? ''}`
+          command = command.trim()
+        }
       }
-      command = baseCommand + ' ' + command.slice('lazy inherit'.length)
-      command = command.trim()
     }
 
     command = command.replaceAll('<rootDir>', this._config.project.root.dir)
 
     return command
   }
+}
+
+/**
+ * TODO: can we use @yarnpkg/shell parser here?
+ * @param {string} command
+ */
+export function extractInheritMatch(command) {
+  const match = command.match(/^(\w+=\S* )*(yarn run( -T| --top-level)? )?lazy inherit($| .*$)/)
+  if (!match) return null
+
+  const [, envVars, , , extraArgs] = match
+
+  return { envVars: envVars?.trim() || null, extraArgs: extraArgs?.trim() || null }
 }
 
 /**
