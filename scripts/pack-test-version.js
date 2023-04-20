@@ -11,16 +11,25 @@ const version = '0.0.0-test.' + Date.now()
 exec(`npm version ${version} --no-git-tag-version`)
 const bin = readFileSync('./bin.js')
 const cli = readFileSync('./src/cli.js')
+const types = readFileSync('./index.d.ts')
 
-writeFileSync('./bin.js', `#!/usr/bin/env node\n import "file:${process.cwd()}/src/cli.js"`)
-writeFileSync('./src/cli.js', `import "file:${process.cwd()}/src/cli.js"`)
+writeFileSync('./bin.js', `#!/usr/bin/env node\n import "${process.cwd()}/src/cli.js"`, {
+  // make executable
+  mode: 0o755,
+})
+writeFileSync('./src/cli.js', `import "${process.cwd()}/src/cli.js"`)
+writeFileSync('./index.d.ts', `export * from "${process.cwd()}/src/config/config-types.js"`)
 
 let outPath
 try {
   outPath = exec(`npm pack`)
 } finally {
-  writeFileSync('./bin.js', bin)
+  writeFileSync('./bin.js', bin, {
+    // make executable
+    mode: 0o755,
+  })
   writeFileSync('./src/cli.js', cli)
+  writeFileSync('./index.d.ts', types)
 }
 
 exec(`npm version ${currentVersion} --no-git-tag-version`)

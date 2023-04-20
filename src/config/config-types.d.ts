@@ -226,4 +226,10 @@ export interface LazyConfig {
    * Custom configuration for any tasks defined in your package.json "scripts" entries.
    */
   tasks?: { [taskName: string]: LazyTask }
+  /**
+   * Ignore workspaces matching the given globs. No tasks will be scheduled to run in these workspaces, ever!
+   *
+   * Warning! This will be true even if another workspace lists one of the ignored workspaces as a dependency.
+   */
+  ignoreWorkspaces?: string[]
 }

@@ -184,8 +184,9 @@ export class Config {
    * @param {string} cwd
    */
   static async fromCwd(cwd) {
-    const project = Project.fromCwd(cwd)
+    let project = Project.fromCwd(cwd)
     const rootConfig = await resolveConfig(project.root.dir)
+    project = project.withoutIgnoredWorkspaces(rootConfig.config.ignoreWorkspaces ?? [])
 
     if (!rootConfig.filePath) {
       logger.log('No config files found, using default configuration.\n')

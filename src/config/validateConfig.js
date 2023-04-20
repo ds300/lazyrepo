@@ -78,6 +78,7 @@ export const lazyConfigSchema = z
       .strict()
       .optional(),
     tasks: z.record(lazyTaskSchema).optional(),
+    ignoreWorkspaces: z.array(z.string()).optional(),
   })
   .strict()
 
