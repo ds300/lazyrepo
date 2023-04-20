@@ -100,25 +100,15 @@ class TestHarness {
     })
     try {
       await execCli(['node', join(process.cwd(), 'bin.js'), ...args])
-      if (expectError) {
-        if (status === 0) {
-          // eslint-disable-next-line no-console
-          console.error(cleanup({ text: output, rootDir: this.config.dir }))
-          throw new Error(
-            `Exited with code ${status} ${cleanup({ text: output, rootDir: this.config.dir })}`,
-          )
-        }
+      const didError = status === 1
+      if ((expectError && didError) || (!expectError && !didError)) {
         return { output: cleanup({ text: output, rootDir: this.config.dir }), status }
-      } else {
-        if (status === 0) {
-          return { output: cleanup({ text: output, rootDir: this.config.dir }), status }
-        }
-        // eslint-disable-next-line no-console
-        console.error(cleanup({ text: output, rootDir: this.config.dir }))
-        throw new Error(
-          `Exited with code ${status} ${cleanup({ text: output, rootDir: this.config.dir })}`,
-        )
       }
+      // eslint-disable-next-line no-console
+      console.error(cleanup({ text: output, rootDir: this.config.dir }))
+      throw new Error(
+        `Exited with code ${status} ${cleanup({ text: output, rootDir: this.config.dir })}`,
+      )
     } finally {
       cwd.mockRestore()
       outWrite.mockRestore()
@@ -158,36 +148,20 @@ class TestHarness {
         output += data
       })
       proc.on('exit', (code) => {
-        if (expectError) {
-          if (code === 0) {
-            // eslint-disable-next-line no-console
-            console.error(output)
-            reject(
-              new Error(
-                `Exited with code ${code} ${cleanup({ text: output, rootDir: this.config.dir })}`,
-              ),
-            )
-          } else {
-            resolve({
-              output: cleanup({ text: output, rootDir: this.config.dir }),
-              status: code ?? 1,
-            })
-          }
+        const didError = code === 1
+        if ((expectError && didError) || (!expectError && !didError)) {
+          resolve({
+            output: cleanup({ text: output, rootDir: this.config.dir }),
+            status: code ?? 1,
+          })
         } else {
-          if (code === 0) {
-            resolve({
-              output: cleanup({ text: output, rootDir: this.config.dir }),
-              status: code ?? 1,
-            })
-          } else {
-            // eslint-disable-next-line no-console
-            console.error(output)
-            reject(
-              new Error(
-                `Exited with code ${code} ${cleanup({ text: output, rootDir: this.config.dir })}`,
-              ),
-            )
-          }
+          // eslint-disable-next-line no-console
+          console.error(output)
+          reject(
+            new Error(
+              `Exited with code ${code} ${cleanup({ text: output, rootDir: this.config.dir })}`,
+            ),
+          )
         }
       })
       proc.on('error', (err) => {
