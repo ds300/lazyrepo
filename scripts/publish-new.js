@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import autopkg from '@auto-it/core'
 import { execSync } from 'child_process'
 import { parse } from 'semver'
@@ -37,6 +38,34 @@ function getNextVersion(bump) {
     : currentVersion?.inc(bump).format()
 
   return { nextVersion, prereleaseTag }
+}
+
+/** @param {string} newVersion */
+async function waitForPublish(newVersion) {
+  let waitAttempts = 20
+
+  loop: while (waitAttempts > 0) {
+    try {
+      // fetch the new package directly from the npm registry
+
+      const url = `https://registry.npmjs.org/lazyrepo/-/lazyrepo-${newVersion}.tgz`
+      console.log('looking for package at url: ', url)
+      const res = await fetch(url, {
+        method: 'HEAD',
+      })
+      if (res.status >= 400) {
+        throw new Error(`Package not found: ${res.status}`)
+      }
+      break loop
+    } catch (e) {
+      console.log('Waiting for package to be published... attemptsRemaining', waitAttempts)
+      waitAttempts--
+      await new Promise((resolve) => setTimeout(resolve, 3000))
+    }
+  }
+  if (waitAttempts === 0) {
+    throw new Error('Timed out waiting for package to be published')
+  }
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
@@ -86,4 +115,8 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
 
   // finally, publish the packages [IF THIS STEP FAILS, RUN THE `publish-manual.ts` script locally]
   exec(`npm publish --tag ${prereleaseTag || 'latest'} --access public`)
+  if (nextVersion.startsWith('0.0.0')) {
+    await waitForPublish(nextVersion)
+    exec(`npm dist-tag add lazyrepo@${nextVersion} latest}`)
+  }
 }

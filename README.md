@@ -23,11 +23,11 @@ Trust me, the whole situation is so delightful it will make you reach for the `:
 
 Install `lazyrepo` globally
 
-    npm install lazyrepo --global
+    npm install lazyrepo@alpha --global
 
 And also as a dev dependency in the root of your repo
 
-    npm install lazyrepo --save-dev
+    npm install lazyrepo@alpha --save-dev
 
 And finally add `.lazy` to your .gitignore
 
@@ -102,11 +102,11 @@ With no config, when you run `lazy test` in the project root:
 
   Runs the given task, forwarding any args passed after the `--`
 
-  You may filter the packages that a task
+  You may filter the packages that a task should run in using the `--filter` option.
 
   e.g. to test only packages that end in `-utils`
 
-      lazy run test --filter packages/*-utils
+      lazy run test --filter="packages/*-utils"
 
   You may force all tasks to execute by passing the `--force` option.
 
@@ -136,7 +136,3 @@ export default {
   },
 }
 ```
-
-## Migrating from turborepo
-
-TODO
