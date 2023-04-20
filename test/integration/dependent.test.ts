@@ -473,7 +473,7 @@ test('when an upstream task fails the downstream tasks do not run', async () => 
     },
     async (t) => {
       const firstRun = await t.exec(['build'], {
-        throwOnError: false,
+        expectError: true,
       })
 
       expect(firstRun.output).toMatchInlineSnapshot(`

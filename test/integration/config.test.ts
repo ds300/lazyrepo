@@ -164,7 +164,7 @@ test('logs error with exit 1 when config is invalid', async () => {
       workspaceGlobs: ['packages/*'],
     },
     async (t) => {
-      const { status, output } = await t.exec(['build'], { throwOnError: false })
+      const { status, output } = await t.exec(['build'], { expectError: true })
       expect(status).toBe(1)
       expect(output).toMatchInlineSnapshot(`
         "lazyrepo 0.0.0-test
