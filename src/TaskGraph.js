@@ -211,6 +211,7 @@ export class TaskGraph {
       running: 0,
       'success:lazy': 0,
       'success:eager': 0,
+      'success:skipped': 0,
       successful: 0,
       failure: 0,
       allTasks: 0,
@@ -278,12 +279,7 @@ export class TaskGraph {
      * @param {string} taskKey
      */
     const runTask = async (taskKey) => {
-      const { didRunTask, didSucceed } = await runTaskIfNeeded(this.allTasks[taskKey], this)
-      this.allTasks[taskKey].status = didSucceed
-        ? didRunTask
-          ? 'success:eager'
-          : 'success:lazy'
-        : 'failure'
+      this.allTasks[taskKey].status = await runTaskIfNeeded(this.allTasks[taskKey], this)
       tick()
     }
 

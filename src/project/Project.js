@@ -195,10 +195,19 @@ export class Project {
    * @param {string} dir
    */
   getWorkspaceByDir(dir) {
+    if (this.root.dir === dir) return this.root
+
     const workspace = this.workspacesByDir.get(dir)
+
     if (!workspace) {
-      throw new Error(`Could not find workspace at ${dir}`)
+      throw new Error(
+        `Could not find workspace at ${dir}. Possible dirs:\n  - ${[
+          this.root.dir,
+          ...this.workspacesByDir.keys(),
+        ].join('\n  - ')}`,
+      )
     }
+
     return workspace
   }
 }

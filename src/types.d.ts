@@ -1,7 +1,8 @@
 import type { TaskConfig } from './config/config.js'
 import { Workspace } from './project/project-types.js'
 
-export type TaskStatus = 'pending' | 'running' | 'success:eager' | 'success:lazy' | 'failure'
+export type CompletedTaskStatus = 'success:eager' | 'success:lazy' | 'failure' | 'success:skipped'
+export type TaskStatus = 'pending' | 'running' | CompletedTaskStatus
 
 export interface ScheduledTask {
   key: string

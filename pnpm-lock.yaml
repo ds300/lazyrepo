@@ -21,6 +21,9 @@ importers:
       esbuild:
         specifier: ^0.17.15
         version: 0.17.15
+      escape-string-regexp:
+        specifier: ^5.0.0
+        version: 5.0.0
       fast-glob:
         specifier: ^3.2.12
         version: 3.2.12

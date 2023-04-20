@@ -4,6 +4,7 @@ import pc from 'picocolors'
 import _sliceAnsi from 'slice-ansi'
 import { createTimer } from '../createTimer.js'
 import {
+  firstNonEmptyLineIfPossible,
   formatFailMessage,
   formatInfoMessage,
   formatNoteMessage,
@@ -210,9 +211,9 @@ export class InteractiveLogger {
       this.update(() => {
         this.tty.clearScreenDown()
         task.status = status
-        const lastLine = lastNonEmptyLineIfPossible(message)
-        if (lastLine) {
-          task.lastLogLine = lastLine
+        const headline = firstNonEmptyLineIfPossible(message)
+        if (headline) {
+          task.lastLogLine = headline
         }
 
         bufferedLogLines.push(message)

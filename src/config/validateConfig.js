@@ -60,6 +60,7 @@ export const packageLevelTaskSchema = baseTaskSchema
   .extend({
     execution: z.union([z.literal('dependent'), z.literal('independent')]).optional(),
     baseCommand: z.string().optional(),
+    recursive: z.union([z.literal('error'), z.literal('skip'), z.literal('run')]).optional(),
   })
   .strict()
 

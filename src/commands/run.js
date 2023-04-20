@@ -65,7 +65,7 @@ export async function run({ taskName, options }) {
   const allLazy = stats.allTasks === stats['success:lazy']
 
   const cachedOutput =
-    pc.bold(`${stats['success:lazy']}/${stats.allTasks} `) +
+    pc.bold(`${stats['success:lazy'] + stats['success:skipped']}/${stats.allTasks} `) +
     (allLazy ? rainbow('>>> MAXIMUM LAZY') : 'cached')
 
   const output = dedent`

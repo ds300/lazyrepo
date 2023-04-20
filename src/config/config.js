@@ -1,4 +1,5 @@
 import slugify from '@sindresorhus/slugify'
+import escapeStringRegexp from 'escape-string-regexp'
 import path, { isAbsolute, relative } from 'path'
 import pc from 'picocolors'
 import { logger } from '../logger/logger.js'
@@ -81,6 +82,10 @@ export class TaskConfig {
     return this.taskConfig.parallel ?? true
   }
 
+  get recursive() {
+    return this.taskConfig.recursive ?? 'error'
+  }
+
   get cache() {
     const cache = this.taskConfig.cache
     if (cache === 'none') {
@@ -121,6 +126,11 @@ export class TaskConfig {
     command = command.replaceAll('<rootDir>', this._config.project.root.dir)
 
     return command
+  }
+
+  get isPossiblyRecursive() {
+    const regex = new RegExp(`lazy.*['"\\s]${escapeStringRegexp(this.name)}(?:['"\\s]|$)`, 'g')
+    return !!this.command.match(regex)
   }
 }
 

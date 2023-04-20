@@ -136,6 +136,8 @@ export interface TopLevelTask extends BaseTask {
    * The command to run for this task
    */
   baseCommand: string
+
+  recursive?: undefined
 }
 
 export interface PackageLevelTask extends BaseTask {
@@ -167,6 +169,16 @@ export interface PackageLevelTask extends BaseTask {
    * The command to run for this task if the task uses `lazy inherit`
    */
   baseCommand?: string
+
+  /**
+   * What should happen if lazyrepo encounters a script that appears to invoke
+   * itself, possibly causing an infinite loop?
+   *
+   * - `"error"` (default) - throw an error, aborting the entire run.
+   * - `"skip"` - skip running the script in the problematic package.
+   * - `"run"` - run the script anyway, even if it could cause a loop.
+   */
+  recursive?: 'error' | 'skip' | 'run'
 
   // API idea
   // packageOverrides: {

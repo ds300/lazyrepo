@@ -43,6 +43,19 @@ export function lastNonEmptyLineIfPossible(str) {
 }
 
 /**
+ * @param {string} str
+ */
+export function firstNonEmptyLineIfPossible(str) {
+  const lines = str.split('\n')
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].trim()) {
+      return lines[i]
+    }
+  }
+  return ''
+}
+
+/**
  * @param {string} headline
  * @param {{ error?: Error, detail?: string }} [more]
  */

@@ -3,13 +3,14 @@ import { spawn } from 'cross-spawn'
 import path, { relative } from 'path'
 import pc from 'picocolors'
 import stripAnsi from 'strip-ansi'
+import { exhaustive } from './exhaustive.js'
 import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from './fs.js'
 import { computeManifest } from './manifest/computeManifest.js'
 
 /**
  * @param {import('./types.js').ScheduledTask} task
  * @param {import('./TaskGraph.js').TaskGraph} tasks
- * @returns {Promise<{didRunTask: boolean, didSucceed: boolean}>}
+ * @returns {Promise<import('./types.js').CompletedTaskStatus>}
  */
 export async function runTaskIfNeeded(task, tasks) {
   task.logger.restartTimer()
@@ -26,18 +27,39 @@ export async function runTaskIfNeeded(task, tasks) {
     tasks,
   })
 
-  let didRunTask = false
-  let didSucceed = false
+  /** @type {import('./types.js').CompletedTaskStatus} */
+  let result
 
-  if (task.force) {
+  let shouldSkip = false
+  if (taskConfig.isPossiblyRecursive) {
+    switch (taskConfig.recursive) {
+      case 'error':
+        task.logger.fail(
+          `Command '${taskConfig.command}' appears to be recursive and could cause an infinite loop.`,
+          { detail: 'To run this command anyway, add `recursive: "run"` to the task config.' },
+        )
+        return 'failure'
+      case 'skip':
+        task.logger.log('skipping recursive command')
+        shouldSkip = true
+        break
+      case 'run':
+        break
+      default:
+        exhaustive(taskConfig.recursive)
+    }
+  }
+
+  if (shouldSkip) {
+    task.logger.log('skipping recursive command')
+    result = 'success:skipped'
+  } else if (task.force) {
     task.logger.log('cache miss, --force flag used')
 
-    didSucceed = (await runTask(task, tasks)).didSucceed
-    didRunTask = true
+    result = (await runTask(task, tasks)).result
   } else if (didChange === null) {
     task.logger.log('cache disabled')
-    didSucceed = (await runTask(task, tasks)).didSucceed
-    didRunTask = true
+    result = (await runTask(task, tasks)).result
   } else if (didChange) {
     const diffPath = taskConfig.getDiffPath()
     const diff = existsSync(diffPath) ? readFileSync(diffPath, 'utf-8').toString() : null
@@ -56,41 +78,47 @@ export async function runTaskIfNeeded(task, tasks) {
     } else if (!didHaveManifest) {
       task.logger.log('cache miss, no previous manifest found')
     }
-    didSucceed = (await runTask(task, tasks)).didSucceed
-    didRunTask = true
+    result = (await runTask(task, tasks)).result
   } else {
-    // cache hit
+    result = 'success:lazy'
   }
 
-  if (!didRunTask || didSucceed) {
+  if (result !== 'failure') {
     task.logger.note(
       'input manifest saved: ' + path.relative(tasks.config.project.root.dir, previousManifestPath),
     )
   }
 
-  if (didRunTask) {
-    if (didSucceed) {
+  switch (result) {
+    case 'success:eager':
       if (existsSync(nextManifestPath)) {
         renameSync(nextManifestPath, previousManifestPath)
       }
       task.logger.success('done')
-    } else {
+      break
+    case 'failure':
       if (existsSync(previousManifestPath)) {
         unlinkSync(previousManifestPath)
       }
       task.logger.fail('failed')
-    }
-  } else {
-    task.logger.success(`cache hit ⚡️`)
+      break
+    case 'success:lazy':
+      task.logger.success('cache hit ⚡️')
+      break
+    case 'success:skipped':
+      task.logger.success('skipped')
+      break
+    default:
+      exhaustive(result)
   }
 
-  return { didRunTask, didSucceed: !didRunTask || didSucceed }
+  return result
 }
 
 /**
  * @param {import('./types.js').ScheduledTask} task
  * @param {import('./TaskGraph.js').TaskGraph} tasks
- * @returns {Promise<{didSucceed: boolean;}>}
+ * @returns {Promise<{result: import('./types.js').CompletedTaskStatus}>}
  */
 async function runTask(task, tasks) {
   const taskConfig = tasks.config.getTaskConfig(task.workspace, task.taskName)
@@ -144,7 +172,7 @@ async function runTask(task, tasks) {
 
   await Promise.all([finishPromise, ...streamPromises])
 
-  return { didSucceed: status === 0 }
+  return { result: status === 0 ? 'success:eager' : 'failure' }
 }
 
 /**
