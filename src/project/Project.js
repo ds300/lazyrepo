@@ -210,14 +210,26 @@ export class Project {
   withoutIgnoredWorkspaces(ignorePatterns) {
     if (ignorePatterns.length === 0) return this
     const allWorkspaceDirs = [...this.workspacesByDir.keys()]
-    const ignored = micromatch(
+    const ignoredNames = micromatch(
       allWorkspaceDirs,
       ignorePatterns.map((pattern) =>
         isAbsolute(pattern) ? pattern : join(this.root.dir, pattern),
       ),
-    )
+    ).map((dir) => this.getWorkspaceByDir(dir).name)
     const filteredWorkspacesByName = Object.fromEntries(
-      [...this.workspacesByName.entries()].filter(([_, { dir }]) => !ignored.includes(dir)),
+      [...this.workspacesByName.entries()]
+        .filter(([name]) => !ignoredNames.includes(name))
+        .map(([name, workspace]) => {
+          return [
+            name,
+            {
+              ...workspace,
+              localDependencyWorkspaceNames: workspace.localDependencyWorkspaceNames.filter(
+                (dep) => !ignoredNames.includes(dep),
+              ),
+            },
+          ]
+        }),
     )
     return new Project(
       {
