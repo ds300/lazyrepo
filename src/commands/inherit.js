@@ -1,10 +1,13 @@
 import { spawnSync } from 'child_process'
-import { relative } from 'path'
-import pc from 'picocolors'
+import process from 'process'
 import { Config } from '../config/config.js'
 import { logger } from '../logger/logger.js'
+import { run } from './run.js'
 
-export async function inherit() {
+/**
+ * @param {import('../types.js').CLIOption} options
+ */
+export async function inherit(options) {
   const scriptName = process.env.npm_lifecycle_event
   if (!scriptName) {
     logger.fail(
@@ -22,20 +25,13 @@ export async function inherit() {
     process.exit(1)
   }
 
-  const command = task.command
-  logger.log(
-    pc.bold('RUN ') +
-      pc.green(pc.bold(command)) +
-      pc.gray(' in ' + relative(process.cwd(), task.workspace.dir) ?? './'),
-  )
-
-  const result = spawnSync(command, process.argv.slice(3), {
-    stdio: 'inherit',
-    shell: true,
-  })
-  if (result.status === null) {
-    logger.fail(`Failed to run '${command}'`, { error: result.error })
-    process.exit(1)
+  if (process.env.__LAZY_WORKFLOW__ === 'true') {
+    const result = spawnSync(task.baseCommand, options['--'] ?? [], {
+      stdio: 'inherit',
+      shell: true,
+    })
+    process.exit(result.status ?? 1)
+  } else {
+    await run({ taskName: scriptName, options: { ...options, filter: [process.cwd()] } }, config)
   }
-  process.exit(result.status)
 }
