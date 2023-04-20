@@ -1,3 +1,15 @@
+# v0.0.0-alpha.15 (Thu Apr 20 2023)
+
+#### 🐛 Bug Fix
+
+- Set latest tag when publishing 0.0.0-alpha releases [#65](https://github.com/ds300/lazyrepo/pull/65) ([@ds300](https://github.com/ds300))
+
+#### Authors: 1
+
+- David Sheldrick ([@ds300](https://github.com/ds300))
+
+---
+
 # v0.0.0-alpha.14 (Thu Apr 20 2023)
 
 #### 💥 Breaking Change
