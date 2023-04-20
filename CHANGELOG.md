@@ -1,3 +1,15 @@
+# v0.0.0-alpha.17 (Thu Apr 20 2023)
+
+#### 🚀 Enhancement
+
+- Allow ignoring workspaces [#68](https://github.com/ds300/lazyrepo/pull/68) ([@ds300](https://github.com/ds300))
+
+#### Authors: 1
+
+- David Sheldrick ([@ds300](https://github.com/ds300))
+
+---
+
 # v0.0.0-alpha.16 (Thu Apr 20 2023)
 
 #### 🚀 Enhancement
