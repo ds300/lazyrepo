@@ -1,14 +1,16 @@
-import { Auto } from '@auto-it/core'
+import autopkg from '@auto-it/core'
 import { execSync } from 'child_process'
 import { parse } from 'semver'
 import { pathToFileURL } from 'url'
 import { exec } from './lib/exec.js'
 
+const { Auto } = autopkg
+
 const auto = new Auto({
   plugins: ['npm'],
   baseBranch: 'main',
-  owner: 'tldraw',
-  repo: 'tldraw-lite',
+  owner: 'ds300',
+  repo: 'lazyrepo',
   verbose: true,
 })
 
@@ -70,6 +72,9 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     useVersion: nextVersion,
     title: `v${nextVersion}`,
   })
+
+  // eslint-disable-next-line no-console
+  console.log('nextVersion: ' + nextVersion)
 
   // create and push a new tag
   execSync(`git tag -f v${nextVersion}`, { stdio: 'inherit' })
