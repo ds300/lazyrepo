@@ -33,7 +33,6 @@ export class TaskConfig {
   /** @private  */
   _config
   /**
-   * @param {Project} project
    * @param {import('../project/project-types.js').Workspace} workspace
    * @param {string} name
    * @param {Config} config

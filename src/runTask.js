@@ -14,7 +14,7 @@ import { computeManifest } from './manifest/computeManifest.js'
 export async function runTaskIfNeeded(task, tasks) {
   task.logger.restartTimer()
 
-  const taskConfig = tasks.config.getTaskConfig(task.workspace.dir, task.taskName)
+  const taskConfig = tasks.config.getTaskConfig(task.workspace, task.taskName)
 
   const previousManifestPath = taskConfig.getManifestPath()
   const nextManifestPath = taskConfig.getNextManifestPath()
