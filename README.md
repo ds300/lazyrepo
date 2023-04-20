@@ -23,11 +23,11 @@ Trust me, the whole situation is so delightful it will make you reach for the `:
 
 Install `lazyrepo` globally
 
-    npm install lazyrepo --global
+    npm install lazyrepo@alpha --global
 
 And also as a dev dependency in the root of your repo
 
-    npm install lazyrepo --save-dev
+    npm install lazyrepo@alpha --save-dev
 
 And finally add `.lazy` to your .gitignore
 
