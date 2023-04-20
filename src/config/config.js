@@ -5,22 +5,14 @@ import { logger } from '../logger/logger.js'
 import { Project } from '../project/Project.js'
 import { resolveConfig } from './resolveConfig.js'
 
-/**
- * @typedef {import('../../index.js').LazyConfig} LazyConfig
- */
-
-/**
- * @typedef {import('./resolveConfig.js').ResolvedConfig} ResolvedConfig
- */
-
 export class RunsAfterConfig {
   /**
    * @private
-   * @type {import('../types.js').RunsAfter}
+   * @type {import('./config-types.js').RunsAfter}
    */
   _runsAfter
 
-  constructor(/** @type {import('../types.js').RunsAfter} */ runsAfter) {
+  constructor(/** @type {import('./config-types.js').RunsAfter} */ runsAfter) {
     this._runsAfter = runsAfter
   }
 
@@ -43,7 +35,7 @@ export class TaskConfig {
   /**
    * @param {string} dir
    * @param {string} name
-   * @param {import("../types.js").LazyTask} config
+   * @param {import("./config-types.js").LazyTask} config
    */
   constructor(dir, name, config) {
     this.dir = dir
@@ -103,7 +95,7 @@ export class TaskConfig {
 
 /**
  *
- * @param {import('../types.js').GlobConfig | null | undefined} glob
+ * @param {import('./config-types.js').GlobConfig | null | undefined} glob
  * @returns {{include: string[], exclude: string[]}}
  */
 function extractGlobPattern(glob) {
@@ -131,7 +123,7 @@ export class Config {
    * @typedef {Object} ConfigWrapperOptions
    *
    * @property {Project} project
-   * @property {ResolvedConfig} rootConfig
+   * @property {import('./resolveConfig.js').ResolvedConfig} rootConfig
    */
   /** @param {ConfigWrapperOptions} options */
   constructor({ project, rootConfig }) {

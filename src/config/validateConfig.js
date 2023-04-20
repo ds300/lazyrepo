@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { fromZodError } from 'zod-validation-error'
 
-/** @type {z.ZodType<import('../types.js').GlobConfig>} */
+/** @type {z.ZodType<import('./config-types.js').GlobConfig>} */
 export const globConfigSchema = z.union([
   z.array(z.string()),
   z
@@ -12,7 +12,7 @@ export const globConfigSchema = z.union([
     .strict(),
 ])
 
-/** @type {z.ZodType<import('../types.js').CacheConfig>} */
+/** @type {z.ZodType<import('./config-types.js').CacheConfig>} */
 export const cacheConfigSchema = z
   .object({
     inputs: globConfigSchema.optional(),
@@ -47,7 +47,7 @@ const baseTaskSchema = z
   })
   .strict()
 
-/** @type {z.ZodType<import('../types.js').TopLevelTask>} */
+/** @type {z.ZodType<import('./config-types.js').TopLevelTask>} */
 export const topLevelTaskSchema = baseTaskSchema
   .extend({
     execution: z.literal('top-level'),
@@ -55,7 +55,7 @@ export const topLevelTaskSchema = baseTaskSchema
   })
   .strict()
 
-/** @type {z.ZodType<import('../types.js').PackageLevelTask>} */
+/** @type {z.ZodType<import('./config-types.js').PackageLevelTask>} */
 export const packageLevelTaskSchema = baseTaskSchema
   .extend({
     execution: z.union([z.literal('dependent'), z.literal('independent')]).optional(),
@@ -63,10 +63,10 @@ export const packageLevelTaskSchema = baseTaskSchema
   })
   .strict()
 
-/** @type {z.ZodType<import('../types.js').LazyTask>} */
+/** @type {z.ZodType<import('./config-types.js').LazyTask>} */
 export const lazyTaskSchema = z.union([topLevelTaskSchema, packageLevelTaskSchema])
 
-/** @type {z.ZodType<import('../types.js').LazyConfig>} */
+/** @type {z.ZodType<import('./config-types.js').LazyConfig>} */
 export const lazyConfigSchema = z
   .object({
     baseCacheConfig: z
@@ -83,7 +83,7 @@ export const lazyConfigSchema = z
 
 /**
  * @param {import('./resolveConfig.js').LoadedConfig} config
- * @returns {import('../types.js').LazyConfig}
+ * @returns {import('./config-types.js').LazyConfig}
  */
 export function validateConfig(config) {
   try {

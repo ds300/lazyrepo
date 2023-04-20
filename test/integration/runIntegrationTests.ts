@@ -4,9 +4,10 @@ import { existsSync, mkdirSync, readFileSync, statSync, utimesSync, writeFileSyn
 import { nanoid } from 'nanoid'
 import { join } from 'path'
 import stripAnsi from 'strip-ansi'
+import { LazyConfig } from '../../index.js'
 import { execCli } from '../../src/execCli.js'
 import { naiveRimraf } from '../../src/naiveRimraf.js'
-import { LazyConfig, PackageJson } from '../../src/types.js'
+import { PackageJson } from '../../src/types.js'
 
 const cleanup = (text: string) => stripAnsi(text).replace(/DEBUG.*\n/g, '')
 
