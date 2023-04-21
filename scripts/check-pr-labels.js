@@ -51,6 +51,16 @@ async function checkPrLabels(prNumber) {
     repo: 'lazyrepo',
   })
 
+  if (pull.data.draft) {
+    console.log('Draft PR, skipping label check')
+    return
+  }
+
+  if (pull.data.closed_at || pull.data.merged_at) {
+    console.log('Closed PR, skipping label check')
+    return
+  }
+
   const currentReleaseLabels = pull.data.labels
     .map((label) => label.name)
     .filter((label) => VALID_LABELS.includes(label))
