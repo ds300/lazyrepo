@@ -117,6 +117,6 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   exec(`npm publish --tag ${prereleaseTag || 'latest'} --access public`)
   if (nextVersion.startsWith('0.0.0')) {
     await waitForPublish(nextVersion)
-    exec(`npm dist-tag add lazyrepo@${nextVersion} latest}`)
+    exec(`npm dist-tag add lazyrepo@${nextVersion} latest`)
   }
 }
