@@ -72,6 +72,7 @@ export async function execCli(argv) {
   try {
     cli.parse(argv, { run: false })
     await cli.runMatchedCommand()
+    // the InteractiveLogger runs a setInterval so we need to explicitly call process.exit(0) here to avoid hanging
     process.exit(0)
   } catch (/** @type {any} */ e) {
     // find out if this is a CACError instance
