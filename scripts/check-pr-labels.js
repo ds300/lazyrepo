@@ -4,34 +4,41 @@ import { Octokit } from '@octokit/rest'
 import { pathToFileURL } from 'url'
 
 const VALID_LABELS = [
-  'patch',
-  'minor',
-  'major',
-  'dependencies',
+  'tests',
+  'internal',
   'documentation',
-  'enhancement',
-  'bug',
+  'dependencies',
+  'major',
+  'minor',
+  'patch',
 ]
 
-async function checkPrLabels() {
-  if (!process.env.GH_TOKEN) {
-    throw new Error('GH_TOKEN not set, exiting')
-  }
+function getPRNumber() {
   const githubRef = process.env.GITHUB_REF
   if (!githubRef) {
-    console.log('GITHUB_REF not set, exiting')
-    return
+    throw new Error('GITHUB_REF not set, exiting')
   }
 
   const [, type, num] = githubRef.split('/')
   if (type !== 'pull') {
-    console.log('Not a pull request, exiting')
-    return
+    throw new Error('Not a pull request, exiting')
   }
 
   const prNumber = Number(num)
   if (!Number.isFinite(prNumber)) {
     throw new Error(`Invalid PR number: ${num}`)
+  }
+
+  console.log(`PR number: ${prNumber}`)
+  return prNumber
+}
+
+/**
+ * @param {number} prNumber
+ */
+async function checkPrLabels(prNumber) {
+  if (!process.env.GH_TOKEN) {
+    throw new Error('GH_TOKEN not set, exiting')
   }
 
   const octokit = new Octokit({
@@ -92,5 +99,5 @@ async function checkPrLabels() {
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   // module was called directly
-  await checkPrLabels()
+  await checkPrLabels(process.argv[2] ? Number(process.argv[2]) : getPRNumber())
 }
