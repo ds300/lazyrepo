@@ -115,3 +115,13 @@ export function decapitalize(str) {
 export const duration = (ms) => {
   return `${(ms / 1000).toFixed(2)}s`
 }
+
+/**
+ *
+ * @param  {Array<(s: string) => string>} fns
+ * @returns {(s: string) => string}
+ */
+export const pipe =
+  (...fns) =>
+  (x) =>
+    fns.reduce((v, f) => f(v), x)

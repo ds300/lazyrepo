@@ -49,7 +49,7 @@ function globCacheConfig({ includes, excludes, task, workspaceRoot }) {
  * @returns
  */
 export function getInputFiles(tasks, task, extraFiles) {
-  const taskConfig = tasks.config.getTaskConfig(task.workspace.dir, task.taskName)
+  const taskConfig = tasks.config.getTaskConfig(task.workspace, task.taskName)
 
   const cacheConfig = taskConfig.cache
   if (cacheConfig === 'none') {

@@ -1,0 +1,27 @@
+name: Publish New Version
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    name: 'Publish New Version'
+    timeout-minutes: 15
+    environment: npm deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Prepare repository
+        # Fetch full git history and tags for auto
+        run: git fetch --unshallow --tags
+
+      - uses: ./.github/actions/setup
+
+      - name: Publish New Version
+        run: node scripts/publish-new.js
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

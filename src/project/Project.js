@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import assert from 'assert'
 import glob from 'fast-glob'
-import path from 'path'
+import micromatch from 'micromatch'
+import path, { isAbsolute, join } from 'path'
 import { findRootWorkspace } from './findRootWorkspace.js'
 import { getPackageManager } from './getPackageManager.js'
 import { loadWorkspace } from './loadWorkspace.js'
@@ -201,6 +203,42 @@ export class Project {
     }
     return workspace
   }
+
+  /**
+   * @param {string[]} ignorePatterns
+   */
+  withoutIgnoredWorkspaces(ignorePatterns) {
+    if (ignorePatterns.length === 0) return this
+    const allWorkspaceDirs = [...this.workspacesByDir.keys()]
+    const ignoredNames = micromatch(
+      allWorkspaceDirs,
+      ignorePatterns.map((pattern) =>
+        isAbsolute(pattern) ? pattern : join(this.root.dir, pattern),
+      ),
+    ).map((dir) => this.getWorkspaceByDir(dir).name)
+    const filteredWorkspacesByName = Object.fromEntries(
+      [...this.workspacesByName.entries()]
+        .filter(([name]) => !ignoredNames.includes(name))
+        .map(([name, workspace]) => {
+          return [
+            name,
+            {
+              ...workspace,
+              localDependencyWorkspaceNames: workspace.localDependencyWorkspaceNames.filter(
+                (dep) => !ignoredNames.includes(dep),
+              ),
+            },
+          ]
+        }),
+    )
+    return new Project(
+      {
+        workspacesByName: { ...filteredWorkspacesByName, [this.root.name]: this.root },
+        rootWorkspaceName: this.root.name,
+      },
+      this.packageManager,
+    )
+  }
 }
 
 /**
@@ -233,8 +271,8 @@ export function topologicallySortWorkspaces(workspacesByName) {
     if (!workspace) {
       throw new Error(`Could not find package ${packageName}. path: ${path.join(' -> ')}`)
     }
-    for (const childWorkspaceName of workspace.childWorkspaceNames) {
-      visit(childWorkspaceName, [...path, childWorkspaceName])
+    for (const localDependencyName of workspace.localDependencyWorkspaceNames) {
+      visit(localDependencyName, [...path, localDependencyName])
     }
     sorted.push(workspace)
   }

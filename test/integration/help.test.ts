@@ -31,8 +31,8 @@ test(`help prints with exit 0 when you pass --help`, async () => {
       const { output, status } = await t.exec(['--help'])
 
       expect(output).toMatchInlineSnapshot(`
-        "lazyrepo @0.0.0-test
-        --------------------
+        "lazyrepo 0.0.0-test
+        -------------------
         lazy
 
         Usage:
@@ -71,11 +71,11 @@ test(`help prints with exit 1 if you pass nothing`, async () => {
       structure: simpleDir,
     },
     async (t) => {
-      const { output, status } = await t.exec([], { throwOnError: false })
+      const { output, status } = await t.exec([], { expectError: true })
 
       expect(output).toMatchInlineSnapshot(`
-        "lazyrepo @0.0.0-test
-        --------------------
+        "lazyrepo 0.0.0-test
+        -------------------
         Missing required args for command \`<task>\`
 
         lazy

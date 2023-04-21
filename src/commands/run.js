@@ -4,15 +4,17 @@ import { TaskGraph } from '../TaskGraph.js'
 import { Config } from '../config/config.js'
 import { createTimer } from '../createTimer.js'
 import { InteractiveLogger } from '../logger/InteractiveLogger.js'
+import { getColorForString, pipe } from '../logger/formatting.js'
 import { logger } from '../logger/logger.js'
 import { rainbow } from '../rainbow.js'
 
 /**
  * @param {{taskName: string, options: import('../types.js').CLIOption}} args
+ * @param {import('../config/config.js').Config} [_config]
  */
-export async function run({ taskName, options }) {
+export async function run({ taskName, options }, _config) {
   const timer = createTimer()
-  const config = await Config.fromCwd(process.cwd())
+  const config = _config ?? (await Config.fromCwd(process.cwd()))
 
   const filterPaths = options.filter
     ? Array.isArray(options.filter)
@@ -27,7 +29,7 @@ export async function run({ taskName, options }) {
       taskName: taskName,
       filterPaths,
       force: options.force,
-      extraArgs: options['--'],
+      extraArgs: options['--'] ?? [],
     },
   ]
 
@@ -49,25 +51,35 @@ export async function run({ taskName, options }) {
 
   const failedTasks = tasks.allFailedTasks()
   if (failedTasks.length > 0) {
-    logger.fail(`Failed tasks: ${failedTasks.join(', ')}`)
+    logger.logErr(
+      pc.bold(pc.red('\nFailed tasks:')),
+      failedTasks.map((t) => getColorForString(t).fg(t)).join(', '),
+    )
   }
 
   const stats = tasks.getTaskStats()
-  const successOutput = `${pc.green(stats.successful.toString() + ' successful')}, ${
-    stats.allTasks
-  } total`
+  const successColor = stats.successful === 0 ? pc.reset : pipe(pc.green, pc.bold)
+  const successOutput = successColor(stats.successful.toString() + ' successful')
+  const failureOutput =
+    stats.failure > 0 ? ', ' + pc.bold(pc.red(stats.failure.toString() + ' failed')) : ''
+
+  const allLazy = stats.allTasks === stats['success:lazy']
 
   const cachedOutput =
-    stats.allTasks === stats['success:lazy']
-      ? rainbow('>>> MAXIMUM LAZY')
-      : `${stats['success:lazy']} cached, ${stats.allTasks} total`
+    pc.bold(`${stats['success:lazy']}/${stats.allTasks} `) +
+    (allLazy ? rainbow('>>> MAXIMUM LAZY') : 'cached')
 
   const output = dedent`
     
-          Tasks:     ${successOutput}
-         Cached:     ${cachedOutput}
-           Time:     ${timer.formatElapsedTime()}
-
-`
+         Tasks:  ${successOutput}${failureOutput}, ${stats.allTasks} total
+        Cached:  ${cachedOutput}
+          Time:  ${timer.formatElapsedTime()}
+    
+  `
   logger.log(output)
+  if (failedTasks.length > 0) {
+    process.exit(1)
+  } else {
+    process.exit(0)
+  }
 }

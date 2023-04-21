@@ -58,7 +58,7 @@ export class TaskGraph {
      * @returns
      */
     const visit = (path, { requestedTask, workspace }) => {
-      const taskConfig = this.config.getTaskConfig(workspace.dir, requestedTask.taskName)
+      const taskConfig = this.config.getTaskConfig(workspace, requestedTask.taskName)
       const key = this.config.getTaskKey(workspace.dir, requestedTask.taskName)
       if (this.allTasks[key]) {
         if (path.includes(key)) {
@@ -172,9 +172,7 @@ export class TaskGraph {
    * @param {string} taskName
    */
   isTopLevelTask(taskName) {
-    return (
-      this.config.getTaskConfig(this.config.project.root.dir, taskName).execution === 'top-level'
-    )
+    return this.config.getTaskConfig(this.config.project.root, taskName).execution === 'top-level'
   }
 
   /**
@@ -248,22 +246,10 @@ export class TaskGraph {
     const tick = () => {
       const runningTasks = this.allRunningTasks()
       const readyTasks = this.allReadyTasks()
-      const failedTasks = this.allFailedTasks()
 
-      if (runningTasks.length === 0 && readyTasks.length === 0 && failedTasks.length === 0) {
+      if (runningTasks.length === 0 && readyTasks.length === 0) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return resolve(null)
-      }
-
-      if (failedTasks.length > 0 && runningTasks.length === 0) {
-        // some tasks failed, and there are no more running tasks
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return resolve(null)
-      }
-
-      if (failedTasks.length > 0) {
-        // don't start any more tasks, just wait for the running ones to finish
-        return
       }
 
       if (runningTasks.length >= maxConcurrentTasks) {

@@ -18,7 +18,7 @@ module.exports = {
       },
     },
     {
-      files: ['test/**'],
+      files: ['{test,scripts}/**'],
       env: {
         'jest/globals': true,
       },
@@ -29,6 +29,8 @@ module.exports = {
         '@typescript-eslint/no-unsafe-call': 'off',
         '@typescript-eslint/no-extra-semi': 'off',
         '@typescript-eslint/no-non-null-assertion': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
+        '@typescript-eslint/restrict-template-expressions': 'off',
       },
     },
   ],
@@ -51,5 +53,7 @@ module.exports = {
     '@typescript-eslint/no-empty-function': ['error', { allow: ['arrowFunctions'] }],
     '@typescript-eslint/ban-ts-comment': 'off',
     '@typescript-eslint/no-extra-semi': 'off',
+    '@typescript-eslint/no-unused-vars': 'off',
+    '@typescript-eslint/restrict-template-expressions': 'off',
   },
 }

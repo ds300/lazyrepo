@@ -5,22 +5,14 @@ import { logger } from '../logger/logger.js'
 import { Project } from '../project/Project.js'
 import { resolveConfig } from './resolveConfig.js'
 
-/**
- * @typedef {import('../../index.js').LazyConfig} LazyConfig
- */
-
-/**
- * @typedef {import('./resolveConfig.js').ResolvedConfig} ResolvedConfig
- */
-
 export class RunsAfterConfig {
   /**
    * @private
-   * @type {import('../types.js').RunsAfter}
+   * @type {import('./config-types.js').RunsAfter}
    */
   _runsAfter
 
-  constructor(/** @type {import('../types.js').RunsAfter} */ runsAfter) {
+  constructor(/** @type {import('./config-types.js').RunsAfter} */ runsAfter) {
     this._runsAfter = runsAfter
   }
 
@@ -41,52 +33,56 @@ export class TaskConfig {
   /** @private  */
   _config
   /**
-   * @param {string} dir
+   * @param {import('../project/project-types.js').Workspace} workspace
    * @param {string} name
-   * @param {import("../types.js").LazyTask} config
+   * @param {Config} config
    */
-  constructor(dir, name, config) {
-    this.dir = dir
+  constructor(workspace, name, config) {
+    this.workspace = workspace
     this.name = name
     this._config = config
   }
 
   getManifestPath() {
-    const dir = path.join(this.dir, '.lazy', 'manifests')
+    const dir = path.join(this.workspace.dir, '.lazy', 'manifests')
     return path.join(dir, slugify(this.name))
   }
 
   getNextManifestPath() {
-    const dir = path.join(this.dir, '.lazy', 'manifests')
+    const dir = path.join(this.workspace.dir, '.lazy', 'manifests')
     return path.join(dir, slugify(this.name) + '.next')
   }
 
   getDiffPath() {
-    const dir = path.join(this.dir, '.lazy', 'diffs')
+    const dir = path.join(this.workspace.dir, '.lazy', 'diffs')
     return path.join(dir, slugify(this.name))
   }
 
+  get taskConfig() {
+    return this._config.rootConfig.config.tasks?.[this.name] ?? {}
+  }
+
   get execution() {
-    return this._config.execution ?? 'dependent'
+    return this.taskConfig.execution ?? 'dependent'
   }
 
   get baseCommand() {
-    return this._config.baseCommand
+    return this.taskConfig.baseCommand
   }
 
   /** @type {[string, RunsAfterConfig][]} */
   get runsAfterEntries() {
-    return Object.entries(this._config.runsAfter ?? {}).map(([name, config]) => {
+    return Object.entries(this.taskConfig.runsAfter ?? {}).map(([name, config]) => {
       return [name, new RunsAfterConfig(config)]
     })
   }
 
   get parallel() {
-    return this._config.parallel ?? true
+    return this.taskConfig.parallel ?? true
   }
 
   get cache() {
-    const cache = this._config.cache
+    const cache = this.taskConfig.cache
     if (cache === 'none') {
       return cache
     } else {
@@ -99,11 +95,56 @@ export class TaskConfig {
       }
     }
   }
+
+  get command() {
+    const baseCommand = this.baseCommand
+    const script = this.workspace.scripts[this.name]
+    let command = this.execution === 'top-level' ? baseCommand : script
+
+    if (!command) {
+      logger.fail(`No command found for script ${this.name} in ${this.workspace.dir}/package.json`)
+      process.exit(1)
+    }
+
+    if (this.execution !== 'top-level') {
+      const inheritMatch = extractInheritMatch(command)
+
+      if (inheritMatch) {
+        if (!baseCommand) {
+          // TODO: evaluate this stuff ahead-of-time
+          logger.fail(
+            `Encountered 'lazy inherit' for scripts#${this.name} in ${this.workspace.dir}/package.json, but there is no baseCommand configured for the task '${this.name}'`,
+          )
+          process.exit(1)
+        } else {
+          command = `${inheritMatch.envVars ?? ''} ${baseCommand} ${inheritMatch.extraArgs ?? ''}`
+          command = command.trim()
+        }
+      }
+    }
+
+    command = command.replaceAll('<rootDir>', this._config.project.root.dir)
+
+    return command
+  }
+}
+
+/**
+ * TODO: can we use @yarnpkg/shell parser here?
+ * @param {string} command
+ */
+export function extractInheritMatch(command) {
+  const match = command.match(/^(\w+=\S* )*(yarn run( -T| --top-level)? )?lazy inherit($| .*$)/)
+  if (!match) return null
+
+  const [, envVars, , , extraArgs] = match
+
+  return { envVars: envVars?.trim() || null, extraArgs: extraArgs?.trim() || null }
 }
 
 /**
  *
- * @param {import('../types.js').GlobConfig | null | undefined} glob
+ * @param {import('./config-types.js').GlobConfig | null | undefined} glob
  * @returns {{include: string[], exclude: string[]}}
  */
 function extractGlobPattern(glob) {
@@ -124,14 +165,14 @@ function extractGlobPattern(glob) {
 }
 
 export class Config {
-  /** @private */ rootConfig
+  /** @readonly */ rootConfig
   /** @readonly */ project
 
   /**
    * @typedef {Object} ConfigWrapperOptions
    *
    * @property {Project} project
-   * @property {ResolvedConfig} rootConfig
+   * @property {import('./resolveConfig.js').ResolvedConfig} rootConfig
    */
   /** @param {ConfigWrapperOptions} options */
   constructor({ project, rootConfig }) {
@@ -143,8 +184,9 @@ export class Config {
    * @param {string} cwd
    */
   static async fromCwd(cwd) {
-    const project = Project.fromCwd(cwd)
+    let project = Project.fromCwd(cwd)
     const rootConfig = await resolveConfig(project.root.dir)
+    project = project.withoutIgnoredWorkspaces(rootConfig.config.ignoreWorkspaces ?? [])
 
     if (!rootConfig.filePath) {
       logger.log('No config files found, using default configuration.\n')
@@ -158,13 +200,12 @@ export class Config {
     })
   }
   /**
-   * @param {string} taskDir
+   * @param {import('../project/project-types.js').Workspace} workspace
    * @param {string} taskName
    * @returns {TaskConfig}
    */
-  getTaskConfig(taskDir, taskName) {
-    const config = this.rootConfig.config
-    return new TaskConfig(taskDir, taskName, config?.tasks?.[taskName] ?? {})
+  getTaskConfig(workspace, taskName) {
+    return new TaskConfig(workspace, taskName, this)
   }
 
   /**

@@ -43,8 +43,10 @@ cli.command('clean', 'delete all local cache data').action(() => {
 
 cli
   .command('inherit', 'run command from configuration file specified by script name')
-  .action(async () => {
-    await inherit()
+  .option('--force', '[boolean] ignore existing cached artifacts', { default: false })
+  .action(async (options) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    await inherit(options)
   })
 
 cli.help()
@@ -64,12 +66,14 @@ export async function execCli(argv) {
     ? '0.0.0-test'
     : // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version
-  logger.log(pc.bold('lazyrepo'), pc.gray(`@${version}`))
-  logger.log(rainbow('-'.repeat(`lazyrepo @${version}`.length)))
+  logger.log(pc.bold('lazyrepo'), pc.gray(`${version}`))
+  logger.log(rainbow('-'.repeat(`lazyrepo ${version}`.length)))
 
   try {
     cli.parse(argv, { run: false })
     await cli.runMatchedCommand()
+    // the InteractiveLogger runs a setInterval so we need to explicitly call process.exit(0) here to avoid hanging
+    process.exit(0)
   } catch (/** @type {any} */ e) {
     // find out if this is a CACError instance
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -77,7 +81,7 @@ export async function execCli(argv) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
       const msg = upperCaseFirst(e.message)
       // eslint-disable-next-line no-console
-      console.error(pc.red(msg) + '\n')
+      console.log(pc.red(msg) + '\n')
       cli.outputHelp()
       process.exit(1)
     } else {
