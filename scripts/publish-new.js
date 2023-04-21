@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 import autopkg from '@auto-it/core'
-import { execSync } from 'child_process'
 import { parse } from 'semver'
 import { pathToFileURL } from 'url'
 import { exec } from './lib/exec.js'
@@ -70,7 +69,7 @@ async function waitForPublish(newVersion) {
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   // module was called directly
-  const currentBranch = execSync('git rev-parse --abbrev-ref HEAD').toString().trim()
+  const currentBranch = exec('git rev-parse --abbrev-ref HEAD')
   if (currentBranch !== 'main') {
     throw new Error('Must be on main branch to publish')
   }
@@ -97,6 +96,10 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   exec(`npm config set registry https://registry.npmjs.org/`)
   exec(`npm whoami`)
 
+  auto.hooks.beforeCommitChangelog.tap('beforeCommitChangelog', () => {
+    exec('prettier --write CHANGELOG.md')
+    exec('git add CHANGELOG.md')
+  })
   // this creates a new commit
   await auto.changelog({
     useVersion: nextVersion,
@@ -107,8 +110,8 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   console.log('nextVersion: ' + nextVersion)
 
   // create and push a new tag
-  execSync(`git tag -f v${nextVersion}`, { stdio: 'inherit' })
-  execSync('git push --follow-tags', { stdio: 'inherit' })
+  exec(`git tag -f v${nextVersion}`)
+  exec('git push --follow-tags')
 
   // create a release on github
   await auto.runRelease({ useVersion: nextVersion })
