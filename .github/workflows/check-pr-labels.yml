@@ -2,7 +2,7 @@ name: Check/Add PR Labels
 
 on:
   pull_request:
-    types: [opened, reopened, labeled, unlabeled, synchronize]
+    types: [opened, reopened, labeled, unlabeled, synchronize, edited]
     branches: [main]
 
 jobs:

@@ -51,45 +51,58 @@ async function checkPrLabels(prNumber) {
     repo: 'lazyrepo',
   })
 
-  const releaseLabels = pull.data.labels
+  const currentReleaseLabels = pull.data.labels
     .map((label) => label.name)
     .filter((label) => VALID_LABELS.includes(label))
 
-  if (releaseLabels.length > 1) {
-    throw new Error(`PR has multiple release labels: ${releaseLabels.join(', ')}`)
-  }
-
-  if (releaseLabels.length === 1) {
-    console.log(`PR has release label: ${releaseLabels[0]}`)
-    return
+  if (currentReleaseLabels.length > 1) {
+    throw new Error(`PR has multiple release labels: ${currentReleaseLabels.join(', ')}`)
   }
 
   const prBody = pull.data.body
 
-  const checkedLabels = VALID_LABELS.filter((label) =>
-    prBody?.match(new RegExp(`^\\s*?-\\s*\\[\\s*x\\s*\\]\\s+\`${label}\``)),
+  const selectedReleaseLabels = VALID_LABELS.filter((label) =>
+    prBody?.match(new RegExp(`^\\s*?-\\s*\\[\\s*x\\s*\\]\\s+\`${label}\``, 'm')),
   )
 
-  if (checkedLabels.length > 1) {
-    throw new Error(`PR has multiple checked labels: ${checkedLabels.join(', ')}`)
-  }
-
-  if (checkedLabels.length === 0) {
+  if (selectedReleaseLabels.length > 1) {
     throw new Error(
-      `PR has no release labels or checked labels. Please add one of the following: ${VALID_LABELS.join(
-        ', ',
-      )}`,
+      `PR has multiple checked labels: ${selectedReleaseLabels.join(', ')}. Please select only one`,
     )
   }
 
-  console.log(`PR has checked label itm: ${checkedLabels.join(', ')}`)
-  console.log('Adding label to PR')
+  const [current] = currentReleaseLabels
+  const [selected] = selectedReleaseLabels
 
+  if (!current && !selected) {
+    throw new Error(
+      `Please assign one of the following release labels to this PR: ${VALID_LABELS.join(', ')}`,
+    )
+  }
+
+  if (current === selected || (current && !selected)) {
+    console.log(`PR already has label: ${current}`)
+    return
+  }
+
+  // otherwise the label has changed or is being set for the first time
+  // from the pr body
+  if (current) {
+    console.log(`Removing label: ${current}`)
+    await octokit.rest.issues.removeLabel({
+      issue_number: prNumber,
+      name: current,
+      owner: 'ds300',
+      repo: 'lazyrepo',
+    })
+  }
+
+  console.log(`Adding label: ${selected}`)
   await octokit.rest.issues.addLabels({
     issue_number: prNumber,
     owner: 'ds300',
     repo: 'lazyrepo',
-    labels: checkedLabels,
+    labels: [selected],
   })
 
   console.log('Done!')
