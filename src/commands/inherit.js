@@ -16,7 +16,11 @@ export async function inherit(options) {
     process.exit(1)
   }
   const config = await Config.fromCwd(process.cwd())
-  const workspace = config.project.getWorkspaceByDir(process.cwd())
+  const workspace =
+    process.cwd() === config.project.root.dir
+      ? config.project.root
+      : config.project.getWorkspaceByDir(process.cwd())
+
   const task = config.getTaskConfig(workspace, scriptName)
   if (!task.baseCommand) {
     logger.fail(

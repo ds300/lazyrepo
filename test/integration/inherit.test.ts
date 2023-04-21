@@ -277,3 +277,36 @@ test('calling lazy inherit in the utils dir runs only the utils build', async ()
     },
   )
 })
+
+test('lazy inherit works works with top-level tasks', async () => {
+  await runIntegrationTest(
+    {
+      packageManager: 'pnpm',
+      structure: {
+        'package.json': makePackageJson({
+          scripts: {
+            build: 'lazy inherit',
+          },
+        }),
+        'lazy.config.js': `
+          module.exports = {
+            tasks: {
+              build: {
+                baseCommand: 'echo "running build"',
+                execution: 'top-level',
+              }
+            }
+          }
+        `,
+        workspace: {
+          'package.json': makePackageJson({ name: 'child' }),
+        },
+      },
+      workspaceGlobs: ['workspace'],
+    },
+    async (t) => {
+      const { output } = await t.exec(['inherit'], { env: { npm_lifecycle_event: 'build' } })
+      expect(output).toContain('running build')
+    },
+  )
+})
