@@ -2,8 +2,7 @@ name: Check/Add PR Labels
 
 on:
   pull_request:
-    branches: [main]
-  push:
+    types: [opened, reopened, labeled, unlabeled, synchronize]
     branches: [main]
 
 jobs:
