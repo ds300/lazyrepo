@@ -1,3 +1,28 @@
+# v0.0.0-alpha.18 (Fri Apr 21 2023)
+
+#### 🐛 Bug Fix
+
+- Fix publishing script. [#74](https://github.com/ds300/lazyrepo/pull/74) ([@MitjaBezensek](https://github.com/MitjaBezensek))
+- Exit after successfully running commands [#72](https://github.com/ds300/lazyrepo/pull/72) ([@MitjaBezensek](https://github.com/MitjaBezensek) [@ds300](https://github.com/ds300))
+
+#### 🏠 Internal
+
+- don't run check-pr-labels on merged/closed PRs [#73](https://github.com/ds300/lazyrepo/pull/73) ([@ds300](https://github.com/ds300))
+- Improve check-pr-labels script [#71](https://github.com/ds300/lazyrepo/pull/71) ([@ds300](https://github.com/ds300))
+- add check-pr-labels script [#70](https://github.com/ds300/lazyrepo/pull/70) ([@ds300](https://github.com/ds300))
+
+#### 🧪 Tests
+
+- Change `throwOnError` to `expectError` [#69](https://github.com/ds300/lazyrepo/pull/69) ([@mrkldshv](https://github.com/mrkldshv))
+
+#### Authors: 3
+
+- David Sheldrick ([@ds300](https://github.com/ds300))
+- Mark Ladyshau ([@mrkldshv](https://github.com/mrkldshv))
+- Mitja Bezenšek ([@MitjaBezensek](https://github.com/MitjaBezensek))
+
+---
+
 # v0.0.0-alpha.17 (Thu Apr 20 2023)
 
 #### 🚀 Enhancement
