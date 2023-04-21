@@ -82,7 +82,7 @@ async function checkPrLabels(prNumber) {
     )
   }
 
-  console.log(`PR has checked label itm: ${checkedLabels.join(', ')}`)
+  console.log(`PR has checked label item: ${checkedLabels[0]}`)
   console.log('Adding label to PR')
 
   await octokit.rest.issues.addLabels({
