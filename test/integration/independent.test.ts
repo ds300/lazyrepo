@@ -173,7 +173,7 @@ test('when a task fails it continues running the others', () => {
       expect(t.exists('packages/core/out.txt')).toBe(false)
       expect(t.exists('packages/utils/out.txt')).toBe(false)
       const firstRun = await t.exec(['build'], {
-        throwOnError: false,
+        expectError: true,
       })
 
       expect(firstRun.status).toBe(1)

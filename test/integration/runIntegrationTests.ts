@@ -68,7 +68,7 @@ class TestHarness {
     options?: {
       packageDir?: string
       env?: NodeJS.ProcessEnv
-      throwOnError?: boolean
+      expectError?: boolean
       inspect?: boolean
     },
   ) {
@@ -79,9 +79,9 @@ class TestHarness {
 
   private async execInBand(
     args: string[],
-    options?: { packageDir?: string; env?: NodeJS.ProcessEnv; throwOnError?: boolean },
+    options?: { packageDir?: string; env?: NodeJS.ProcessEnv; expectError?: boolean },
   ) {
-    const throwOnError = options?.throwOnError ?? true
+    const expectError = options?.expectError ?? false
     const cwd = jest.spyOn(process, 'cwd').mockImplementation(() => this.config.dir)
     let output = ''
     const outWrite = jest.spyOn(process.stdout, 'write').mockImplementation((data) => {
@@ -100,15 +100,15 @@ class TestHarness {
     })
     try {
       await execCli(['node', join(process.cwd(), 'bin.js'), ...args])
-      if (!throwOnError || status === 0) {
+      const didError = status === 1
+      if ((expectError && didError) || (!expectError && !didError)) {
         return { output: cleanup({ text: output, rootDir: this.config.dir }), status }
-      } else {
-        // eslint-disable-next-line no-console
-        console.error(cleanup({ text: output, rootDir: this.config.dir }))
-        throw new Error(
-          `Exited with code ${status} ${cleanup({ text: output, rootDir: this.config.dir })}`,
-        )
       }
+      // eslint-disable-next-line no-console
+      console.error(cleanup({ text: output, rootDir: this.config.dir }))
+      throw new Error(
+        `Exited with code ${status} ${cleanup({ text: output, rootDir: this.config.dir })}`,
+      )
     } finally {
       cwd.mockRestore()
       outWrite.mockRestore()
@@ -122,11 +122,11 @@ class TestHarness {
     options?: {
       packageDir?: string
       env?: NodeJS.ProcessEnv
-      throwOnError?: boolean
+      expectError?: boolean
       inspect?: boolean
     },
   ): Promise<{ output: string; status: number }> {
-    const throwOnError = options?.throwOnError ?? true
+    const expectError = options?.expectError ?? false
     return new Promise((resolve, reject) => {
       const proc = spawn(
         'node',
@@ -148,7 +148,8 @@ class TestHarness {
         output += data
       })
       proc.on('exit', (code) => {
-        if (!throwOnError || code === 0) {
+        const didError = code === 1
+        if ((expectError && didError) || (!expectError && !didError)) {
           resolve({
             output: cleanup({ text: output, rootDir: this.config.dir }),
             status: code ?? 1,
@@ -156,7 +157,11 @@ class TestHarness {
         } else {
           // eslint-disable-next-line no-console
           console.error(output)
-          reject(new Error(`Exited with code ${code ?? 'null'}`))
+          reject(
+            new Error(
+              `Exited with code ${code} ${cleanup({ text: output, rootDir: this.config.dir })}`,
+            ),
+          )
         }
       })
       proc.on('error', (err) => {
