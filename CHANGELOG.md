@@ -1,3 +1,15 @@
+# v0.0.0-alpha.20 (Fri Apr 21 2023)
+
+#### 🐛 Bug Fix
+
+- Fix top-level inherit commands [#75](https://github.com/ds300/lazyrepo/pull/75) ([@SomeHats](https://github.com/SomeHats))
+
+#### Authors: 1
+
+- alex ([@SomeHats](https://github.com/SomeHats))
+
+---
+
 # v0.0.0-alpha.19 (Fri Apr 21 2023)
 
 
