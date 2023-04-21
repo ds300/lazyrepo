@@ -67,7 +67,7 @@ async function checkPrLabels(prNumber) {
   const prBody = pull.data.body
 
   const checkedLabels = VALID_LABELS.filter((label) =>
-    prBody?.match(new RegExp(`^\\s*?-\\s*\\[\\s*x\\s*\\]\\s+\`${label}\``)),
+    prBody?.match(new RegExp(`^\\s*?-\\s*\\[\\s*x\\s*\\]\\s+\`${label}\``, 'm')),
   )
 
   if (checkedLabels.length > 1) {
