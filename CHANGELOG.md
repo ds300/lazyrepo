@@ -1,3 +1,25 @@
+# v0.0.0-alpha.21 (Sat Apr 22 2023)
+
+#### 🐛 Bug Fix
+
+- Add colors to the diff depending on the diff kind. [#77](https://github.com/ds300/lazyrepo/pull/77) ([@MitjaBezensek](https://github.com/MitjaBezensek))
+
+#### ⚠️ Pushed to `main`
+
+- fix prettier usage in publish-new.js ([@ds300](https://github.com/ds300))
+- update logo ([@ds300](https://github.com/ds300))
+
+#### 🏠 Internal
+
+- run prettier before committing changelog [#76](https://github.com/ds300/lazyrepo/pull/76) ([@ds300](https://github.com/ds300))
+
+#### Authors: 2
+
+- David Sheldrick ([@ds300](https://github.com/ds300))
+- Mitja Bezenšek ([@MitjaBezensek](https://github.com/MitjaBezensek))
+
+---
+
 # v0.0.0-alpha.20 (Fri Apr 21 2023)
 
 #### 🐛 Bug Fix
