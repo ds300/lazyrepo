@@ -97,7 +97,7 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   exec(`npm whoami`)
 
   auto.hooks.beforeCommitChangelog.tap('beforeCommitChangelog', () => {
-    exec('prettier --write CHANGELOG.md')
+    exec('pnpm prettier --write CHANGELOG.md')
     exec('git add CHANGELOG.md')
   })
   // this creates a new commit
