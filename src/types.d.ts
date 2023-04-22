@@ -60,6 +60,7 @@ export interface PackageJson {
 
 export interface TaskLogger extends Logger {
   restartTimer(): void
+  diff(diffLine: string): void
 }
 
 export interface CliLogger extends Logger {

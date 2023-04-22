@@ -72,6 +72,21 @@ export function formatNoteMessage(...args) {
 }
 
 /**
+ * @param {string} diffLine
+ * @return strring
+ */
+export function formatDiffMessage(diffLine) {
+  if (diffLine[0] === '+') {
+    return pc.bold(pc.green(diffLine[0])) + pc.gray(diffLine.slice(1))
+  } else if (diffLine[0] === '-') {
+    return pc.bold(pc.red(diffLine[0])) + pc.gray(diffLine.slice(1))
+  } else if (diffLine[0] === '±') {
+    return pc.bold(pc.yellow(diffLine[0])) + pc.gray(diffLine.slice(1))
+  }
+  return pc.gray(diffLine)
+}
+
+/**
  * @param {string[]} args
  */
 export function formatWarningMessage(...args) {

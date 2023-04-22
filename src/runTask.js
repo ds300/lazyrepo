@@ -49,7 +49,7 @@ export async function runTaskIfNeeded(task, tasks) {
       }
       writeFileSync(diffPath, stripAnsi(allLines.join('\n')))
       task.logger.note('cache miss, changes since last run:')
-      allLines.slice(0, 10).forEach((line) => task.logger.note(line))
+      allLines.slice(0, 10).forEach((line) => task.logger.diff(line))
       if (allLines.length > 10) {
         task.logger.note(`... and ${allLines.length - 10} more. See ${diffPath} for full diff.`)
       }
