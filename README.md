@@ -8,13 +8,13 @@
 
 It fits right into the niche that `turborepo` carved out: making package.json `"scripts"` scale without adopting a big industrial-strength build system like `nx`, `bazel`, `rush`, or `buck`.
 
-`lazyrepo` is scary fast. It's a lot faster than `turborepo` despite being written in TypeScript rather than some young handsome clever funny systems language.
+`lazyrepo` is scary fast, despite being written in TypeScript rather than some young handsome clever funny systems language.
 
 Aside from perf, `lazyrepo` comes with some big quality-of-life improvements:
 
 - A human-friendly config format.
-- Palpably sensible defaults.
 - Concise and timely feedback to help you tweak and debug your build pipelines.
+- Palpably sensible defaults.
 - You don't need to learn Rust to contribute.
 
 Trust me, the whole situation is so delightful it will make you reach for the `:chefs-kiss:` emoji. And then you'll realize that there is no such emoji, but you'll want it so badly that you'll draft a proposal to the Unicode Consortium to lobby for its introduction.
