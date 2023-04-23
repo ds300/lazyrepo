@@ -1,7 +1,7 @@
 import path, { join } from 'path'
 import pc from 'picocolors'
 import { createTimer } from '../createTimer.js'
-import { existsSync, mkdirSync, statSync } from '../fs.js'
+import { mkdir, stat } from '../fs.js'
 import { uniq } from '../uniq.js'
 import { ManifestConstructor } from './ManifestConstructor.js'
 import { getInputFiles } from './getInputFiles.js'
@@ -42,17 +42,14 @@ export async function computeManifest({ tasks, task }) {
   const nextManifestPath = task.taskConfig.getNextManifestPath()
   const diffPath = task.taskConfig.getDiffPath()
 
-  if (!existsSync(path.dirname(manifestPath))) {
-    mkdirSync(path.dirname(manifestPath), { recursive: true })
-  }
-  if (!existsSync(path.dirname(nextManifestPath))) {
-    mkdirSync(path.dirname(nextManifestPath), { recursive: true })
-  }
-  if (diffPath && !existsSync(path.dirname(diffPath))) {
-    mkdirSync(path.dirname(diffPath), { recursive: true })
+  await mkdir(path.dirname(manifestPath), { recursive: true })
+  await mkdir(path.dirname(nextManifestPath), { recursive: true })
+
+  if (diffPath) {
+    await mkdir(path.dirname(diffPath), { recursive: true })
   }
 
-  const manifestConstructor = new ManifestConstructor({
+  const manifestConstructor = await ManifestConstructor.from({
     diffPath,
     previousManifestPath: manifestPath,
     nextManifestPath,
@@ -78,7 +75,7 @@ export async function computeManifest({ tasks, task }) {
         throw new Error(`Missing inputManifestCacheKey for task: ${key}.`)
       }
 
-      manifestConstructor.update('upstream task inputs', key, depTask.inputManifestCacheKey)
+      await manifestConstructor.update('upstream task inputs', key, depTask.inputManifestCacheKey)
     }
     if (depConfig.usesOutput !== false) {
       extraFiles.push(depTask.outputFiles)
@@ -105,7 +102,11 @@ export async function computeManifest({ tasks, task }) {
           throw new Error(`Missing inputManifestCacheKey for task: ${key}.`)
         }
 
-        manifestConstructor.update('upstream package inputs', key, depTask.inputManifestCacheKey)
+        await manifestConstructor.update(
+          'upstream package inputs',
+          key,
+          depTask.inputManifestCacheKey,
+        )
       }
     }
   }
@@ -118,22 +119,22 @@ export async function computeManifest({ tasks, task }) {
 
   for (const envVar of allEnvVars) {
     const hash = hashString(process.env[envVar] ?? '')
-    manifestConstructor.update('env var', envVar, hash)
+    await manifestConstructor.update('env var', envVar, hash)
   }
 
   let numSkipped = 0
   let numHashed = 0
   // getInputFiles returns null for cache=none
   // TODO: make it clearer that's what's happening. Result type or something
-  const files = getInputFiles(tasks, task, extraFiles.flat())
+  const files = await getInputFiles(tasks, task, extraFiles.flat())
   if (!files) return null
 
   const timer = createTimer()
 
   for (const file of files.sort()) {
     const fullPath = join(tasks.config.project.root.dir, file)
-    const stat = statSync(fullPath)
-    const timestamp = String(stat.mtimeMs)
+    const stats = await stat(fullPath)
+    const timestamp = String(stats.mtimeMs)
 
     if (manifestConstructor.copyLineOverIfMetaIsSame('file', file, timestamp)) {
       numSkipped++
@@ -141,8 +142,8 @@ export async function computeManifest({ tasks, task }) {
     }
 
     numHashed++
-    const hash = hashFile(fullPath, stat.size)
-    manifestConstructor.update('file', file, hash, timestamp)
+    const hash = await hashFile(fullPath, stats.size)
+    await manifestConstructor.update('file', file, hash, timestamp)
   }
 
   const { didChange, hash } = await manifestConstructor.end()

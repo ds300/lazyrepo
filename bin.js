@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 
-import { resolve } from 'path'
-import { existsSync } from './src/fs.js'
-
-if (existsSync('./node_modules/lazyrepo/src/cli.js')) {
-  await import(resolve('./node_modules/lazyrepo/src/cli.js'))
-} else {
-  await import('./src/cli.js')
+let path = './src/cli.js'
+if (import.meta.resolve) {
+  try {
+    path = await import.meta.resolve?.('lazyrepo/src/cli.js')
+  } catch (e) {
+    // ignore
+  }
 }
+
+await import(path)

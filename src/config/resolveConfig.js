@@ -1,6 +1,6 @@
 import glob from 'fast-glob'
 import { join } from 'path'
-import { existsSync, mkdirSync, writeFileSync } from '../fs.js'
+import { mkdir, writeFile } from '../fs.js'
 import { isTest } from '../isTest.js'
 import { logger } from '../logger/logger.js'
 import { validateConfig } from './validateConfig.js'
@@ -22,7 +22,7 @@ import { validateConfig } from './validateConfig.js'
  * @param {string} dir
  */
 export async function resolveConfig(dir) {
-  const files = glob.sync('lazy.config.{js,cjs,mjs,ts,cts,mts}', {
+  const files = await glob('lazy.config.{js,cjs,mjs,ts,cts,mts}', {
     absolute: true,
     cwd: dir,
   })
@@ -65,12 +65,10 @@ async function loadConfig(dir, file) {
   }
 
   const configDir = join(dir, '.lazy')
-  if (!existsSync(configDir)) {
-    mkdirSync(configDir)
-  }
+  await mkdir(configDir, { recursive: true })
 
   const inFile = join(configDir, 'config.source.mjs')
-  writeFileSync(inFile, `import config from '${file}'; export default config`)
+  await writeFile(inFile, `import config from '${file}'; export default config`)
   const outFile = join(configDir, 'config.cache.mjs')
 
   const esbuild = await import('esbuild')

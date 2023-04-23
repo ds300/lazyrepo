@@ -1,19 +1,19 @@
 import assert from 'assert'
 import micromatch from 'micromatch'
 import { dirname, isAbsolute, join, sep } from 'path'
-import { existsSync } from '../fs.js'
+import { exists } from '../exists.js'
 import { loadWorkspace } from './loadWorkspace.js'
 
 /**
  * @param {string} dir
- * @returns {import('./project-types.js').PartialWorkspace | null}
+ * @returns {Promise<import('./project-types.js').PartialWorkspace | null>}
  */
-function findContainingPackage(dir) {
+async function findContainingPackage(dir) {
   assert(dir && isAbsolute(dir), 'findContainingPackage: dir must be absolute')
   let currentDir = dir
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    if (existsSync(join(currentDir, 'package.json'))) {
+    if (await exists(join(currentDir, 'package.json'))) {
       return loadWorkspace(currentDir)
     }
     if (currentDir === sep) {
@@ -42,16 +42,16 @@ function hasChildWorkspace(parent, childDir) {
  * @param {string} dir
  * @returns
  */
-export function findRootWorkspace(dir) {
+export async function findRootWorkspace(dir) {
   assert(dir && isAbsolute(dir), 'findRootWorkspace: dir must be absolute')
-  let rootWorkspace = findContainingPackage(dir)
+  let rootWorkspace = await findContainingPackage(dir)
   if (!rootWorkspace) {
     return null
   }
   let childDir = rootWorkspace.dir
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const parent = findContainingPackage(dirname(childDir))
+    const parent = await findContainingPackage(dirname(childDir))
     if (!parent) {
       return rootWorkspace
     }

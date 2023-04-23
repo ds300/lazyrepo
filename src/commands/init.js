@@ -1,12 +1,13 @@
-import { existsSync, writeFileSync } from '../fs.js'
+import { exists } from '../exists.js'
+import { writeFile } from '../fs.js'
 import { logger } from '../logger/logger.js'
 
-export function init() {
+export async function init() {
   const configPath = 'lazy.config.mjs'
-  if (existsSync(configPath)) {
+  if (await exists(configPath)) {
     logger.fail(`Config file already exists at '${configPath}'`)
   }
-  writeFileSync(
+  await writeFile(
     configPath,
     `// @ts-check
 

@@ -4,7 +4,7 @@ import { clean } from './commands/clean.js'
 import { inherit } from './commands/inherit.js'
 import { init } from './commands/init.js'
 import { run } from './commands/run.js'
-import { readFileSync } from './fs.js'
+import { readFile } from './fs.js'
 import { isTest } from './isTest.js'
 import { logger } from './logger/logger.js'
 import { rainbow } from './rainbow.js'
@@ -33,12 +33,12 @@ cli
     await run({ taskName, options })
   })
 
-cli.command('init', 'create config file').action(() => {
-  init()
+cli.command('init', 'create config file').action(async () => {
+  await init()
 })
 
-cli.command('clean', 'delete all local cache data').action(() => {
-  clean()
+cli.command('clean', 'delete all local cache data').action(async () => {
+  await clean()
 })
 
 cli
@@ -65,7 +65,7 @@ export async function execCli(argv) {
   const version = isTest
     ? '0.0.0-test'
     : // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version
+      JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8')).version
   logger.log(pc.bold('lazyrepo'), pc.gray(`${version}`))
   logger.log(rainbow('-'.repeat(`lazyrepo ${version}`.length)))
 

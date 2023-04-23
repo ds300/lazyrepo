@@ -6,4 +6,4 @@
  */
 
 // eslint-disable-next-line no-restricted-imports, n/no-deprecated-api
-export * from 'fs'
+export * from 'fs/promises'

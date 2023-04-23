@@ -3,9 +3,9 @@ import { logger } from '../logger/logger.js'
 import { naiveRimraf } from '../naiveRimraf.js'
 import { Project } from '../project/Project.js'
 
-export function clean() {
-  const project = Project.fromCwd(process.cwd())
-  const cacheDirs = glob.sync(['**/.lazy'], {
+export async function clean() {
+  const project = await Project.fromCwd(process.cwd())
+  const cacheDirs = await glob(['**/.lazy'], {
     ignore: ['**/node_modules'],
     absolute: true,
     onlyDirectories: true,
@@ -13,5 +13,5 @@ export function clean() {
   })
 
   logger.log(`Cleaning ${cacheDirs.length} cache directories...`)
-  cacheDirs.forEach(naiveRimraf)
+  await Promise.all(cacheDirs.map(naiveRimraf))
 }

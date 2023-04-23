@@ -114,7 +114,7 @@ With no config, when you run `lazy test` in the project root:
 
 ## Configuration
 
-Create a file called `lazy.config.js` or `lazy.config.json`
+Create a file called `lazy.config.js` or `lazy.config.ts` in the root of your repo.
 
 To create a `.js` config file, in your project root run:
 

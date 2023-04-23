@@ -2,7 +2,7 @@ import path from 'path'
 import yaml from 'yaml'
 import { z } from 'zod'
 import { fromZodError } from 'zod-validation-error'
-import { readFileSync } from '../fs.js'
+import { readFile } from '../fs.js'
 import { uniq } from '../uniq.js'
 
 const packageJsonSchema = z.object({
@@ -26,11 +26,11 @@ const pnpmWorkspaceYamlSchema = z.object({
 /**
  * @param {string} dir
  */
-function readPackageJsonIfExists(dir) {
+async function readPackageJsonIfExists(dir) {
   const packageJsonPath = path.join(dir, 'package.json')
   let packageJsonString
   try {
-    packageJsonString = readFileSync(packageJsonPath, 'utf8')
+    packageJsonString = await readFile(packageJsonPath, 'utf8')
   } catch {
     return null
   }
@@ -53,11 +53,11 @@ function readPackageJsonIfExists(dir) {
 /**
  * @param {string} dir
  */
-function readPnpmWorkspaceYamlIfExists(dir) {
+async function readPnpmWorkspaceYamlIfExists(dir) {
   const pnpmWorkspaceYamlPath = path.join(dir, 'pnpm-workspace.yaml')
   let pnpmWorkspaceYamlString
   try {
-    pnpmWorkspaceYamlString = readFileSync(pnpmWorkspaceYamlPath, 'utf8')
+    pnpmWorkspaceYamlString = await readFile(pnpmWorkspaceYamlPath, 'utf8')
   } catch {
     return null
   }
@@ -79,14 +79,14 @@ function readPnpmWorkspaceYamlIfExists(dir) {
 
 /**
  * @param {string} dir
- * @returns {import('./project-types.js').PartialWorkspace}
+ * @returns {Promise<import('./project-types.js').PartialWorkspace>}
  */
-export function loadWorkspace(dir) {
-  const packageJson = readPackageJsonIfExists(dir)
+export async function loadWorkspace(dir) {
+  const packageJson = await readPackageJsonIfExists(dir)
   if (!packageJson) {
     throw new Error(`Could not find package.json in ${dir}`)
   }
-  const pnpmWorkspaceYaml = readPnpmWorkspaceYamlIfExists(dir)
+  const pnpmWorkspaceYaml = await readPnpmWorkspaceYamlIfExists(dir)
   if (packageJson.workspaces && pnpmWorkspaceYaml) {
     throw new Error(`Both pnpm-workspace.yaml and package.json workspaces are defined in ${dir}`)
   }

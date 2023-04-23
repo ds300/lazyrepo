@@ -184,7 +184,7 @@ export class Config {
    * @param {string} cwd
    */
   static async fromCwd(cwd) {
-    let project = Project.fromCwd(cwd)
+    let project = await Project.fromCwd(cwd)
     const rootConfig = await resolveConfig(project.root.dir)
     project = project.withoutIgnoredWorkspaces(rootConfig.config.ignoreWorkspaces ?? [])
 

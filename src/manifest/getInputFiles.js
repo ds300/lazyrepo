@@ -2,13 +2,13 @@ import glob from 'fast-glob'
 import path, { isAbsolute, join } from 'path'
 import pc from 'picocolors'
 import { createTimer } from '../createTimer.js'
-import { readdirSync, statSync } from '../fs.js'
+import { readdir, stat } from '../fs.js'
 import { uniq } from '../uniq.js'
 
 /**
  * @param {{task: import('../types.js').ScheduledTask, includes: string[], excludes: string[], workspaceRoot: string}} param
  */
-function globCacheConfig({ includes, excludes, task, workspaceRoot }) {
+async function globCacheConfig({ includes, excludes, task, workspaceRoot }) {
   /**
    * @type {Set<string>}
    */
@@ -16,13 +16,13 @@ function globCacheConfig({ includes, excludes, task, workspaceRoot }) {
 
   for (const pattern of includes) {
     const timer = createTimer()
-    for (const file of glob.sync(pattern, {
+    for (const file of await glob(pattern, {
       cwd: task.workspace.dir,
       ignore: [join(workspaceRoot, '**/node_modules/**'), ...excludes],
       absolute: true,
     })) {
-      if (statSync(file).isDirectory()) {
-        visitAllFiles(file, (filePath) => files.add(filePath))
+      if ((await stat(file)).isDirectory()) {
+        await visitAllFiles(file, (filePath) => files.add(filePath))
       } else {
         files.add(path.relative(workspaceRoot, file))
       }
@@ -48,7 +48,7 @@ function globCacheConfig({ includes, excludes, task, workspaceRoot }) {
  * @param {string[]} extraFiles
  * @returns
  */
-export function getInputFiles(tasks, task, extraFiles) {
+export async function getInputFiles(tasks, task, extraFiles) {
   const taskConfig = tasks.config.getTaskConfig(task.workspace, task.taskName)
 
   const cacheConfig = taskConfig.cache
@@ -58,7 +58,7 @@ export function getInputFiles(tasks, task, extraFiles) {
 
   const baseCacheConfig = tasks.config.getBaseCacheConfig()
 
-  const localFiles = globCacheConfig({
+  const localFiles = await globCacheConfig({
     task,
     workspaceRoot: tasks.config.project.root.dir,
     includes: makeGlobsAbsolute(
@@ -97,11 +97,11 @@ const makeGlobsAbsolute = (arr, workspaceRoot, taskDir) =>
  * @param {string} dir
  * @param {(filePath: string) => void} visit
  */
-function visitAllFiles(dir, visit) {
-  for (const fileName of readdirSync(dir)) {
+async function visitAllFiles(dir, visit) {
+  for (const fileName of await readdir(dir)) {
     const fullPath = path.join(dir, fileName)
-    if (statSync(fullPath).isDirectory()) {
-      visitAllFiles(fullPath, visit)
+    if ((await stat(fullPath)).isDirectory()) {
+      await visitAllFiles(fullPath, visit)
     } else {
       visit(fullPath)
     }

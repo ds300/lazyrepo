@@ -4,21 +4,21 @@ import glob from 'fast-glob'
 import micromatch from 'micromatch'
 import path, { isAbsolute, join } from 'path'
 import { findRootWorkspace } from './findRootWorkspace.js'
-import { getPackageManager } from './getPackageManager.js'
 import { loadWorkspace } from './loadWorkspace.js'
 
 /** @param {import('./project-types.js').PartialWorkspace} workspace */
-function findDirectChildWorkspaces(workspace) {
+async function findDirectChildWorkspaces(workspace) {
   if (workspace.childWorkspaceGlobs.length === 0) return []
 
+  /** @type {import('./project-types.js').PartialWorkspace[]} */
   const directChildWorkspaces = []
 
   for (const workspaceGlob of workspace.childWorkspaceGlobs) {
-    for (const foundWorkspacePackageJsonPath of glob.sync(
+    for (const foundWorkspacePackageJsonPath of await glob(
       path.join(workspace.dir, workspaceGlob, 'package.json'),
     )) {
       const foundWorkspaceDir = path.dirname(foundWorkspacePackageJsonPath)
-      const foundWorkspace = loadWorkspace(foundWorkspaceDir)
+      const foundWorkspace = await loadWorkspace(foundWorkspaceDir)
 
       // do we care about this? seems like if they have nested pnpm-workspace.yaml files, they're doing something wrong anyway
       // and our stuff should work either way?
@@ -39,11 +39,13 @@ function findDirectChildWorkspaces(workspace) {
  *
  * @param {import('./project-types.js').PartialWorkspace} workspace
  * @param {Map<string, import('./project-types.js').PartialWorkspace>} allWorkspacesByName
- * @returns {import('./project-types.js').PartialWorkspace}
+ * @returns {Promise<import('./project-types.js').PartialWorkspace>}
  */
-function hydrateChildWorkspaces(workspace, allWorkspacesByName) {
-  const directChildWorkspaces = findDirectChildWorkspaces(workspace).map((w) =>
-    hydrateChildWorkspaces(w, allWorkspacesByName),
+async function hydrateChildWorkspaces(workspace, allWorkspacesByName) {
+  const directChildWorkspaces = await Promise.all(
+    (
+      await findDirectChildWorkspaces(workspace)
+    ).map((w) => hydrateChildWorkspaces(w, allWorkspacesByName)),
   )
 
   /** @type {import('./project-types.js').PartialWorkspace} */
@@ -101,13 +103,13 @@ function assertIsHydratedWorkspace(workspace) {
 }
 
 /**
- *
  * @param {import('./project-types.js').PartialWorkspace} rootWorkspace
+ * @returns {Promise<HydratedWorkspaceInfo>}
  */
-function hydrateWorkspaces(rootWorkspace) {
+async function hydrateWorkspaces(rootWorkspace) {
   /** @type {Map<string, import('./project-types.js').PartialWorkspace>} */
   const allWorkspacesByName = new Map()
-  hydrateChildWorkspaces(rootWorkspace, allWorkspacesByName)
+  await hydrateChildWorkspaces(rootWorkspace, allWorkspacesByName)
   hydrateLocalDependencies(allWorkspacesByName)
   /** @type {import('./project-types.js').Workspace[]} */
   const allWorkspaces = [...allWorkspacesByName.values()].filter(assertIsHydratedWorkspace)
@@ -117,6 +119,10 @@ function hydrateWorkspaces(rootWorkspace) {
     workspacesByName: Object.fromEntries(allWorkspaces.map((w) => [w.name, w])),
   }
 }
+
+/**
+ * @typedef {{rootWorkspaceName: string, workspacesByName: Record<string, import('./project-types.js').Workspace>}} HydratedWorkspaceInfo
+ */
 
 export class Project {
   /**
@@ -144,29 +150,19 @@ export class Project {
   topologicallySortedWorkspaces
 
   /**
-   * @type {import('./project-types.js').PackageManger}
-   */
-  packageManager
-
-  /**
    * @param {string} cwd
    */
-  static fromCwd(cwd) {
-    const rootWorkspace = findRootWorkspace(cwd)
+  static async fromCwd(cwd) {
+    const rootWorkspace = await findRootWorkspace(cwd)
     if (!rootWorkspace) throw new Error('Could not find root workspace from directory ' + cwd)
-    const config = hydrateWorkspaces(rootWorkspace)
-    const packageManager = getPackageManager(rootWorkspace.dir)
-    if (!packageManager)
-      throw new Error('Could not find package manager lockfile in directory ' + rootWorkspace.dir)
-    return new Project(config, packageManager)
+    const config = await hydrateWorkspaces(rootWorkspace)
+    return new Project(config)
   }
 
   /**
-   * @param {ReturnType<typeof hydrateWorkspaces>} config
-   * @param {"npm" | "yarn" | "pnpm"} packageManager
+   * @param {HydratedWorkspaceInfo} config
    */
-  constructor(config, packageManager) {
-    this.packageManager = packageManager
+  constructor(config) {
     this.root = config.workspacesByName[config.rootWorkspaceName]
     assert(this.root, 'Root workspace not found')
 
@@ -231,13 +227,10 @@ export class Project {
           ]
         }),
     )
-    return new Project(
-      {
-        workspacesByName: { ...filteredWorkspacesByName, [this.root.name]: this.root },
-        rootWorkspaceName: this.root.name,
-      },
-      this.packageManager,
-    )
+    return new Project({
+      workspacesByName: { ...filteredWorkspacesByName, [this.root.name]: this.root },
+      rootWorkspaceName: this.root.name,
+    })
   }
 }
 

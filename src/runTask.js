@@ -2,9 +2,10 @@ import { spawn } from 'cross-spawn'
 
 import path, { relative } from 'path'
 import pc from 'picocolors'
-import stripAnsi from 'strip-ansi'
-import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from './fs.js'
+import { exists } from './exists.js'
+import { rename, unlink } from './fs.js'
 import { computeManifest } from './manifest/computeManifest.js'
+import { readIfExists } from './readIfExists.js'
 
 /**
  * @param {import('./types.js').ScheduledTask} task
@@ -19,7 +20,7 @@ export async function runTaskIfNeeded(task, tasks) {
   const previousManifestPath = taskConfig.getManifestPath()
   const nextManifestPath = taskConfig.getNextManifestPath()
 
-  const didHaveManifest = existsSync(previousManifestPath)
+  const didHaveManifest = await exists(previousManifestPath)
 
   const didChange = await computeManifest({
     task,
@@ -40,14 +41,10 @@ export async function runTaskIfNeeded(task, tasks) {
     didRunTask = true
   } else if (didChange) {
     const diffPath = taskConfig.getDiffPath()
-    const diff = existsSync(diffPath) ? readFileSync(diffPath, 'utf-8').toString() : null
+    const diff = await readIfExists(diffPath)
     if (diff?.length) {
       const allLines = diff.split('\n')
       const diffPath = taskConfig.getDiffPath()
-      if (!existsSync(path.dirname(diffPath))) {
-        mkdirSync(path.dirname(diffPath), { recursive: true })
-      }
-      writeFileSync(diffPath, stripAnsi(allLines.join('\n')))
       task.logger.note('cache miss, changes since last run:')
       allLines.slice(0, 10).forEach((line) => task.logger.diff(line))
       if (allLines.length > 10) {
@@ -70,13 +67,18 @@ export async function runTaskIfNeeded(task, tasks) {
 
   if (didRunTask) {
     if (didSucceed) {
-      if (existsSync(nextManifestPath)) {
-        renameSync(nextManifestPath, previousManifestPath)
+      try {
+        await rename(nextManifestPath, previousManifestPath)
+      } catch (_e) {
+        // ignore, file doesn't exist
+        // TODO: find out if we actually wrote a manifest file so we can turn this into an actual error
       }
       task.logger.success('done')
     } else {
-      if (existsSync(previousManifestPath)) {
-        unlinkSync(previousManifestPath)
+      try {
+        await unlink(previousManifestPath)
+      } catch (_e) {
+        // ignore, file doesn't exist
       }
       task.logger.fail('failed')
     }

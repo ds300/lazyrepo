@@ -1,6 +1,8 @@
 import { createHash } from 'crypto'
 
-import { createWriteStream, existsSync, readFileSync, unlinkSync, writeFileSync } from '../fs.js'
+import { open, writeFile } from '../fs.js'
+import { readIfExists } from '../readIfExists.js'
+import { unlinkIfExists } from '../unlinkIfExists.js'
 import { compareManifestTypes } from './computeManifest.js'
 
 const TAB = '\t'
@@ -54,14 +56,23 @@ export class ManifestConstructor {
   diffPath
 
   /**
-   * @param {ManifestConstructorProps} options
+   * @private
+   * @param {string | null} previousManifestSource
+   * @param {string} diffPath
+   * @param {string} nextManifestPath
    */
-  constructor({ previousManifestPath, diffPath, nextManifestPath }) {
-    this.previousManifestSource = existsSync(previousManifestPath)
-      ? readFileSync(previousManifestPath, 'utf8')
-      : null
+  constructor(previousManifestSource, diffPath, nextManifestPath) {
+    this.previousManifestSource = previousManifestSource
     this.nextManifestPath = nextManifestPath
     this.diffPath = diffPath
+  }
+
+  /**
+   * @param {ManifestConstructorProps} options
+   */
+  static async from({ previousManifestPath, diffPath, nextManifestPath }) {
+    const previousManifestSource = await readIfExists(previousManifestPath)
+    return new ManifestConstructor(previousManifestSource, diffPath, nextManifestPath)
   }
 
   /** @private */
@@ -123,9 +134,11 @@ export class ManifestConstructor {
     }
   }
 
-  getManifestOutStream() {
+  async getManifestOutStream() {
     if (this._manifestOutStream === null) {
-      this._manifestOutStream = createWriteStream(this.nextManifestPath, 'utf-8')
+      this._manifestOutStream = (await open(this.nextManifestPath, 'w')).createWriteStream({
+        encoding: 'utf-8',
+      })
       if (this.previousManifestSource) {
         // catch up
         this._manifestOutStream.write(this.previousManifestSource.slice(0, this.lineOffset))
@@ -134,12 +147,12 @@ export class ManifestConstructor {
     return this._manifestOutStream
   }
 
-  getDiffOutStream() {
+  async getDiffOutStream() {
     if (this._diffOutStream === null) {
-      if (existsSync(this.diffPath)) {
-        unlinkSync(this.diffPath)
-      }
-      this._diffOutStream = createWriteStream(this.diffPath, 'utf-8')
+      // TODO: do we need to unlink this first?
+      this._diffOutStream = (await open(this.diffPath, 'w')).createWriteStream({
+        encoding: 'utf-8',
+      })
     }
     return this._diffOutStream
   }
@@ -150,9 +163,9 @@ export class ManifestConstructor {
    * @param {string} id
    * @param {string} hash
    *
-   * @returns {ManifestLineComparison | null}
+   * @returns {Promise<ManifestLineComparison | null>}
    */
-  compareWithPreviousLine(type, id, hash) {
+  async compareWithPreviousLine(type, id, hash) {
     if (this.previousManifestSource === null) {
       return null
     }
@@ -160,7 +173,7 @@ export class ManifestConstructor {
     const nextLineOffset = this.previousManifestSource.indexOf(LF, this.lineOffset + 1)
     if (nextLineOffset === -1) {
       // if it comes before, that means it wasn't there in the previous one
-      this.getDiffOutStream().write('+ added ' + type + ' ' + id + LF)
+      ;(await this.getDiffOutStream()).write('+ added ' + type + ' ' + id + LF)
       return WAS_ADDED
     }
     const line = this.previousManifestSource.slice(this.lineOffset, nextLineOffset)
@@ -172,10 +185,10 @@ export class ManifestConstructor {
       const comesBeforePrevious = compareManifestTypes(type, parts[0]) < 0
       if (comesBeforePrevious) {
         // if it comes before, that means it wasn't there in the previous one
-        this.getDiffOutStream().write('+ added ' + type + ' ' + id + LF)
+        ;(await this.getDiffOutStream()).write('+ added ' + type + ' ' + id + LF)
         return WAS_ADDED
       } else {
-        this.getDiffOutStream().write('- removed ' + type + ' ' + id + LF)
+        ;(await this.getDiffOutStream()).write('- removed ' + type + ' ' + id + LF)
         return PREV_WAS_DELETED
       }
     }
@@ -186,11 +199,11 @@ export class ManifestConstructor {
 
       if (comesBeforePrevious) {
         // if it comes before, that means it wasn't there in the previous one
-        this.getDiffOutStream().write('+ added ' + type + ' ' + id + LF)
+        ;(await this.getDiffOutStream()).write('+ added ' + type + ' ' + id + LF)
         return WAS_ADDED
       } else {
         // if it comes after, that means the previous one was deleted
-        this.getDiffOutStream().write('- removed ' + type + ' ' + parts[1] + LF)
+        ;(await this.getDiffOutStream()).write('- removed ' + type + ' ' + parts[1] + LF)
         return PREV_WAS_DELETED
       }
     }
@@ -198,7 +211,7 @@ export class ManifestConstructor {
 
     if (hash !== parts[2]) {
       // hash changed
-      this.getDiffOutStream().write('± changed ' + type + ' ' + id + LF)
+      ;(await this.getDiffOutStream()).write('± changed ' + type + ' ' + id + LF)
       return WAS_CHANGED
     }
 
@@ -212,7 +225,7 @@ export class ManifestConstructor {
    * @param {string} hash
    * @param {string} [meta]
    */
-  update(type, id, hash, meta) {
+  async update(type, id, hash, meta) {
     if (type !== this.prevType && compareManifestTypes(type, this.prevType) < 0) {
       throw new Error(`Invalid type order: ${type} < ${this.prevType}`)
     }
@@ -222,10 +235,10 @@ export class ManifestConstructor {
 
     let comparisonResult = null
     if (this.previousManifestSource !== null) {
-      comparisonResult = this.compareWithPreviousLine(type, id, hash)
+      comparisonResult = await this.compareWithPreviousLine(type, id, hash)
       while (comparisonResult === PREV_WAS_DELETED) {
         // make sure the manifest stream is started so it can catch up
-        this.getManifestOutStream()
+        await this.getManifestOutStream()
         this.lineOffset = this.previousManifestSource.indexOf(LF, this.lineOffset + 1) + 1
         comparisonResult = this.compareWithPreviousLine(type, id, hash)
       }
@@ -236,7 +249,7 @@ export class ManifestConstructor {
     this.globalHash.update(hash)
 
     if (this._manifestOutStream || comparisonResult !== SAME_AS_BEFORE) {
-      this.getManifestOutStream().write(
+      ;(await this.getManifestOutStream()).write(
         type + TAB + id + TAB + hash + (meta ? TAB + meta + LF : LF),
       )
     }
@@ -258,10 +271,10 @@ export class ManifestConstructor {
       if (!this._manifestOutStream) {
         if (this.lineOffset === 0) {
           // manifest was previously not empty and is now empty, need to create an empty file
-          writeFileSync(this.nextManifestPath, '')
+          await writeFile(this.nextManifestPath, '')
         } else {
           // need to catch up
-          this.getManifestOutStream()
+          await this.getManifestOutStream()
         }
       }
 
@@ -272,7 +285,7 @@ export class ManifestConstructor {
           .slice(this.lineOffset, nextLineOffset)
           .split(TAB)
 
-        this.getDiffOutStream().write(`- removed ${type} ${id}${LF}`)
+        ;(await this.getDiffOutStream()).write(`- removed ${type} ${id}${LF}`)
 
         if (nextLineOffset === -1) {
           break
@@ -282,12 +295,12 @@ export class ManifestConstructor {
       }
     }
     // unlink previous diff if no changes
-    if (!this._diffOutStream && existsSync(this.diffPath)) {
-      unlinkSync(this.diffPath)
+    if (!this._diffOutStream) {
+      await unlinkIfExists(this.diffPath)
     }
     if (!this._manifestOutStream && this.previousManifestSource === null) {
       // no manifest previously existed and there were no updates so we need to create an empty file
-      writeFileSync(this.nextManifestPath, '')
+      await writeFile(this.nextManifestPath, '')
     }
     await Promise.all([close(this._diffOutStream), close(this._manifestOutStream)])
 
