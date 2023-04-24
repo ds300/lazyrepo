@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import assert from 'assert'
 import glob from 'fast-glob'
 import micromatch from 'micromatch'

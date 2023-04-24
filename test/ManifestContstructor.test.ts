@@ -1,8 +1,36 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
+import { vol } from 'memfs'
 import os from 'os'
 import { dirname, join } from 'path'
 import { rimraf } from 'rimraf'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from '../src/fs.js'
 import { ManifestConstructor } from '../src/manifest/ManifestConstructor.js'
+import { LazyWriter } from '../src/manifest/manifest-types.js'
+
+jest.mock('../src/fs.js', () => {
+  return require('memfs')
+})
+
+jest.mock('../src/manifest/createLazyWriteStream.js', () => {
+  function createLazyWriteStream(path: string): LazyWriter {
+    let buffer = ''
+    return {
+      write(data: string) {
+        buffer += data
+      },
+      close() {
+        writeFileSync(path, buffer)
+        return Promise.resolve()
+      },
+    }
+  }
+  return {
+    createLazyWriteStream,
+  }
+})
+
+beforeEach(() => {
+  vol.reset()
+})
 
 const tmpdir = join(os.tmpdir(), 'lazyrepo-test')
 function setup() {

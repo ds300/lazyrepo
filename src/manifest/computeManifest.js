@@ -7,13 +7,14 @@ import { ManifestConstructor } from './ManifestConstructor.js'
 import { getInputFiles } from './getInputFiles.js'
 import { hashFile, hashString } from './hash.js'
 
-const types = {
+export const types = /** @type {const} */ ({
   upstreamTaskInputs: 'upstream task inputs',
   dependencyTaskInputs: 'dependency task inputs',
   envVar: 'env var',
   file: 'file',
-}
+})
 
+/** @type {string[]} */
 const order = [types.upstreamTaskInputs, types.dependencyTaskInputs, types.envVar, types.file]
 
 /**

@@ -35,7 +35,6 @@ try {
 exec(`npm version ${currentVersion} --no-git-tag-version`)
 
 const fullPath = join(process.cwd(), outPath)
-// eslint-disable-next-line no-console
 console.log(dedent`
   Wrote tarball:
 

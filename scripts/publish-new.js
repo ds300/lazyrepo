@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import autopkg from '@auto-it/core'
 import { parse } from 'semver'
 import { pathToFileURL } from 'url'
@@ -77,7 +76,6 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   await auto.loadConfig()
   const bump = await auto.getVersion()
   if (!bump) {
-    // eslint-disable-next-line no-console
     console.log('nothing to do')
     process.exit(0)
   }
@@ -106,7 +104,6 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     title: `v${nextVersion}`,
   })
 
-  // eslint-disable-next-line no-console
   console.log('nextVersion: ' + nextVersion)
 
   // create and push a new tag

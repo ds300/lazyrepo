@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
@@ -8,7 +7,6 @@ import { loadWorkspace } from '../src/project/loadWorkspace.js'
 import { Workspace } from '../src/project/project-types.js'
 import type { Dir } from './integration/runIntegrationTests.js'
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 const g = global as any
 
 g.__existentPaths = {}
@@ -28,7 +26,6 @@ function getIn(obj: any, path: string): string | null {
   while (parts.length && current) {
     current = current[parts.shift() ?? '']
   }
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return current
 }
 
