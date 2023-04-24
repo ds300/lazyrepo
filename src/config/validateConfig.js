@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { fromZodError } from 'zod-validation-error'
+import { formatZodError } from '../formatZodError.js'
 
 /** @type {z.ZodType<import('./config-types.js').GlobConfig>} */
 export const globConfigSchema = z.union([
@@ -91,11 +91,7 @@ export function validateConfig(config) {
     return lazyConfigSchema.parse(config)
   } catch (err) {
     if (err instanceof z.ZodError) {
-      const validationError = fromZodError(err, {
-        issueSeparator: '\n',
-        prefix: '',
-        prefixSeparator: '',
-      })
+      const validationError = formatZodError(err)
       throw new Error(validationError.message)
     }
     throw err
