@@ -1,6 +1,6 @@
 import { createHash } from 'crypto'
 
-import { existsSync, readFileSync, unlinkSync, writeFileSync } from '../fs.js'
+import { existsSync, readFileSync, unlinkSync } from '../fs.js'
 import { compareManifestTypes } from './computeManifest.js'
 import { createLazyWriteStream } from './createLazyWriteStream.js'
 
@@ -8,12 +8,13 @@ const TAB = '\t'
 const LF = '\n'
 
 const SAME_AS_BEFORE = 'SAME_AS_BEFORE'
+const META_CHANGED_ONLY = 'META_CHANGED_ONLY'
 const PREV_WAS_DELETED = 'PREV_WAS_DELETED'
 const WAS_ADDED = 'WAS_ADDED'
 const WAS_CHANGED = 'WAS_CHANGED'
 
 /**
- * @typedef {typeof SAME_AS_BEFORE | typeof PREV_WAS_DELETED | typeof WAS_ADDED | typeof WAS_CHANGED} ManifestLineComparison
+ * @typedef {typeof META_CHANGED_ONLY | typeof SAME_AS_BEFORE | typeof PREV_WAS_DELETED | typeof WAS_ADDED | typeof WAS_CHANGED} ManifestLineComparison
  */
 
 /**
@@ -31,6 +32,8 @@ const WAS_CHANGED = 'WAS_CHANGED'
  */
 
 export class ManifestConstructor {
+  didChange = false
+
   globalHash = createHash('sha256')
 
   /**
@@ -127,7 +130,7 @@ export class ManifestConstructor {
   getManifestOutStream() {
     if (this._manifestOutStream === null) {
       this._manifestOutStream = createLazyWriteStream(this.nextManifestPath)
-      if (this.previousManifestSource) {
+      if (this.previousManifestSource !== null) {
         // catch up
         this._manifestOutStream.write(this.previousManifestSource.slice(0, this.lineOffset))
       }
@@ -150,10 +153,11 @@ export class ManifestConstructor {
    * @param {string} type
    * @param {string} id
    * @param {string} hash
+   * @param {string | undefined} meta
    *
    * @returns {ManifestLineComparison | null}
    */
-  compareWithPreviousLine(type, id, hash) {
+  compareWithPreviousLine(type, id, hash, meta) {
     if (this.previousManifestSource === null) {
       return null
     }
@@ -176,7 +180,7 @@ export class ManifestConstructor {
         this.getDiffOutStream().write('+ added ' + type + ' ' + id + LF)
         return WAS_ADDED
       } else {
-        this.getDiffOutStream().write('- removed ' + type + ' ' + id + LF)
+        this.getDiffOutStream().write('- removed ' + parts[0] + ' ' + parts[1] + LF)
         return PREV_WAS_DELETED
       }
     }
@@ -203,6 +207,11 @@ export class ManifestConstructor {
       return WAS_CHANGED
     }
 
+    if (meta !== parts[3]) {
+      // meta changed
+      return META_CHANGED_ONLY
+    }
+
     return SAME_AS_BEFORE
   }
 
@@ -223,13 +232,18 @@ export class ManifestConstructor {
 
     let comparisonResult = null
     if (this.previousManifestSource !== null) {
-      comparisonResult = this.compareWithPreviousLine(type, id, hash)
+      comparisonResult = this.compareWithPreviousLine(type, id, hash, meta)
       while (comparisonResult === PREV_WAS_DELETED) {
+        this.didChange = true
         // make sure the manifest stream is started so it can catch up
         this.getManifestOutStream()
         this.lineOffset = this.previousManifestSource.indexOf(LF, this.lineOffset + 1) + 1
-        comparisonResult = this.compareWithPreviousLine(type, id, hash)
+        comparisonResult = this.compareWithPreviousLine(type, id, hash, meta)
       }
+    }
+
+    if (comparisonResult !== SAME_AS_BEFORE && comparisonResult !== META_CHANGED_ONLY) {
+      this.didChange = true
     }
 
     this.globalHash.update(type)
@@ -242,7 +256,7 @@ export class ManifestConstructor {
       )
     }
 
-    if (this.previousManifestSource && comparisonResult !== WAS_ADDED) {
+    if (this.previousManifestSource !== null && comparisonResult !== WAS_ADDED) {
       // if it was added, we don't need to advance the line offset
       this.lineOffset = this.previousManifestSource.indexOf(LF, this.lineOffset + 1) + 1
     }
@@ -256,14 +270,10 @@ export class ManifestConstructor {
       this.previousManifestSource !== null &&
       this.lineOffset < this.previousManifestSource.length - 1
     ) {
+      this.didChange = true
       if (!this._manifestOutStream) {
-        if (this.lineOffset === 0) {
-          // manifest was previously not empty and is now empty, need to create an empty file
-          writeFileSync(this.nextManifestPath, '')
-        } else {
-          // need to catch up
-          this.getManifestOutStream()
-        }
+        // there are changes so we need to create the manifest stream, even if it ends up being an empty file
+        this.getManifestOutStream()
       }
 
       while (this.lineOffset < this.previousManifestSource.length - 1) {
@@ -272,7 +282,6 @@ export class ManifestConstructor {
         const [type, id] = this.previousManifestSource
           .slice(this.lineOffset, nextLineOffset)
           .split(TAB)
-
         this.getDiffOutStream().write(`- removed ${type} ${id}${LF}`)
 
         if (nextLineOffset === -1) {
@@ -288,11 +297,18 @@ export class ManifestConstructor {
     }
     if (!this._manifestOutStream && this.previousManifestSource === null) {
       // no manifest previously existed and there were no updates so we need to create an empty file
-      writeFileSync(this.nextManifestPath, '')
+      this.didChange = true
+      this.getManifestOutStream()
     }
     await Promise.all([this._diffOutStream?.close(), this._manifestOutStream?.close()])
 
-    const didChange = !!this._diffOutStream || this.previousManifestSource === null
-    return { hash: this.globalHash.digest('hex'), didChange }
+    const didWriteDiff = !!this._diffOutStream
+    const didWriteManifest = !!this._manifestOutStream
+    return {
+      hash: this.globalHash.digest('hex'),
+      didChange: this.didChange,
+      didWriteDiff,
+      didWriteManifest,
+    }
   }
 }

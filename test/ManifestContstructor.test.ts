@@ -4,6 +4,7 @@ import { dirname, join } from 'path'
 import { rimraf } from 'rimraf'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from '../src/fs.js'
 import { ManifestConstructor } from '../src/manifest/ManifestConstructor.js'
+import { compareManifestTypes, types } from '../src/manifest/computeManifest.js'
 import { LazyWriter } from '../src/manifest/manifest-types.js'
 
 jest.mock('../src/fs.js', () => {
@@ -56,7 +57,7 @@ const makeManifestString = (entries: [string, string, string, string?][]) => {
         ([type, path, hash, diffHash]) =>
           `${type}\t${path}\t${hash}${diffHash ? `\t${diffHash}` : ''}`,
       )
-      .join('\n') + '\n'
+      .join('\n') + (entries.length ? '\n' : '')
   )
 }
 
@@ -518,3 +519,247 @@ it('should not complain if types are added in alphabetical order', async () => {
 
   await manifest.end()
 })
+
+type ManifestLineType = (typeof types)[keyof typeof types]
+type Line = [ManifestLineType, string, string, string | undefined]
+
+class Random {
+  constructor(private _seed: number) {}
+
+  random(n: number = Number.MAX_SAFE_INTEGER) {
+    this._seed = (this._seed * 9301 + 49297) % 233280
+    // float is a number between 0 and 1
+    const float = this._seed / 233280
+    return Math.floor(float * n)
+  }
+
+  choice<Result>(choices: Array<(() => any) | { weight: number; do: () => any }>): Result {
+    type Choice = (typeof choices)[number]
+    const getWeightFromChoice = (choice: Choice) => ('weight' in choice ? choice.weight : 1)
+    const totalWeight = Object.values(choices).reduce(
+      (total, choice) => total + getWeightFromChoice(choice),
+      0,
+    )
+    const randomWeight = this.random(totalWeight)
+    let weight = 0
+    for (const choice of Object.values(choices)) {
+      weight += getWeightFromChoice(choice)
+      if (randomWeight < weight) {
+        return 'do' in choice ? choice.do() : choice()
+      }
+    }
+    throw new Error('unreachable')
+  }
+
+  randomType(): ManifestLineType {
+    return this.choice(Object.values(types).map((type) => () => type))
+  }
+
+  randomId() {
+    return 'id__' + this.random().toString(36)
+  }
+
+  randomHash() {
+    return 'hash__' + this.randomId()
+  }
+
+  randomMeta() {
+    return 'meta__' + this.randomId()
+  }
+
+  randomLine(): Line {
+    if (this.random(2) === 0) {
+      return [this.randomType(), this.randomId(), this.randomHash(), undefined]
+    } else {
+      return [this.randomType(), this.randomId(), this.randomHash(), this.randomMeta()]
+    }
+  }
+
+  randomLines(n: number): Array<Line> {
+    return Array.from({ length: n }, () => this.randomLine()).sort(lineComparator)
+  }
+
+  editLines({
+    lines,
+    numEdits,
+    numDeletions,
+    numAdditions,
+    numMetaUpdates,
+  }: {
+    lines: Line[]
+    numEdits: number
+    numDeletions: number
+    numAdditions: number
+    numMetaUpdates: number
+  }): Line[] {
+    const result = [...lines]
+    for (let i = 0; i < numEdits; i++) {
+      if (lines.length === 0) continue
+      const index = this.random(result.length)
+      const [type, id, _hash, _meta] = result[index]
+      result[index] = [type, id, this.randomHash(), this.randomMeta()]
+    }
+    for (let i = 0; i < numMetaUpdates; i++) {
+      if (lines.length === 0) continue
+      const index = this.random(result.length)
+      const [type, id, hash, _meta] = result[index]
+      result[index] = [type, id, hash, this.randomMeta()]
+    }
+    for (let i = 0; i < numDeletions; i++) {
+      if (lines.length === 0) continue
+      const index = this.random(result.length)
+      result.splice(index, 1)
+    }
+    for (let i = 0; i < numAdditions; i++) {
+      result.push(this.randomLine())
+    }
+    return result.sort(lineComparator)
+  }
+}
+
+const lineComparator = (a: Line, b: Line) => {
+  const typeComparison = compareManifestTypes(a[0], b[0])
+  if (typeComparison !== 0) {
+    return typeComparison
+  }
+
+  const idComparison = a[1].localeCompare(b[1])
+
+  if (idComparison !== 0) {
+    return idComparison
+  }
+
+  const hashComparison = a[2].localeCompare(b[2])
+
+  if (hashComparison !== 0) {
+    return hashComparison
+  }
+
+  return 0
+}
+
+async function runCreationTest(seed: number) {
+  const random = new Random(seed)
+  const numLines = random.random(20)
+  const lines = random.randomLines(numLines)
+
+  const previousManifestPath = '/manifest'
+  const nextManifestPath = '/manifest.next'
+  const diffPath = '/manifest.diff'
+
+  const manifest = new ManifestConstructor({ previousManifestPath, nextManifestPath, diffPath })
+  for (const line of lines) {
+    manifest.update(...line)
+  }
+
+  const { hash, didChange, didWriteDiff, didWriteManifest } = await manifest.end()
+
+  expect(didWriteDiff).toBe(false)
+  expect(didWriteManifest).toBe(true)
+  expect(hash).toHaveLength(64)
+  expect(didChange).toBe(true)
+  expect(readFileSync(nextManifestPath, 'utf8')).toEqual(makeManifestString(lines))
+}
+
+for (let i = 0; i < 1000; i++) {
+  const seed = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)
+  // eslint-disable-next-line jest/expect-expect
+  test(`random test ${seed}`, async () => {
+    await runCreationTest(i)
+  })
+}
+
+function getDiff(linesA: Line[], linesB: Line[]) {
+  const aById = Object.fromEntries(linesA.map((line) => [line[1], line]))
+
+  const bById = Object.fromEntries(linesB.map((line) => [line[1], line]))
+
+  const deletedIds = new Set(Object.keys(aById).filter((id) => !(id in bById)))
+  const addedIds = new Set(Object.keys(bById).filter((id) => !(id in aById)))
+  const updatedIds = new Set(
+    Object.keys(aById).filter((id) => id in bById && aById[id][2] !== bById[id][2]),
+  )
+
+  const allIds = [...deletedIds, ...addedIds, ...updatedIds].sort((a, b) => {
+    const aType = aById[a] ? aById[a][0] : bById[a][0]
+    const bType = aById[b] ? aById[b][0] : bById[b][0]
+    const typeComparison = compareManifestTypes(aType, bType)
+    if (typeComparison !== 0) {
+      return typeComparison
+    }
+    return a.localeCompare(b)
+  })
+
+  let diff = ''
+  for (const id of allIds) {
+    const type = aById[id] ? aById[id][0] : bById[id][0]
+    if (deletedIds.has(id)) {
+      diff += `- removed ${type} ${id}\n`
+    } else if (addedIds.has(id)) {
+      diff += `+ added ${type} ${id}\n`
+    } else {
+      diff += `± changed ${type} ${id}\n`
+    }
+  }
+  return diff
+}
+
+async function runUpdateTest(seed: number) {
+  const random = new Random(seed)
+  const numLines = random.random(20)
+  const lines = random.randomLines(numLines)
+
+  const previousManifestPath = '/manifest'
+  const nextManifestPath = '/manifest.next'
+  const diffPath = '/manifest.diff'
+
+  writeFileSync(previousManifestPath, makeManifestString(lines))
+
+  const manifest = new ManifestConstructor({ previousManifestPath, nextManifestPath, diffPath })
+
+  const numAdditions = random.random(5)
+  const numDeletions = random.random(5)
+  const numEdits = random.random(5)
+  const numMetaUpdates = random.random(5)
+
+  const newLines = random.editLines({
+    lines,
+    numAdditions,
+    numDeletions,
+    numEdits,
+    numMetaUpdates,
+  })
+
+  const manifestsAreDifferent = makeManifestString(lines) !== makeManifestString(newLines)
+  const manifestHashesAreDifferent =
+    lines.map((line) => line[2]).join('') !== newLines.map((line) => line[2]).join('')
+
+  for (const line of newLines) {
+    const [type, id, _hash, meta] = line
+    if (meta && manifest.copyLineOverIfMetaIsSame(type, id, meta)) {
+      continue
+    }
+    manifest.update(...line)
+  }
+
+  const { hash, didChange, didWriteDiff, didWriteManifest } = await manifest.end()
+
+  expect(didWriteDiff).toBe(manifestHashesAreDifferent)
+  expect(didWriteManifest).toBe(manifestsAreDifferent)
+  expect(hash).toHaveLength(64)
+  expect(didChange).toBe(manifestHashesAreDifferent)
+  if (didWriteManifest) {
+    expect(readFileSync(nextManifestPath, 'utf8')).toEqual(makeManifestString(newLines))
+  }
+  if (didWriteDiff) {
+    expect(readFileSync(diffPath, 'utf8')).toEqual(getDiff(lines, newLines))
+  }
+}
+
+for (let i = 0; i < 1000; i++) {
+  const seed = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)
+  // eslint-disable-next-line jest/expect-expect
+  test(`random test ${seed}`, async () => {
+    await runUpdateTest(seed)
+  })
+}
