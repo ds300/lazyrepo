@@ -40,6 +40,7 @@ module.exports = {
         '@typescript-eslint/restrict-template-expressions': 'off',
         '@typescript-eslint/no-unsafe-return': 'off',
         '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/restrict-plus-operands': 'off',
       },
     },
     {
