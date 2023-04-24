@@ -1,4 +1,3 @@
-/* eslint-disable jest/no-export */
 import spawn from 'cross-spawn'
 import { existsSync, mkdirSync, readFileSync, statSync, utimesSync, writeFileSync } from 'fs'
 import { nanoid } from 'nanoid'
@@ -104,7 +103,6 @@ class TestHarness {
       if ((expectError && didError) || (!expectError && !didError)) {
         return { output: cleanup({ text: output, rootDir: this.config.dir }), status }
       }
-      // eslint-disable-next-line no-console
       console.error(cleanup({ text: output, rootDir: this.config.dir }))
       throw new Error(
         `Exited with code ${status} ${cleanup({ text: output, rootDir: this.config.dir })}`,
@@ -155,7 +153,6 @@ class TestHarness {
             status: code ?? 1,
           })
         } else {
-          // eslint-disable-next-line no-console
           console.error(output)
           reject(
             new Error(

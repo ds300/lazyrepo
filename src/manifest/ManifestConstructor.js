@@ -1,7 +1,8 @@
 import { createHash } from 'crypto'
 
-import { createWriteStream, existsSync, readFileSync, unlinkSync, writeFileSync } from '../fs.js'
+import { existsSync, readFileSync, unlinkSync, writeFileSync } from '../fs.js'
 import { compareManifestTypes } from './computeManifest.js'
+import { createLazyWriteStream } from './createLazyWriteStream.js'
 
 const TAB = '\t'
 const LF = '\n'
@@ -69,13 +70,13 @@ export class ManifestConstructor {
 
   /**
    * @private
-   * @type {import('fs').WriteStream | null}
+   * @type {import('./manifest-types.js').LazyWriter | null}
    */
   _manifestOutStream = null
 
   /**
    * @private
-   * @type {import('fs').WriteStream | null}
+   * @type {import('./manifest-types.js').LazyWriter | null}
    */
   _diffOutStream = null
 
@@ -125,7 +126,7 @@ export class ManifestConstructor {
 
   getManifestOutStream() {
     if (this._manifestOutStream === null) {
-      this._manifestOutStream = createWriteStream(this.nextManifestPath, 'utf-8')
+      this._manifestOutStream = createLazyWriteStream(this.nextManifestPath)
       if (this.previousManifestSource) {
         // catch up
         this._manifestOutStream.write(this.previousManifestSource.slice(0, this.lineOffset))
@@ -139,7 +140,7 @@ export class ManifestConstructor {
       if (existsSync(this.diffPath)) {
         unlinkSync(this.diffPath)
       }
-      this._diffOutStream = createWriteStream(this.diffPath, 'utf-8')
+      this._diffOutStream = createLazyWriteStream(this.diffPath)
     }
     return this._diffOutStream
   }
@@ -289,24 +290,9 @@ export class ManifestConstructor {
       // no manifest previously existed and there were no updates so we need to create an empty file
       writeFileSync(this.nextManifestPath, '')
     }
-    await Promise.all([close(this._diffOutStream), close(this._manifestOutStream)])
+    await Promise.all([this._diffOutStream?.close(), this._manifestOutStream?.close()])
 
     const didChange = !!this._diffOutStream || this.previousManifestSource === null
     return { hash: this.globalHash.digest('hex'), didChange }
   }
-}
-
-/**
- * @param {import('fs').WriteStream | null} stream
- */
-function close(stream) {
-  return new Promise((resolve, reject) => {
-    if (stream === null) {
-      resolve(null)
-    } else {
-      stream.on('close', resolve)
-      stream.on('error', reject)
-      stream.close()
-    }
-  })
 }

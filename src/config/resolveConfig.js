@@ -86,7 +86,6 @@ async function loadConfig(dir, file) {
   })
 
   if (!isTest) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
     await import('source-map-support/register.js')
   }

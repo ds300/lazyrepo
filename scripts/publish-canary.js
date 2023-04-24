@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import pkg from '@auto-it/core'
 
 const { Auto } = pkg
@@ -24,7 +23,6 @@ function getNextVersion(bump) {
   if (!currentVersion) {
     throw new Error('Could not parse current version')
   }
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const nextVersion = currentVersion.prerelease.length
     ? // if the package is in prerelease mode, we want to release a canary for the current version rather than bumping
       currentVersion
@@ -42,8 +40,6 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   if (!bumpType) {
     console.log('No changes, skipping publish')
   } else if (['major', 'minor', 'patch'].includes(bumpType)) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     const nextVersion = getNextVersion(bumpType)
     console.log('nextVersion: ' + nextVersion)
 

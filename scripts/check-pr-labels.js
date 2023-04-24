@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { Octokit } from '@octokit/rest'
 import { pathToFileURL } from 'url'
 
