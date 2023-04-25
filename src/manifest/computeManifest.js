@@ -61,14 +61,14 @@ export async function computeManifest({ tasks, task }) {
 
   const extraFiles = []
 
-  for (const [otherTaskName, depConfig] of task.taskConfig.runsAfterEntries) {
+  for (const [otherScriptName, depConfig] of task.taskConfig.runsAfterEntries) {
     if (!depConfig.inheritsInput && depConfig.usesOutput === false) continue
     const isTopLevel =
-      tasks.config.getTaskConfig(task.workspace, otherTaskName).execution === 'top-level'
+      tasks.config.getTaskConfig(task.workspace, otherScriptName).execution === 'top-level'
 
     const key = tasks.config.getTaskKey(
       isTopLevel ? tasks.config.project.root.dir : task.workspace.dir,
-      otherTaskName,
+      otherScriptName,
     )
     const depTask = tasks.allTasks[key]
     if (isTopLevel && !depTask) throw new Error(`Missing task: ${key}.`)
@@ -94,7 +94,7 @@ export async function computeManifest({ tasks, task }) {
     const upstreamTaskKeys = task.workspace.localDependencyWorkspaceNames
       .map((packageName) => {
         const depPackage = tasks.config.project.getWorkspaceByName(packageName)
-        const key = tasks.config.getTaskKey(depPackage.dir, task.taskName)
+        const key = tasks.config.getTaskKey(depPackage.dir, task.scriptName)
         return key
       })
       .sort()
@@ -112,9 +112,7 @@ export async function computeManifest({ tasks, task }) {
   }
 
   const allEnvVars = uniq(
-    (tasks.config.getBaseCacheConfig().envInputs ?? []).concat(
-      task.taskConfig.cache?.envInputs ?? [],
-    ),
+    tasks.config.getBaseCacheConfig().envInputs.concat(task.taskConfig.cache.envInputs),
   ).sort()
 
   for (const envVar of allEnvVars) {

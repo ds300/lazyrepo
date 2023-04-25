@@ -2,7 +2,7 @@ import { Dir, makeConfigFile, makePackageJson, runIntegrationTest } from './runI
 
 const makeDir = ({ buildCommand = 'echo $RANDOM > out.txt' } = {}): Dir => ({
   'lazy.config.js': makeConfigFile({
-    tasks: {
+    scripts: {
       build: {
         cache: {
           inputs: {

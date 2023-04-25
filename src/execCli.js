@@ -12,25 +12,31 @@ import { rainbow } from './rainbow.js'
 const cli = cac('lazy')
 
 cli
-  .command('<task>', 'run task in all packages')
-  .option('--filter <paths>', '[string] run task in packages specified by paths')
-  .option('--force', '[boolean] ignore existing cached artifacts', {
+  .command('<script>', 'run the script in all packages that support it')
+  .option(
+    '--filter="<path-glob>"',
+    '[string] only run the script in packages that match the given path glob',
+  )
+  .option('--force', '[boolean] ignore the cache', {
     default: false,
   })
-  .action(async (taskName, options) => {
+  .action(async (scriptName, options) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    await run({ taskName, options })
+    await run({ scriptName, options })
   })
 
 cli
-  .command('run <task>', 'run task in all packages')
-  .option('--filter <paths>', '[string] run task in packages specified by paths')
-  .option('--force', '[boolean] ignore existing cached artifacts', {
+  .command('run <script>', 'run the script in all packages that support it')
+  .option(
+    '--filter="<path-glob>"',
+    '[string] only run the script in packages that match the given path glob',
+  )
+  .option('--force', '[boolean] ignore the cache', {
     default: false,
   })
-  .action(async (taskName, options) => {
+  .action(async (scriptName, options) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    await run({ taskName, options })
+    await run({ scriptName, options })
   })
 
 cli.command('init', 'create config file').action(() => {
@@ -42,8 +48,11 @@ cli.command('clean', 'delete all local cache data').action(() => {
 })
 
 cli
-  .command('inherit', 'run command from configuration file specified by script name')
-  .option('--force', '[boolean] ignore existing cached artifacts', { default: false })
+  .command(
+    'inherit',
+    '(use in package.json "scripts" only) Runs the command specified in the lazy config file for the script name.',
+  )
+  .option('--force', '[boolean] ignore the cache', { default: false })
   .action(async (options) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     await inherit(options)

@@ -6,7 +6,7 @@ export type TaskStatus = 'pending' | 'running' | 'success:eager' | 'success:lazy
 export interface ScheduledTask {
   key: string
   taskConfig: TaskConfig
-  taskName: string
+  scriptName: string
   status: TaskStatus
   force: boolean
   extraArgs: string[]
@@ -23,7 +23,7 @@ export type ManifestChange = {
 }
 
 export type RequestedTask = {
-  taskName: string
+  scriptName: string
   filterPaths: string[]
   extraArgs: string[]
   force: boolean
@@ -64,5 +64,5 @@ export interface TaskLogger extends Logger {
 }
 
 export interface CliLogger extends Logger {
-  task(taskName: string, sortOrder: number): TaskLogger
+  task(scriptName: string, sortOrder: number): TaskLogger
 }

@@ -9,10 +9,10 @@ import { logger } from '../logger/logger.js'
 import { rainbow } from '../rainbow.js'
 
 /**
- * @param {{taskName: string, options: import('../types.js').CLIOption}} args
+ * @param {{scriptName: string, options: import('../types.js').CLIOption}} args
  * @param {import('../config/config.js').Config} [_config]
  */
-export async function run({ taskName, options }, _config) {
+export async function run({ scriptName, options }, _config) {
   const timer = createTimer()
   const config = _config ?? (await Config.fromCwd(process.cwd()))
 
@@ -26,7 +26,7 @@ export async function run({ taskName, options }, _config) {
   /** @type {import('../types.js').RequestedTask[]} */
   const requestedTasks = [
     {
-      taskName: taskName,
+      scriptName,
       filterPaths,
       force: options.force,
       extraArgs: options['--'] ?? [],
@@ -40,7 +40,7 @@ export async function run({ taskName, options }, _config) {
 
   if (tasks.sortedTaskKeys.length === 0) {
     logger.fail(
-      `No tasks found matching [${requestedTasks.map((t) => t.taskName).join(', ')}] in ${
+      `No tasks found matching [${requestedTasks.map((t) => t.scriptName).join(', ')}] in ${
         config.project.root.dir
       }`,
     )
@@ -49,7 +49,7 @@ export async function run({ taskName, options }, _config) {
   await tasks.runAllTasks()
   if (logger instanceof InteractiveLogger) logger.clearTasks()
 
-  const failedTasks = tasks.allFailedTasks()
+  const failedTasks = tasks.allFailedTaskKeys()
   if (failedTasks.length > 0) {
     logger.logErr(
       pc.bold(pc.red('\nFailed tasks:')),

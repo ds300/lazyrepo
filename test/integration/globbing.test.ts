@@ -11,7 +11,7 @@ test('excludes take precedence', async () => {
             include: ['<rootDir>/scripts/**/*'],
             exclude: ['scripts/tsconfig.tsbuildinfo'],
           },
-          tasks: {
+          scripts: {
             build: {
               cache: {
                 inputs: ['scripts/build.js'],

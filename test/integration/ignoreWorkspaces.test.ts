@@ -5,7 +5,7 @@ const makeDir = ({
   ignoreWorkspaces = ['packages/utils'],
 } = {}): Dir => ({
   'lazy.config.js': makeConfigFile({
-    tasks: {
+    scripts: {
       build: {
         cache: {
           inputs: {

@@ -14,7 +14,7 @@ import { computeManifest } from './manifest/computeManifest.js'
 export async function runTaskIfNeeded(task, tasks) {
   task.logger.restartTimer()
 
-  const taskConfig = tasks.config.getTaskConfig(task.workspace, task.taskName)
+  const taskConfig = tasks.config.getTaskConfig(task.workspace, task.scriptName)
 
   const previousManifestPath = taskConfig.getManifestPath()
   const nextManifestPath = taskConfig.getNextManifestPath()
@@ -93,7 +93,7 @@ export async function runTaskIfNeeded(task, tasks) {
  * @returns {Promise<{didSucceed: boolean;}>}
  */
 async function runTask(task, tasks) {
-  const taskConfig = tasks.config.getTaskConfig(task.workspace, task.taskName)
+  const taskConfig = tasks.config.getTaskConfig(task.workspace, task.scriptName)
   const command = taskConfig.command
 
   task.logger.log(
@@ -113,7 +113,7 @@ async function runTask(task, tasks) {
         process.env.PATH ?? ''
       }`,
       FORCE_COLOR: '1',
-      npm_lifecycle_event: task.taskName,
+      npm_lifecycle_event: task.scriptName,
       __LAZY_WORKFLOW__: 'true',
     },
   })

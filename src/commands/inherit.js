@@ -36,6 +36,6 @@ export async function inherit(options) {
     })
     process.exit(result.status ?? 1)
   } else {
-    await run({ taskName: scriptName, options: { ...options, filter: [process.cwd()] } }, config)
+    await run({ scriptName: scriptName, options: { ...options, filter: [process.cwd()] } }, config)
   }
 }

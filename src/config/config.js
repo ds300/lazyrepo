@@ -58,31 +58,32 @@ export class TaskConfig {
     return path.join(dir, slugify(this.name))
   }
 
-  get taskConfig() {
-    return this._config.rootConfig.config.tasks?.[this.name] ?? {}
+  /** @private */
+  get scriptConfig() {
+    return this._config.rootConfig.config.scripts?.[this.name] ?? {}
   }
 
   get execution() {
-    return this.taskConfig.execution ?? 'dependent'
+    return this.scriptConfig.execution ?? 'dependent'
   }
 
   get baseCommand() {
-    return this.taskConfig.baseCommand
+    return this.scriptConfig.baseCommand
   }
 
   /** @type {[string, RunsAfterConfig][]} */
   get runsAfterEntries() {
-    return Object.entries(this.taskConfig.runsAfter ?? {}).map(([name, config]) => {
+    return Object.entries(this.scriptConfig.runsAfter ?? {}).map(([name, config]) => {
       return [name, new RunsAfterConfig(config)]
     })
   }
 
   get parallel() {
-    return this.taskConfig.parallel ?? true
+    return this.scriptConfig.parallel ?? true
   }
 
   get cache() {
-    const cache = this.taskConfig.cache
+    const cache = this.scriptConfig.cache
     if (cache === 'none') {
       return cache
     } else {
@@ -201,20 +202,27 @@ export class Config {
   }
   /**
    * @param {import('../project/project-types.js').Workspace} workspace
-   * @param {string} taskName
+   * @param {string} scriptName
    * @returns {TaskConfig}
    */
-  getTaskConfig(workspace, taskName) {
-    return new TaskConfig(workspace, taskName, this)
+  getTaskConfig(workspace, scriptName) {
+    return new TaskConfig(workspace, scriptName, this)
+  }
+
+  /**
+   * @param {string} scriptName
+   */
+  isTopLevelScript(scriptName) {
+    return this.rootConfig.config.scripts?.[scriptName]?.execution === 'top-level'
   }
 
   /**
    * @param {string} taskDir
-   * @param {string} taskName
+   * @param {string} scriptName
    */
-  getTaskKey(taskDir, taskName) {
+  getTaskKey(taskDir, scriptName) {
     if (!isAbsolute(taskDir)) throw new Error(`taskKey: taskDir must be absolute: ${taskDir}`)
-    return `${taskName}::${relative(this.project.root.dir, taskDir) || '<rootDir>'}`
+    return `${scriptName}::${relative(this.project.root.dir, taskDir) || '<rootDir>'}`
   }
 
   /**

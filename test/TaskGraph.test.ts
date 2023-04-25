@@ -53,30 +53,30 @@ function createProject(): Project {
   return makeProject(workspaces)
 }
 
-function makeConfig(project: Project, tasks: LazyConfig['tasks']): Config {
+function makeConfig(project: Project, scripts: LazyConfig['scripts']): Config {
   return new Config({
     project,
     rootConfig: {
       config: {
-        tasks,
+        scripts,
       },
       filePath: null,
     },
   })
 }
 
-function createConfig(tasks: LazyConfig['tasks']): Config {
-  return makeConfig(createProject(), tasks)
+function createConfig(scripts: LazyConfig['scripts']): Config {
+  return makeConfig(createProject(), scripts)
 }
 
 function makeTask(
-  taskName: string,
+  scriptName: string,
   filterPaths: string[] = [],
   extraArgs: string[] = [],
   force = false,
-): { taskName: string; filterPaths: string[]; extraArgs: string[]; force: boolean } {
+): { scriptName: string; filterPaths: string[]; extraArgs: string[]; force: boolean } {
   return {
-    taskName,
+    scriptName,
     filterPaths,
     extraArgs,
     force,
@@ -199,7 +199,7 @@ test('when circular dependencies are detected an error is thrown', () => {
 })
 
 describe('running "pack" on its own in a package with dependencies', () => {
-  const graph = (taskConfig: LazyConfig['tasks']) => {
+  const graph = (taskConfig: LazyConfig['scripts']) => {
     return new TaskGraph({
       config: makeConfig(
         makeProject([
@@ -347,7 +347,7 @@ describe('running "pack" on its own in a package with dependencies', () => {
 })
 
 describe('running "pack" on its own in a package with both dependents and dependencies', () => {
-  const graph = (taskConfig: LazyConfig['tasks']) => {
+  const graph = (taskConfig: LazyConfig['scripts']) => {
     return new TaskGraph({
       config: makeConfig(
         makeProject([

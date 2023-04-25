@@ -10,7 +10,7 @@ import { uniq } from './uniq.js'
 /**
  * @typedef {Object} TaskKeyProps
  * @property {string} taskDir
- * @property {string} taskName
+ * @property {string} scriptName
  * @property {string} workspaceRoot
  */
 
@@ -58,8 +58,8 @@ export class TaskGraph {
      * @returns
      */
     const visit = (path, { requestedTask, workspace }) => {
-      const taskConfig = this.config.getTaskConfig(workspace, requestedTask.taskName)
-      const key = this.config.getTaskKey(workspace.dir, requestedTask.taskName)
+      const taskConfig = this.config.getTaskConfig(workspace, requestedTask.scriptName)
+      const key = this.config.getTaskKey(workspace.dir, requestedTask.scriptName)
       if (this.allTasks[key]) {
         if (path.includes(key)) {
           logger.fail(`Circular dependency detected: \n${path.join('\n -> ')}\n -> ${pc.bold(key)}`)
@@ -71,7 +71,7 @@ export class TaskGraph {
       this.allTasks[key] = {
         key,
         taskConfig: taskConfig,
-        taskName: requestedTask.taskName,
+        scriptName: requestedTask.scriptName,
         extraArgs: requestedTask.extraArgs,
         force: requestedTask.force,
         status: 'pending',
@@ -83,24 +83,24 @@ export class TaskGraph {
       }
       const result = this.allTasks[key]
 
-      for (const [upstreamTaskName, upstreamTaskConfig] of taskConfig.runsAfterEntries) {
+      for (const [upstreamScriptName, upstreamScriptConfig] of taskConfig.runsAfterEntries) {
         /**
          * @type {string[]}
          */
         let filterPaths = []
-        if (upstreamTaskConfig.in === 'self-and-dependencies') {
+        if (upstreamScriptConfig.in === 'self-and-dependencies') {
           filterPaths = [workspace.dir].concat(
             workspace.localDependencyWorkspaceNames.map(
               (dep) => this.config.project.getWorkspaceByName(dep).dir,
             ) ?? [],
           )
-        } else if (upstreamTaskConfig.in === 'self-only') {
+        } else if (upstreamScriptConfig.in === 'self-only') {
           filterPaths = [workspace.dir]
         }
         enqueueTask(
           path,
           {
-            taskName: upstreamTaskName,
+            scriptName: upstreamScriptName,
             extraArgs: [],
             force: requestedTask.force,
             filterPaths,
@@ -112,8 +112,8 @@ export class TaskGraph {
       if (taskConfig.execution === 'dependent') {
         for (const workspaceName of workspace.localDependencyWorkspaceNames ?? []) {
           const dependency = this.config.project.getWorkspaceByName(workspaceName)
-          if (dependency.scripts?.[requestedTask.taskName]) {
-            const depKey = this.config.getTaskKey(dependency.dir, requestedTask.taskName)
+          if (dependency.scripts?.[requestedTask.scriptName]) {
+            const depKey = this.config.getTaskKey(dependency.dir, requestedTask.scriptName)
             result.dependencies.push(depKey)
             visit(path, {
               requestedTask,
@@ -134,8 +134,8 @@ export class TaskGraph {
      * @returns
      */
     const enqueueTask = (path, requestedTask, dependencies) => {
-      if (this.isTopLevelTask(requestedTask.taskName)) {
-        const key = this.config.getTaskKey(this.config.project.root.dir, requestedTask.taskName)
+      if (this.config.isTopLevelScript(requestedTask.scriptName)) {
+        const key = this.config.getTaskKey(this.config.project.root.dir, requestedTask.scriptName)
         dependencies?.push(key)
         visit(path, {
           requestedTask,
@@ -152,8 +152,8 @@ export class TaskGraph {
 
       for (const dir of dirs) {
         const workspace = this.config.project.getWorkspaceByDir(dir)
-        if (workspace.scripts[requestedTask.taskName]) {
-          const key = this.config.getTaskKey(dir, requestedTask.taskName)
+        if (workspace.scripts[requestedTask.scriptName]) {
+          const key = this.config.getTaskKey(dir, requestedTask.scriptName)
           dependencies?.push(key)
           visit(path, {
             requestedTask,
@@ -169,13 +169,6 @@ export class TaskGraph {
   }
 
   /**
-   * @param {string} taskName
-   */
-  isTopLevelTask(taskName) {
-    return this.config.getTaskConfig(this.config.project.root, taskName).execution === 'top-level'
-  }
-
-  /**
    * @param {string} key
    * @returns
    */
@@ -187,19 +180,22 @@ export class TaskGraph {
     )
   }
 
-  allReadyTasks() {
-    const allReadyTasks = this.sortedTaskKeys.filter((key) => this.isTaskReady(key))
-    const inBandTaskNames = new Set()
-    // filter out duplicates for in-band tasks
-    return allReadyTasks
+  allReadyTaskKeys() {
+    const allReadyTaskKeys = this.sortedTaskKeys.filter((key) => this.isTaskReady(key))
+    const unparallelizableScripts = new Set()
+    // filter out duplicates for unparallelizable tasks
+    return allReadyTaskKeys
       .filter((key) => {
-        const { taskName, taskConfig } = this.allTasks[key]
-        const singleThreaded = taskConfig.parallel === false
-        if (singleThreaded && inBandTaskNames.has(taskName)) {
+        const { scriptName, taskConfig } = this.allTasks[key]
+
+        if (taskConfig.parallel) return true
+
+        if (unparallelizableScripts.has(scriptName)) {
           return false
         }
 
-        inBandTaskNames.add(taskName)
+        unparallelizableScripts.add(scriptName)
+
         return true
       })
       .sort()
@@ -226,11 +222,11 @@ export class TaskGraph {
     return stats
   }
 
-  allRunningTasks() {
+  allRunningTaskKeys() {
     return this.sortedTaskKeys.filter((key) => this.allTasks[key].status === 'running')
   }
 
-  allFailedTasks() {
+  allFailedTaskKeys() {
     return this.sortedTaskKeys.filter((key) => this.allTasks[key].status === 'failure')
   }
 
@@ -244,8 +240,8 @@ export class TaskGraph {
     })
 
     const tick = () => {
-      const runningTasks = this.allRunningTasks()
-      const readyTasks = this.allReadyTasks()
+      const runningTasks = this.allRunningTaskKeys()
+      const readyTasks = this.allReadyTaskKeys()
 
       if (runningTasks.length === 0 && readyTasks.length === 0) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
