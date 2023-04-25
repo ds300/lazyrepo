@@ -7,7 +7,7 @@ const makeDir = ({
 } = {}) =>
   ({
     'lazy.config.js': makeConfigFile({
-      tasks: {
+      scripts: {
         build: {
           baseCommand,
           cache: {

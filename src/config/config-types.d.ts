@@ -23,32 +23,32 @@ export type GlobConfig =
 
 export type CacheConfig = {
   /**
-   * Globs of files that this task depends on.
+   * Globs of files that this script depends on.
    *
    * If none are specified, all files in the package will be used.
    */
   inputs?: GlobConfig
   /**
-   * Globs of files that this task produces.
+   * Globs of files that this script produces.
    *
    * If none are specified, none will be tracked.
    */
   outputs?: GlobConfig
   /**
-   * The names of any environment variables that should contribute to the cache key of this task.
-   * Note that it will not control which env vars are passed to the task in any way.
+   * The names of any environment variables that should contribute to the cache key of this script.
+   * Note that it will not control which env vars are passed to the script in any way.
    */
   envInputs?: string[]
   /**
-   * If this task is not independent, this controls whether or not the output created by
-   * upstream packages running this task counts towards the input for the current package.
+   * If this script is not independent, this controls whether or not the output created by
+   * upstream packages running this script counts towards the input for the current package.
    *
    * @default true
    */
   usesOutputFromDependencies?: boolean
   /**
-   * If this task is not independent, this controls whether or not the inputs used by
-   * upstream packages running this task count towards the input for the current package.
+   * If this script is not independent, this controls whether or not the inputs used by
+   * upstream packages running this script count towards the input for the current package.
    *
    * @default true
    */
@@ -57,15 +57,15 @@ export type CacheConfig = {
 
 export type RunsAfter = {
   /**
-   * Whether or not this task uses the files created by the named task.
+   * Whether or not this script uses the files created by the named script.
    * If true, they will be included as cache inputs.
    *
    * @default true
    */
   usesOutput?: boolean
   /**
-   * Whether or not the input files of the named task should contribute to the
-   * cache inputs of this task.
+   * Whether or not the input files of the named script should contribute to the
+   * cache inputs of this script.
    *
    * @default false
    */
@@ -85,10 +85,10 @@ export type RunsAfter = {
   in?: 'all-packages' | 'self-and-dependencies' | 'self-only'
 }
 
-type BaseTask = {
+type BaseScript = {
   /** The other commands that must be completed before this one can run. */
   runsAfter?: {
-    [taskName: string]: RunsAfter
+    [scriptName: string]: RunsAfter
   }
 
   /**
@@ -108,24 +108,24 @@ type BaseTask = {
   parallel?: boolean
 }
 
-export interface TopLevelTask extends BaseTask {
+export interface TopLevelScript extends BaseScript {
   /**
-   * The execution strategy for this task
+   * The execution strategy for this script
    *
    * "dependent" (default)
    *
-   *   The task will run in workspace package directories. It will run in topological order based
+   *   The script will run in workspace package directories. It will run in topological order based
    *   on the dependencies listed in package.json files.
    *
    *   Any tasks that do not depend on each other may be run in parallel, unless specified otherwise.
    *
    * "independent"
    *
-   *   The task will run in workspace package directories, in parallel unless specified otherwise.
+   *   The script will run in workspace package directories, in parallel tasks unless specified otherwise.
    *
    * "top-level"
    *
-   *   The task will run in the root directory of the repo.
+   *   The script will run in the root directory of the repo.
    *   You must specify a command to run.
    *   You may also want to add a `package.json` script with the same name that calls `lazy`.
    *
@@ -133,30 +133,29 @@ export interface TopLevelTask extends BaseTask {
    */
   execution: 'top-level'
   /**
-   * The command to run for this task
+   * The command to run for this script
    */
   baseCommand: string
 }
 
-export interface PackageLevelTask extends BaseTask {
+export interface PackageLevelScript extends BaseScript {
   /**
    * The execution strategy for this script
    *
    * "dependent" (default)
    *
-   *   Lazyrepo will run the script in workspace package directories. These will run in topological order based
-   *   on the dependencies listed in the respective package.json files.
+   *   The script will run in workspace package directories. It will run in topological order based
+   *   on the dependencies listed in package.json files.
    *
    *   Any tasks that do not depend on each other may be run in parallel, unless specified otherwise.
    *
    * "independent"
    *
-   *   Lazyrepo will run the script in workspace package directories. It will not schedule the tasks to complete in any particular order.
-   *   The tasks will run in parallel unless specified otherwise.
+   *   The script will run in workspace package directories, in parallel tasks unless specified otherwise.
    *
    * "top-level"
    *
-   *   Lazyrepo will run the script in the root directory of the repo.
+   *   The script will run in the root directory of the repo.
    *   You must specify a command to run.
    *   You may also want to add a `package.json` script with the same name that calls `lazy`.
    *
@@ -164,23 +163,23 @@ export interface PackageLevelTask extends BaseTask {
    */
   execution?: 'dependent' | 'independent'
   /**
-   * The command to run for this task if the task uses `lazy inherit`
+   * The command to run for this script when invoked via `lazy inherit`
    */
   baseCommand?: string
 
   // API idea
-  // packageOverrides: {
+  // workspaceOverrides: {
   //   [dirGlob: string]: {
   //     command?: string
   //     cache?: 'none' | CacheConfig
   //     runsAfter?: {
-  //       [taskName: string]: RunsAfter
+  //       [scriptName: string]: RunsAfter
   //     }
   //   }
   // }
 }
 
-export type LazyTask = TopLevelTask | PackageLevelTask
+export type LazyScript = TopLevelScript | PackageLevelScript
 
 export interface LazyConfig {
   /**
@@ -223,9 +222,9 @@ export interface LazyConfig {
     envInputs?: string[]
   }
   /**
-   * Custom configuration for any tasks defined in your package.json "scripts" entries.
+   * Custom configuration for any scripts defined in your package.json "scripts" entries.
    */
-  tasks?: { [taskName: string]: LazyTask }
+  scripts?: { [scriptName: string]: LazyScript }
   /**
    * Ignore workspaces matching the given globs. No tasks will be scheduled to run in these workspaces, ever!
    *

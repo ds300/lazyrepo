@@ -2,7 +2,7 @@ import { Dir, makeConfigFile, makePackageJson, runIntegrationTest } from './runI
 
 const makeDir = (): Dir => ({
   'lazy.config.js': makeConfigFile({
-    tasks: {
+    scripts: {
       build: {
         execution: 'top-level',
         cache: {
