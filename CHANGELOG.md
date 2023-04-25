@@ -1,3 +1,32 @@
+# v0.0.0-alpha.22 (Tue Apr 25 2023)
+
+#### 🐛 Bug Fix
+
+- tests(manifest constructor): add property-based-tests & fix bugs [#80](https://github.com/ds300/lazyrepo/pull/80) ([@ds300](https://github.com/ds300))
+
+#### ⚠️ Pushed to `main`
+
+- Update README.md ([@ds300](https://github.com/ds300))
+- center logo ([@ds300](https://github.com/ds300))
+- simplify svg ([@ds300](https://github.com/ds300))
+- refine logo ([@ds300](https://github.com/ds300))
+- update logo again ([@ds300](https://github.com/ds300))
+- update logo ([@ds300](https://github.com/ds300))
+
+#### 🏠 Internal
+
+- Run Label Enforcer on Cloudflare worker [#81](https://github.com/ds300/lazyrepo/pull/81) ([@ds300](https://github.com/ds300))
+
+#### 🧪 Tests
+
+- tests: use memfs in ManifestConstructor.test [#78](https://github.com/ds300/lazyrepo/pull/78) ([@ds300](https://github.com/ds300))
+
+#### Authors: 1
+
+- David Sheldrick ([@ds300](https://github.com/ds300))
+
+---
+
 # v0.0.0-alpha.21 (Sat Apr 22 2023)
 
 #### 🐛 Bug Fix
