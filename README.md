@@ -2,8 +2,7 @@
   <img alt="LAZYREPO" src="https://github.com/ds300/lazyrepo/raw/main/assets/lazyrepo.svg" />
 </div>
 
-> **Warning**
-> Currently in the prototyping stage, expect breaking changes! Get help or join in development on [discord](https://discord.gg/XWb3NGHkfD).
+> **Warning** Currently in the prototyping stage, expect breaking changes! Get help or join in development on [discord](https://discord.gg/XWb3NGHkfD).
 
 `lazyrepo` is a zero-config caching task runner for `npm`/`pnpm`/`yarn` monorepos.
 
