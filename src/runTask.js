@@ -4,6 +4,7 @@ import path, { relative } from 'path'
 import pc from 'picocolors'
 import stripAnsi from 'strip-ansi'
 import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from './fs.js'
+import { isCi } from './isCi.js'
 import { computeManifest } from './manifest/computeManifest.js'
 
 /**
@@ -21,7 +22,7 @@ export async function runTaskIfNeeded(task, tasks) {
 
   const didHaveManifest = existsSync(previousManifestPath)
 
-  const didChange = await computeManifest({
+  const manifestResult = await computeManifest({
     task,
     tasks,
   })
@@ -34,24 +35,29 @@ export async function runTaskIfNeeded(task, tasks) {
 
     didSucceed = (await runTask(task, tasks)).didSucceed
     didRunTask = true
-  } else if (didChange === null) {
+  } else if (manifestResult === null) {
     task.logger.log('cache disabled')
     didSucceed = (await runTask(task, tasks)).didSucceed
     didRunTask = true
-  } else if (didChange) {
+  } else if (manifestResult.didChange) {
     const diffPath = taskConfig.getDiffPath()
     const diff = existsSync(diffPath) ? readFileSync(diffPath, 'utf-8').toString() : null
     if (diff?.length) {
-      const allLines = diff.split('\n')
-      const diffPath = taskConfig.getDiffPath()
-      if (!existsSync(path.dirname(diffPath))) {
-        mkdirSync(path.dirname(diffPath), { recursive: true })
-      }
-      writeFileSync(diffPath, stripAnsi(allLines.join('\n')))
-      task.logger.note('cache miss, changes since last run:')
-      allLines.slice(0, 10).forEach((line) => task.logger.diff(line))
-      if (allLines.length > 10) {
-        task.logger.note(`... and ${allLines.length - 10} more. See ${diffPath} for full diff.`)
+      if (isCi) {
+        task.logger.note('cache miss')
+        task.logger.group('changes since last run', diff)
+      } else {
+        const allLines = diff.split('\n')
+        const diffPath = taskConfig.getDiffPath()
+        if (!existsSync(path.dirname(diffPath))) {
+          mkdirSync(path.dirname(diffPath), { recursive: true })
+        }
+        writeFileSync(diffPath, stripAnsi(allLines.join('\n')))
+        task.logger.note('cache miss, changes since last run:')
+        allLines.slice(0, 10).forEach((line) => task.logger.diff(line))
+        if (allLines.length > 10) {
+          task.logger.note(`... and ${allLines.length - 10} more. See ${diffPath} for full diff.`)
+        }
       }
     } else if (!didHaveManifest) {
       task.logger.log('cache miss, no previous manifest found')
@@ -66,11 +72,19 @@ export async function runTaskIfNeeded(task, tasks) {
     task.logger.note(
       'input manifest saved: ' + path.relative(tasks.config.project.root.dir, previousManifestPath),
     )
+    if (isCi) {
+      task.logger.group(
+        'input manifest',
+        readFileSync(
+          manifestResult?.didWriteManifest ? nextManifestPath : previousManifestPath,
+        ).toString(),
+      )
+    }
   }
 
   if (didRunTask) {
     if (didSucceed) {
-      if (existsSync(nextManifestPath)) {
+      if (manifestResult?.didWriteManifest) {
         renameSync(nextManifestPath, previousManifestPath)
       }
       task.logger.success('done')

@@ -12,6 +12,7 @@ import {
   prefixLines,
 } from './formatting.js'
 
+import ci from 'ci-info'
 /**
  * @implements {CliLogger}
  */
@@ -80,6 +81,35 @@ export class RealtimeLogger {
   }
 
   /**
+   * @param {string} title
+   * @param {string} content
+   */
+  group(title, content) {
+    if (ci.TRAVIS) {
+      this.log(`travis_fold:start:${title}`)
+      this.log(content)
+      this.log(`travis_fold:end:${title}`)
+    } else if (ci.GITLAB) {
+      this.log(
+        `section_start:${Math.floor(Date.now() / 1000)}:${title
+          .toLowerCase()
+          .replace(/\W+/g, `_`)}[collapsed=true]\r\x1b[0K${title}`,
+      )
+      this.log(content)
+      this.log(
+        `section_end:${Math.floor(Date.now() / 1000)}:${title
+          .toLowerCase()
+          .replace(/\W+/g, `_`)}\r\x1b[0K`,
+      )
+    } else {
+      // github actions as default format
+      this.log(`::group::${title}`)
+      this.log(content)
+      this.log('::endgroup::')
+    }
+  }
+
+  /**
    * @param {string} taskName
    * @returns {import('../types.js').TaskLogger}
    */
@@ -121,6 +151,9 @@ export class RealtimeLogger {
       },
       info: (...args) => {
         log(formatInfoMessage(...args))
+      },
+      group: (title, content) => {
+        this.group(prefix + ' ' + title, content)
       },
       note: (...args) => {
         log(formatInfoMessage(...args))

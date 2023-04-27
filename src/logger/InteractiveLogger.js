@@ -146,6 +146,10 @@ export class InteractiveLogger {
     this.log(formatWarningMessage(...args))
   }
 
+  group() {
+    // noop, ci only
+  }
+
   /**
    * @param {string} message
    */
@@ -246,6 +250,9 @@ export class InteractiveLogger {
       },
       success: (message) => {
         complete('done', formatSuccessMessage(message, pc.gray(`in ${timer.formatElapsedTime()}`)))
+      },
+      group: () => {
+        // noop, ci only
       },
       info: (...args) => {
         log('running', formatInfoMessage(...args))

@@ -39,6 +39,8 @@ export interface Logger {
   log(...message: string[]): void
   logErr(...message: string[]): void
 
+  group(title: string, content: string): void
+
   info(...message: string[]): void
   note(...message: string[]): void
   warn(...message: string[]): void
