@@ -133,6 +133,7 @@ class TestHarness {
           cwd: options?.packageDir ? join(this.config.dir, options.packageDir) : this.config.dir,
           env: {
             ...process.env,
+            __test__FORCE_CI: 'false',
             ...options?.env,
           },
         },
