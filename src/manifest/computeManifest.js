@@ -2,6 +2,7 @@ import path, { join } from 'path'
 import pc from 'picocolors'
 import { createTimer } from '../createTimer.js'
 import { existsSync, mkdirSync, statSync } from '../fs.js'
+import { isTest } from '../isTest.js'
 import { uniq } from '../uniq.js'
 import { ManifestConstructor } from './ManifestConstructor.js'
 import { getInputFiles } from './getInputFiles.js'
@@ -132,7 +133,8 @@ export async function computeManifest({ tasks, task }) {
   for (const file of files.sort()) {
     const fullPath = join(tasks.config.project.root.dir, file)
     const stat = statSync(fullPath)
-    const timestamp = String(stat.mtimeMs)
+    const timestamp =
+      isTest && process.env.__test__CONSTANT_MTIME ? '100.000' : String(stat.mtimeMs)
 
     if (manifestConstructor.copyLineOverIfMetaIsSame('file', file, timestamp)) {
       numSkipped++
@@ -144,7 +146,7 @@ export async function computeManifest({ tasks, task }) {
     manifestConstructor.update('file', file, hash, timestamp)
   }
 
-  const { didChange, hash } = await manifestConstructor.end()
+  const { didChange, hash, didWriteManifest, didWriteDiff } = await manifestConstructor.end()
 
   // todo: always log this if verbose
   if (timer.getElapsedMs() > 100) {
@@ -157,5 +159,5 @@ export async function computeManifest({ tasks, task }) {
 
   task.inputManifestCacheKey = hash
 
-  return didChange
+  return { didChange, didWriteManifest, didWriteDiff }
 }

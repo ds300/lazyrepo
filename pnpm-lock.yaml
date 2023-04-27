@@ -15,6 +15,9 @@ importers:
       cac:
         specifier: ^6.7.14
         version: 6.7.14
+      ci-info:
+        specifier: ^3.8.0
+        version: 3.8.0
       cross-spawn:
         specifier: ^7.0.3
         version: 7.0.3
@@ -2798,7 +2801,6 @@ packages:
   /ci-info@3.8.0:
     resolution: {integrity: sha512-eXTggHWSooYhq49F2opQhuHWgzucfF2YgODK4e1566GQs5BIfP30B0oenwBJHfWxAs2fyPB1s7Mg949zLf61Yw==}
     engines: {node: '>=8'}
-    dev: true
 
   /cjs-module-lexer@1.2.2:
     resolution: {integrity: sha512-cOU9usZw8/dXIXKtwa8pM0OTJQuJkxMN6w30csNRUerHfeQ5R6U3kkU/FtJeIf3M202OHfY2U8ccInBG7/xogA==}

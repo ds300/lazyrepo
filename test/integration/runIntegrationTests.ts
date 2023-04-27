@@ -221,7 +221,7 @@ export async function runIntegrationTest(
 export function makePackageJson(opts: Partial<PackageJson>) {
   return JSON.stringify({
     name: 'test',
-    version: '1.0.0-' + nanoid(),
+    version: '1.0.0-test',
     ...opts,
   })
 }
