@@ -37,7 +37,7 @@ describe('on ci', () => {
       async (t) => {
         const { output, status } = await t.exec(['build'], {
           env: {
-            __test__FORCE_CI: 'true',
+            __test__IS_CI_OVERRIDE: 'true',
             __test__CONSTANT_MTIME: 'true',
           },
         })
@@ -98,7 +98,7 @@ describe('on ci', () => {
       async (t) => {
         const firstRun = await t.exec(['build'], {
           env: {
-            __test__FORCE_CI: 'true',
+            __test__IS_CI_OVERRIDE: 'true',
             __test__CONSTANT_MTIME: 'true',
           },
         })
@@ -110,7 +110,7 @@ describe('on ci', () => {
 
         const secondRun = await t.exec(['build'], {
           env: {
-            __test__FORCE_CI: 'true',
+            __test__IS_CI_OVERRIDE: 'true',
             __test__CONSTANT_MTIME: 'true',
           },
         })

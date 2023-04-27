@@ -1,3 +1,5 @@
 import { isCI } from 'ci-info'
 
-export const isCi = process.env.__test__FORCE_CI ? process.env.__test__FORCE_CI === 'true' : isCI
+export const isCi = process.env.__test__IS_CI_OVERRIDE
+  ? process.env.__test__IS_CI_OVERRIDE === 'true'
+  : isCI
