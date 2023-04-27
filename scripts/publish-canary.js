@@ -54,7 +54,7 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     exec(`npm whoami`)
 
     exec(`npm version ${nextVersion} --no-git-tag-version`)
-    // exec(`npm publish --tag canary --access public`)
+    exec(`npm publish --tag canary --access public`)
   } else {
     throw new Error('Invalid bump type provided')
   }
