@@ -1,3 +1,29 @@
+# v0.0.0-alpha.23 (Fri Apr 28 2023)
+
+#### 💥 Breaking Change
+
+- Rename "tasks" config option to "scripts" [#83](https://github.com/ds300/lazyrepo/pull/83) ([@ds300](https://github.com/ds300))
+
+#### 🚀 Enhancement
+
+- Log full diff + manifest on CI [#85](https://github.com/ds300/lazyrepo/pull/85) ([@ds300](https://github.com/ds300))
+
+#### ⚠️ Pushed to `main`
+
+- fix canary script ([@ds300](https://github.com/ds300))
+- prettier ([@ds300](https://github.com/ds300))
+- Update README.md ([@ds300](https://github.com/ds300))
+
+#### 🏠 Internal
+
+- add pr-label-enforcer worker to repo [#82](https://github.com/ds300/lazyrepo/pull/82) ([@ds300](https://github.com/ds300))
+
+#### Authors: 1
+
+- David Sheldrick ([@ds300](https://github.com/ds300))
+
+---
+
 # v0.0.0-alpha.22 (Tue Apr 25 2023)
 
 #### 🐛 Bug Fix
