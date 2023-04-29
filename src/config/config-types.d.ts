@@ -21,7 +21,7 @@ export type GlobConfig =
       exclude?: string[]
     }
 
-export type CacheConfig = {
+export interface CacheConfig {
   /**
    * Globs of files that this script depends on.
    *
@@ -39,6 +39,9 @@ export type CacheConfig = {
    * Note that it will not control which env vars are passed to the script in any way.
    */
   envInputs?: string[]
+}
+
+export interface DependentCacheConfig extends CacheConfig {
   /**
    * If this script is not independent, this controls whether or not the output created by
    * upstream packages running this script counts towards the input for the current package.
@@ -85,30 +88,7 @@ export type RunsAfter = {
   in?: 'all-packages' | 'self-and-dependencies' | 'self-only'
 }
 
-type BaseScript = {
-  /** The other commands that must be completed before this one can run. */
-  runsAfter?: {
-    [scriptName: string]: RunsAfter
-  }
-
-  /**
-   * The configuration for the input + output caches.
-   *
-   * Set to `"none"` to disable caching and make sure the task will always execute when invoked.
-   *
-   * @default { inputs: ["**\/*"] }
-   */
-  cache?: 'none' | CacheConfig
-
-  /**
-   * Whether this task can be safely executed in parallel with other instances of the same task.
-   *
-   * @default true
-   */
-  parallel?: boolean
-}
-
-export interface TopLevelScript extends BaseScript {
+export interface TopLevelScript {
   /**
    * The execution strategy for this script
    *
@@ -136,9 +116,23 @@ export interface TopLevelScript extends BaseScript {
    * The command to run for this script
    */
   baseCommand: string
+
+  /** The other commands that must be completed before this one can run. */
+  runsAfter?: {
+    [scriptName: string]: RunsAfter
+  }
+
+  /**
+   * The configuration for the input + output caches.
+   *
+   * Set to `"none"` to disable caching and make sure the task will always execute when invoked.
+   *
+   * @default { inputs: ["**\/*"] }
+   */
+  cache?: 'none' | CacheConfig
 }
 
-export interface PackageLevelScript extends BaseScript {
+export interface DependentScript {
   /**
    * The execution strategy for this script
    *
@@ -161,25 +155,104 @@ export interface PackageLevelScript extends BaseScript {
    *
    * @default 'dependent'
    */
-  execution?: 'dependent' | 'independent'
+  execution?: 'dependent'
   /**
    * The command to run for this script when invoked via `lazy inherit`
    */
   baseCommand?: string
-
-  // API idea
-  // workspaceOverrides: {
-  //   [dirGlob: string]: {
-  //     command?: string
-  //     cache?: 'none' | CacheConfig
-  //     runsAfter?: {
-  //       [scriptName: string]: RunsAfter
-  //     }
-  //   }
-  // }
+  /**
+   * Override the script configuration for specific workspaces.
+   */
+  workspaceOverrides?: {
+    [dirGlob: string]: {
+      baseCommand?: string
+      cache?: 'none' | DependentCacheConfig
+      runsAfter?: {
+        [scriptName: string]: RunsAfter
+      }
+    }
+  }
+  /** The other commands that must be completed before this one can run. */
+  runsAfter?: {
+    [scriptName: string]: RunsAfter
+  }
+  /**
+   * Whether this task can be safely executed in parallel with other instances of the same task.
+   *
+   * @default true
+   */
+  parallel?: boolean
+  /**
+   * The configuration for the input + output caches.
+   *
+   * Set to `"none"` to disable caching and make sure the task will always execute when invoked.
+   *
+   * @default { inputs: ["**\/*"] }
+   */
+  cache?: 'none' | DependentCacheConfig
 }
 
-export type LazyScript = TopLevelScript | PackageLevelScript
+export interface IndependentScript {
+  /**
+   * The execution strategy for this script
+   *
+   * "dependent" (default)
+   *
+   *   The script will run in workspace package directories. It will run in topological order based
+   *   on the dependencies listed in package.json files.
+   *
+   *   Any tasks that do not depend on each other may be run in parallel, unless specified otherwise.
+   *
+   * "independent"
+   *
+   *   The script will run in workspace package directories, in parallel tasks unless specified otherwise.
+   *
+   * "top-level"
+   *
+   *   The script will run in the root directory of the repo.
+   *   You must specify a command to run.
+   *   You may also want to add a `package.json` script with the same name that calls `lazy`.
+   *
+   * @default 'dependent'
+   */
+  execution: 'independent'
+  /**
+   * The command to run for this script when invoked via `lazy inherit`
+   */
+  baseCommand?: string
+  /**
+   * Override the script configuration for specific workspaces.
+   */
+  workspaceOverrides?: {
+    [dirGlob: string]: {
+      baseCommand?: string
+      cache?: 'none' | CacheConfig
+      runsAfter?: {
+        [scriptName: string]: RunsAfter
+      }
+    }
+  }
+  /** The other commands that must be completed before this one can run. */
+  runsAfter?: {
+    [scriptName: string]: RunsAfter
+  }
+  /**
+   * Whether this task can be safely executed in parallel with other instances of the same task.
+   *
+   * @default true
+   */
+  parallel?: boolean
+  /**
+   * The configuration for the input + output caches.
+   *
+   * Set to `"none"` to disable caching and make sure the task will always execute when invoked.
+   *
+   * @default { inputs: ["**\/*"] }
+   */
+  cache?: 'none' | CacheConfig
+}
+
+export type LazyScript = TopLevelScript | DependentScript | IndependentScript
 
 export interface LazyConfig {
   /**

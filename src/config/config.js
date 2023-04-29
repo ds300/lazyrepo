@@ -5,6 +5,14 @@ import { logger } from '../logger/logger.js'
 import { Project } from '../project/Project.js'
 import { resolveConfig } from './resolveConfig.js'
 
+/**
+ * @param {import('./config-types.js').LazyScript} script
+ * @returns {script is import('./config-types.js').DependentScript}
+ */
+function isDependentScript(script) {
+  return script.execution === undefined || script.execution === 'dependent'
+}
+
 export class RunsAfterConfig {
   /**
    * @private
@@ -58,7 +66,10 @@ export class TaskConfig {
     return path.join(dir, slugify(this.name))
   }
 
-  /** @private */
+  /**
+   * @private
+   * @returns {import('./config-types.js').LazyScript}
+   */
   get scriptConfig() {
     return this._config.rootConfig.config.scripts?.[this.name] ?? {}
   }
@@ -73,26 +84,35 @@ export class TaskConfig {
 
   /** @type {[string, RunsAfterConfig][]} */
   get runsAfterEntries() {
+    if (this.scriptConfig.execution === 'top-level') return []
     return Object.entries(this.scriptConfig.runsAfter ?? {}).map(([name, config]) => {
       return [name, new RunsAfterConfig(config)]
     })
   }
 
   get parallel() {
+    if (this.scriptConfig.execution === 'top-level') return false
     return this.scriptConfig.parallel ?? true
   }
 
   get cache() {
-    const cache = this.scriptConfig.cache
-    if (cache === 'none') {
-      return cache
+    if (this.scriptConfig.cache === 'none') {
+      return this.scriptConfig.cache
     } else {
+      const inheritsInputFromDependencies = isDependentScript(this.scriptConfig)
+        ? this.scriptConfig.cache?.inheritsInputFromDependencies ?? true
+        : false
+
+      const usesOutputFromDependencies = isDependentScript(this.scriptConfig)
+        ? this.scriptConfig.cache?.usesOutputFromDependencies ?? true
+        : false
+
       return {
-        envInputs: cache?.envInputs ?? [],
-        inheritsInputFromDependencies: cache?.inheritsInputFromDependencies ?? true,
-        inputs: extractGlobPattern(cache?.inputs),
-        outputs: extractGlobPattern(cache?.outputs),
-        usesOutputFromDependencies: cache?.usesOutputFromDependencies ?? true,
+        envInputs: this.scriptConfig.cache?.envInputs ?? [],
+        inputs: extractGlobPattern(this.scriptConfig.cache?.inputs),
+        outputs: extractGlobPattern(this.scriptConfig.cache?.outputs),
+        inheritsInputFromDependencies,
+        usesOutputFromDependencies,
       }
     }
   }
