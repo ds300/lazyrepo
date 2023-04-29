@@ -1,5 +1,6 @@
 import slugify from '@sindresorhus/slugify'
-import path, { isAbsolute, relative } from 'path'
+import micromatch from 'micromatch'
+import path, { isAbsolute, join, relative } from 'path'
 import pc from 'picocolors'
 import { logger } from '../logger/logger.js'
 import { Project } from '../project/Project.js'
@@ -68,10 +69,59 @@ export class TaskConfig {
 
   /**
    * @private
+   * @param {string[]} patterns
+   */
+  formatMultimatchError(patterns) {
+    return `Workspace '${relative(
+      process.cwd(),
+      this.workspace.dir,
+    )}' matched multiple overrides for script "${this.name}": [${patterns
+      .sort()
+      .map((pattern) => `'${pattern}'`)
+      .join(', ')}]\nPlease make sure that the workspace only matches one override.`
+  }
+
+  /**
+   * @private
    * @returns {import('./config-types.js').LazyScript}
    */
   get scriptConfig() {
-    return this._config.rootConfig.config.scripts?.[this.name] ?? {}
+    const rawConfig = this._config.rootConfig.config.scripts?.[this.name]
+    if (!rawConfig) return {}
+
+    if (rawConfig?.execution === 'top-level') return rawConfig
+    const overrides = rawConfig?.workspaceOverrides
+    if (!overrides) {
+      return rawConfig
+    }
+    const patterns = Object.keys(overrides)
+    const nameMatches = patterns.filter((pattern) =>
+      micromatch.isMatch(this.workspace.name, pattern),
+    )
+    if (nameMatches.length > 1) {
+      throw new Error(this.formatMultimatchError(nameMatches))
+    }
+    const dirMatches = patterns.filter((pattern) =>
+      micromatch.isMatch(this.workspace.dir, join(this._config.project.root.dir, pattern)),
+    )
+    if (dirMatches.length > 1) {
+      throw new Error(this.formatMultimatchError(dirMatches))
+    }
+
+    if (nameMatches.length === 0 && dirMatches.length === 0) {
+      return rawConfig
+    }
+
+    if (nameMatches.length === 1 && dirMatches.length === 1 && nameMatches[0] !== dirMatches[0]) {
+      throw new Error(this.formatMultimatchError(nameMatches.concat(dirMatches)))
+    }
+
+    const overrideConfig = overrides[nameMatches[0] ?? dirMatches[0]]
+
+    return {
+      ...rawConfig,
+      ...overrideConfig,
+    }
   }
 
   get execution() {
