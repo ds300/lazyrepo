@@ -1,6 +1,5 @@
-import slugify from '@sindresorhus/slugify'
 import micromatch from 'micromatch'
-import path, { isAbsolute, join, relative } from 'path'
+import { isAbsolute, join, relative } from 'path'
 import pc from 'picocolors'
 import { logger } from '../logger/logger.js'
 import { Project } from '../project/Project.js'
@@ -52,19 +51,33 @@ export class TaskConfig {
     this._config = config
   }
 
+  /** @private */
+  get dataDir() {
+    return join(this.workspace.dir, '.lazy', this.name)
+  }
+
   getManifestPath() {
-    const dir = path.join(this.workspace.dir, '.lazy', 'manifests')
-    return path.join(dir, slugify(this.name))
+    return join(this.dataDir, 'manifest.tsv')
   }
 
   getNextManifestPath() {
-    const dir = path.join(this.workspace.dir, '.lazy', 'manifests')
-    return path.join(dir, slugify(this.name) + '.next')
+    return join(this.dataDir, 'manifest.next.tsv')
   }
 
   getDiffPath() {
-    const dir = path.join(this.workspace.dir, '.lazy', 'diffs')
-    return path.join(dir, slugify(this.name))
+    return join(this.dataDir, 'diff.log')
+  }
+
+  getOutputPath() {
+    return join(this.dataDir, 'output')
+  }
+
+  getLogPath() {
+    return join(this.dataDir, 'output.log')
+  }
+
+  getAnsiLogPath() {
+    return join(this.dataDir, 'output.ansi.log')
   }
 
   /**
@@ -124,10 +137,17 @@ export class TaskConfig {
     }
   }
 
+  /** @returns {import('./config-types.js').LogMode} */
+  get logMode() {
+    return this.scriptConfig.logMode ?? 'new-only'
+  }
+
+  /** @returns {import('./config-types.js').LazyScript['execution']} */
   get execution() {
     return this.scriptConfig.execution ?? 'dependent'
   }
 
+  /** @returns {string | undefined} */
   get baseCommand() {
     return this.scriptConfig.baseCommand
   }
@@ -140,11 +160,13 @@ export class TaskConfig {
     })
   }
 
+  /** @type {boolean} */
   get parallel() {
     if (this.scriptConfig.execution === 'top-level') return false
     return this.scriptConfig.parallel ?? true
   }
 
+  /** @type {import('./config-types.js').DependentCacheConfig | 'none'} */
   get cache() {
     if (this.scriptConfig.cache === 'none') {
       return this.scriptConfig.cache
@@ -167,6 +189,7 @@ export class TaskConfig {
     }
   }
 
+  /** @type {string} */
   get command() {
     const baseCommand = this.baseCommand
     const script = this.workspace.scripts[this.name]

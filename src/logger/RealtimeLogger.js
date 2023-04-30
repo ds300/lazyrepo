@@ -103,11 +103,13 @@ export class RealtimeLogger {
           .toLowerCase()
           .replace(/\W+/g, `_`)}\r\x1b[0K`,
       )
-    } else {
-      // github actions as default format
+    } else if (ci.GITHUB_ACTIONS) {
       this.log(`::group::${title}`)
       this.log(content)
       this.log('::endgroup::')
+    } else {
+      this.log(title)
+      this.log('[ grouped content suppressed on unsupported CI environment ]')
     }
   }
 

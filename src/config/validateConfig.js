@@ -47,6 +47,13 @@ const runsAfterSchema = z
   })
   .strict()
 
+const logMode = z.union([
+  z.literal('full'),
+  z.literal('new-only'),
+  z.literal('errors-only'),
+  z.literal('none'),
+])
+
 /** @type {z.ZodType<import('./config-types.js').TopLevelScript>} */
 export const topLevelScriptSchema = z
   .object({
@@ -54,6 +61,7 @@ export const topLevelScriptSchema = z
     baseCommand: z.string(),
     cache: z.union([z.literal('none'), cacheConfigSchema]).optional(),
     runsAfter: z.record(runsAfterSchema).optional(),
+    logMode: logMode.optional(),
   })
   .strict()
 
@@ -69,6 +77,7 @@ export const dependentScriptSchema = z
       .record(
         z
           .object({
+            logMode: logMode.optional(),
             baseCommand: z.string().optional(),
             cache: z.union([z.literal('none'), dependentCacheConfigSchema]).optional(),
             runsAfter: z.record(runsAfterSchema).optional(),
@@ -76,6 +85,7 @@ export const dependentScriptSchema = z
           .strict(),
       )
       .optional(),
+    logMode: logMode.optional(),
   })
   .strict()
 
@@ -91,6 +101,7 @@ export const independentScriptSchema = z
       .record(
         z
           .object({
+            logMode: logMode.optional(),
             baseCommand: z.string().optional(),
             cache: z.union([z.literal('none'), cacheConfigSchema]).optional(),
             runsAfter: z.record(runsAfterSchema).optional(),
@@ -98,6 +109,7 @@ export const independentScriptSchema = z
           .strict(),
       )
       .optional(),
+    logMode: logMode.optional(),
   })
   .strict()
 

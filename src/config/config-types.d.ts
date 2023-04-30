@@ -88,6 +88,8 @@ export type RunsAfter = {
   in?: 'all-packages' | 'self-and-dependencies' | 'self-only'
 }
 
+type LogMode = 'full' | 'new-only' | 'errors-only' | 'none'
+
 export interface TopLevelScript {
   /**
    * The execution strategy for this script
@@ -130,6 +132,16 @@ export interface TopLevelScript {
    * @default { inputs: ["**\/*"] }
    */
   cache?: 'none' | CacheConfig
+
+  /**
+   * What to log when this script runs.
+   *
+   * "new-only" - (default) only log output if the cache misses
+   * "full" - log output from both cache hits and cache misses
+   * "errors-only" - only log output if the task fails
+   * "none" - don't log any output
+   */
+  logMode?: LogMode
 }
 
 export interface DependentScript {
@@ -165,6 +177,7 @@ export interface DependentScript {
    */
   workspaceOverrides?: {
     [dirGlob: string]: {
+      logMode?: LogMode
       baseCommand?: string
       cache?: 'none' | DependentCacheConfig
       runsAfter?: {
@@ -190,6 +203,15 @@ export interface DependentScript {
    * @default { inputs: ["**\/*"] }
    */
   cache?: 'none' | DependentCacheConfig
+  /**
+   * What to log when this script runs.
+   *
+   * "new-only" - (default) only log output if the cache misses
+   * "full" - log output from both cache hits and cache misses
+   * "errors-only" - only log output if the task fails
+   * "none" - don't log any output
+   */
+  logMode?: LogMode
 }
 
 export interface IndependentScript {
@@ -225,6 +247,7 @@ export interface IndependentScript {
    */
   workspaceOverrides?: {
     [dirGlob: string]: {
+      logMode?: LogMode
       baseCommand?: string
       cache?: 'none' | CacheConfig
       runsAfter?: {
@@ -250,6 +273,15 @@ export interface IndependentScript {
    * @default { inputs: ["**\/*"] }
    */
   cache?: 'none' | CacheConfig
+  /**
+   * What to log when this script runs.
+   *
+   * "new-only" - (default) only log output if the cache misses
+   * "full" - log output from both cache hits and cache misses
+   * "errors-only" - only log output if the task fails
+   * "none" - don't log any output
+   */
+  logMode?: LogMode
 }
 
 export type LazyScript = TopLevelScript | DependentScript | IndependentScript
