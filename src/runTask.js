@@ -51,9 +51,7 @@ export async function runTaskIfNeeded(task, tasks) {
       } else {
         const allLines = diff.split('\n')
         const diffPath = taskConfig.getDiffPath()
-        if (!existsSync(dirname(diffPath))) {
-          mkdirSync(dirname(diffPath), { recursive: true })
-        }
+        mkdirSync(dirname(diffPath), { recursive: true })
         writeFileSync(diffPath, stripAnsi(allLines.join('\n')))
         task.logger.note('cache miss, changes since last run:')
         allLines.slice(0, 10).forEach((line) => task.logger.diff(line))
