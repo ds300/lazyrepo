@@ -1,5 +1,4 @@
 import { join } from 'path'
-import stripAnsi from 'strip-ansi'
 import { LazyConfig } from '../index.js'
 import { TaskGraph } from '../src/TaskGraph.js'
 import { Config } from '../src/config/config.js'
@@ -144,13 +143,7 @@ test('core-build should depend on utils-build', () => {
 })
 
 test('when circular dependencies are detected an error is thrown', () => {
-  const exit = jest.spyOn(process, 'exit').mockImplementation(() => undefined as never)
-  let stderr = ''
-  const stderrWrite = jest.spyOn(process.stderr, 'write').mockImplementation((chunk) => {
-    stderr += chunk
-    return true
-  })
-  try {
+  expect(() => {
     new TaskGraph({
       config: createConfig({
         'core-build': {
@@ -159,19 +152,13 @@ test('when circular dependencies are detected an error is thrown', () => {
       }),
       requestedTasks: [makeTask('core-build', ['packages/core'])],
     })
+  }).toThrowErrorMatchingInlineSnapshot(`
+    "Circular dependency detected: 
+    core-build::packages/core
+     -> core-build::packages/core"
+  `)
 
-    expect(exit).toHaveBeenCalledWith(1)
-    expect(stripAnsi(stderr)).toMatchInlineSnapshot(`
-      "
-
-      ∙ ERROR ∙ Circular dependency detected: 
-      core-build::packages/core
-       -> core-build::packages/core
-      "
-    `)
-
-    stderr = ''
-
+  expect(() => {
     new TaskGraph({
       config: createConfig({
         'core-build': {
@@ -183,19 +170,12 @@ test('when circular dependencies are detected an error is thrown', () => {
       }),
       requestedTasks: [makeTask('core-build', ['packages/core'])],
     })
-    expect(stripAnsi(stderr)).toMatchInlineSnapshot(`
-      "
-
-      ∙ ERROR ∙ Circular dependency detected: 
-      core-build::packages/core
-       -> utils-build::packages/utils
-       -> core-build::packages/core
-      "
-    `)
-  } finally {
-    stderrWrite.mockRestore()
-    exit.mockRestore()
-  }
+  }).toThrowErrorMatchingInlineSnapshot(`
+    "Circular dependency detected: 
+    core-build::packages/core
+     -> utils-build::packages/utils
+     -> core-build::packages/core"
+  `)
 })
 
 describe('running "pack" on its own in a package with dependencies', () => {

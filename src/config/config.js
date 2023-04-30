@@ -173,8 +173,9 @@ export class TaskConfig {
     let command = this.execution === 'top-level' ? baseCommand : script
 
     if (!command) {
-      logger.fail(`No command found for script ${this.name} in ${this.workspace.dir}/package.json`)
-      process.exit(1)
+      throw logger.fail(
+        `No command found for script ${this.name} in ${this.workspace.dir}/package.json`,
+      )
     }
 
     if (this.execution !== 'top-level') {
@@ -183,10 +184,9 @@ export class TaskConfig {
       if (inheritMatch) {
         if (!baseCommand) {
           // TODO: evaluate this stuff ahead-of-time
-          logger.fail(
+          throw logger.fail(
             `Encountered 'lazy inherit' for scripts#${this.name} in ${this.workspace.dir}/package.json, but there is no baseCommand configured for the task '${this.name}'`,
           )
-          process.exit(1)
         } else {
           command = `${inheritMatch.envVars ?? ''} ${baseCommand} ${inheritMatch.extraArgs ?? ''}`
           command = command.trim()

@@ -63,7 +63,6 @@ export class TaskGraph {
       if (this.allTasks[key]) {
         if (path.includes(key)) {
           logger.fail(`Circular dependency detected: \n${path.join('\n -> ')}\n -> ${pc.bold(key)}`)
-          process.exit(1)
         }
         return
       }

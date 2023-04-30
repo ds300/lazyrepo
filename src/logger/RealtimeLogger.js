@@ -13,6 +13,7 @@ import {
 } from './formatting.js'
 
 import ci from 'ci-info'
+import { LazyError } from './LazyError.js'
 /**
  * @implements {CliLogger}
  */
@@ -40,16 +41,17 @@ export class RealtimeLogger {
     this.stderr.write(args.join(' ') + '\n')
   }
 
+  stop() {
+    // noop
+  }
+
   /**
    * @param {string} headline
    * @param {{ error?: Error, detail?: string }} [more]
    * @returns {never}
    */
   fail(headline, more) {
-    this.stderr.write('\n\n')
-    this.stderr.write(formatFailMessage(headline, more))
-    this.stderr.write('\n')
-    process.exit(1)
+    throw new LazyError(headline, more)
   }
 
   /**

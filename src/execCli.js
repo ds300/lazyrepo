@@ -6,6 +6,7 @@ import { init } from './commands/init.js'
 import { run } from './commands/run.js'
 import { readFileSync } from './fs.js'
 import { isTest } from './isTest.js'
+import { LazyError } from './logger/LazyError.js'
 import { logger } from './logger/logger.js'
 import { rainbow } from './rainbow.js'
 
@@ -22,7 +23,7 @@ cli
   })
   .action(async (scriptName, options) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    await run({ scriptName, options })
+    return await run({ scriptName, options })
   })
 
 cli
@@ -36,15 +37,15 @@ cli
   })
   .action(async (scriptName, options) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    await run({ scriptName, options })
+    return await run({ scriptName, options })
   })
 
 cli.command('init', 'create config file').action(() => {
-  init()
+  return init()
 })
 
 cli.command('clean', 'delete all local cache data').action(() => {
-  clean()
+  return clean()
 })
 
 cli
@@ -55,7 +56,7 @@ cli
   .option('--force', '[boolean] ignore the cache', { default: false })
   .action(async (options) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    await inherit(options)
+    return await inherit(options)
   })
 
 cli.help()
@@ -65,8 +66,8 @@ const upperCaseFirst = (/** @type {string} */ str) => {
 }
 
 /**
- *
  * @param {string[]} argv
+ * @returns {Promise<number>}
  */
 export async function execCli(argv) {
   /** @type {string} */
@@ -80,9 +81,10 @@ export async function execCli(argv) {
 
   try {
     cli.parse(argv, { run: false })
-    await cli.runMatchedCommand()
-    // the InteractiveLogger runs a setInterval so we need to explicitly call process.exit(0) here to avoid hanging
-    process.exit(0)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const exitCode = (await cli.runMatchedCommand()) ?? 0
+    if (typeof exitCode === 'number') return exitCode
+    return 0
   } catch (/** @type {any} */ e) {
     // find out if this is a CACError instance
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -92,9 +94,14 @@ export async function execCli(argv) {
       // eslint-disable-next-line no-console
       console.log(pc.red(msg) + '\n')
       cli.outputHelp()
-      process.exit(1)
+    } else if (e instanceof LazyError) {
+      logger.logErr(e.format())
     } else {
-      throw e
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+      logger.logErr(e.stack ?? e.message ?? e)
     }
+    return 1
+  } finally {
+    logger.stop()
   }
 }

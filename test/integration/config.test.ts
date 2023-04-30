@@ -169,8 +169,6 @@ test('logs error with exit 1 when config is invalid', async () => {
       expect(output).toMatchInlineSnapshot(`
         "lazyrepo 0.0.0-test
         -------------------
-
-
         ∙ ERROR ∙ Failed reading config file at '__ROOT_DIR__/lazy.config.mjs'
         Unrecognized key(s) in object: 'foo'
         "
