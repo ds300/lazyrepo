@@ -3,6 +3,7 @@
 import pc from 'picocolors'
 import _sliceAnsi from 'slice-ansi'
 import { createTimer } from '../createTimer.js'
+import { LazyError } from './LazyError.js'
 import {
   formatDiffMessage,
   formatFailMessage,
@@ -46,6 +47,10 @@ export class InteractiveLogger {
    */
   constructor(tty) {
     this.tty = tty
+  }
+
+  stop() {
+    if (this.animationInterval) clearInterval(this.animationInterval)
   }
 
   /** @private */
@@ -119,10 +124,7 @@ export class InteractiveLogger {
    * @returns {never}
    */
   fail(headline, more) {
-    this.tty.write('\n\n')
-    this.tty.write(formatFailMessage(headline, more))
-    this.tty.write('\n')
-    process.exit(1)
+    throw new LazyError(headline, more)
   }
 
   /**

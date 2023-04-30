@@ -77,9 +77,5 @@ export async function run({ scriptName, options }, _config) {
     
   `
   logger.log(output)
-  if (failedTasks.length > 0) {
-    process.exit(1)
-  } else {
-    process.exit(0)
-  }
+  return failedTasks.length > 0 ? 1 : 0
 }

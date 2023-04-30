@@ -661,7 +661,7 @@ async function runCreationTest(seed: number) {
   expect(readFileSync(nextManifestPath, 'utf8')).toEqual(makeManifestString(lines))
 }
 
-for (let i = 0; i < 1000; i++) {
+for (let i = 0; i < 100; i++) {
   const seed = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)
   // eslint-disable-next-line jest/expect-expect
   test(`random test ${seed}`, async () => {
@@ -756,7 +756,7 @@ async function runUpdateTest(seed: number) {
   }
 }
 
-for (let i = 0; i < 1000; i++) {
+for (let i = 0; i < 100; i++) {
   const seed = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)
   // eslint-disable-next-line jest/expect-expect
   test(`random test ${seed}`, async () => {

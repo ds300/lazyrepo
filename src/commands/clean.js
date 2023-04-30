@@ -14,4 +14,5 @@ export function clean() {
 
   logger.log(`Cleaning ${cacheDirs.length} cache directories...`)
   cacheDirs.forEach(naiveRimraf)
+  return 0
 }
