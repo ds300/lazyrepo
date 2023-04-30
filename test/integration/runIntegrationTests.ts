@@ -5,7 +5,7 @@ import { join } from 'path'
 import stripAnsi from 'strip-ansi'
 import { LazyConfig } from '../../index.js'
 import { execCli } from '../../src/execCli.js'
-import { naiveRimraf } from '../../src/naiveRimraf.js'
+import { rimraf } from '../../src/rimraf.js'
 import { PackageJson } from '../../src/types.js'
 
 const cleanup = ({ text, rootDir }: { text: string; rootDir: string }) =>
@@ -51,7 +51,7 @@ class TestHarness {
   }
 
   remove(path: string) {
-    naiveRimraf(join(this.config.dir, path))
+    rimraf(join(this.config.dir, path))
   }
 
   install() {

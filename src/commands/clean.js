@@ -1,7 +1,7 @@
 import glob from 'fast-glob'
 import { logger } from '../logger/logger.js'
-import { naiveRimraf } from '../naiveRimraf.js'
 import { Project } from '../project/Project.js'
+import { rimraf } from '../rimraf.js'
 
 export function clean() {
   const project = Project.fromCwd(process.cwd())
@@ -13,6 +13,6 @@ export function clean() {
   })
 
   logger.log(`Cleaning ${cacheDirs.length} cache directories...`)
-  cacheDirs.forEach(naiveRimraf)
+  cacheDirs.forEach(rimraf)
   return 0
 }

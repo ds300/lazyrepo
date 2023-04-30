@@ -50,7 +50,7 @@ test('dependent tasks run', async () => {
         build::packages/utils Hashed 3/3 files in 1.00s
         build::packages/utils cache miss, no previous manifest found
         build::packages/utils RUN echo $RANDOM > .out.txt in packages/utils
-        build::packages/utils input manifest saved: packages/utils/.lazy/manifests/build
+        build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
         build::packages/utils ✔ done in 1.00s
         build::packages/core Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
         build::packages/core Finding files matching lazy.config.* took 1.00s
@@ -58,7 +58,7 @@ test('dependent tasks run', async () => {
         build::packages/core Hashed 3/3 files in 1.00s
         build::packages/core cache miss, no previous manifest found
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
-        build::packages/core input manifest saved: packages/core/.lazy/manifests/build
+        build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
         build::packages/core ✔ done in 1.00s
 
              Tasks:  2 successful, 2 total
@@ -84,13 +84,15 @@ test('dependent tasks run', async () => {
         build::packages/utils Finding files matching lazy.config.* took 1.00s
         build::packages/utils Finding files matching packages/utils/**/* took 1.00s
         build::packages/utils Hashed 0/3 files in 1.00s
-        build::packages/utils input manifest saved: packages/utils/.lazy/manifests/build
+        build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
+        build::packages/utils output log: packages/utils/.lazy/build/output.log
         build::packages/utils ✔ cache hit ⚡️ in 1.00s
         build::packages/core Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
         build::packages/core Finding files matching lazy.config.* took 1.00s
         build::packages/core Finding files matching packages/core/**/* took 1.00s
         build::packages/core Hashed 0/3 files in 1.00s
-        build::packages/core input manifest saved: packages/core/.lazy/manifests/build
+        build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
+        build::packages/core output log: packages/core/.lazy/build/output.log
         build::packages/core ✔ cache hit ⚡️ in 1.00s
 
              Tasks:  2 successful, 2 total
@@ -143,7 +145,7 @@ test('adding an input file causes the task to re-run', async () => {
         build::packages/utils + added file packages/utils/new-file.txt
         build::packages/utils 
         build::packages/utils RUN echo $RANDOM > .out.txt in packages/utils
-        build::packages/utils input manifest saved: packages/utils/.lazy/manifests/build
+        build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
         build::packages/utils ✔ done in 1.00s
         build::packages/core Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
         build::packages/core Finding files matching lazy.config.* took 1.00s
@@ -153,7 +155,7 @@ test('adding an input file causes the task to re-run', async () => {
         build::packages/core ± changed upstream package inputs build::packages/utils
         build::packages/core 
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
-        build::packages/core input manifest saved: packages/core/.lazy/manifests/build
+        build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
         build::packages/core ✔ done in 1.00s
 
              Tasks:  2 successful, 2 total
@@ -184,7 +186,8 @@ test('adding an input file causes the task to re-run', async () => {
         build::packages/utils Finding files matching lazy.config.* took 1.00s
         build::packages/utils Finding files matching packages/utils/**/* took 1.00s
         build::packages/utils Hashed 0/4 files in 1.00s
-        build::packages/utils input manifest saved: packages/utils/.lazy/manifests/build
+        build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
+        build::packages/utils output log: packages/utils/.lazy/build/output.log
         build::packages/utils ✔ cache hit ⚡️ in 1.00s
         build::packages/core Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
         build::packages/core Finding files matching lazy.config.* took 1.00s
@@ -194,7 +197,7 @@ test('adding an input file causes the task to re-run', async () => {
         build::packages/core + added file packages/core/new-file.txt
         build::packages/core 
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
-        build::packages/core input manifest saved: packages/core/.lazy/manifests/build
+        build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
         build::packages/core ✔ done in 1.00s
 
              Tasks:  2 successful, 2 total
@@ -247,7 +250,7 @@ test('changing an input file causes the task to re-run', async () => {
         build::packages/utils ± changed file packages/utils/index.js
         build::packages/utils 
         build::packages/utils RUN echo $RANDOM > .out.txt in packages/utils
-        build::packages/utils input manifest saved: packages/utils/.lazy/manifests/build
+        build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
         build::packages/utils ✔ done in 1.00s
         build::packages/core Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
         build::packages/core Finding files matching lazy.config.* took 1.00s
@@ -257,7 +260,7 @@ test('changing an input file causes the task to re-run', async () => {
         build::packages/core ± changed upstream package inputs build::packages/utils
         build::packages/core 
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
-        build::packages/core input manifest saved: packages/core/.lazy/manifests/build
+        build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
         build::packages/core ✔ done in 1.00s
 
              Tasks:  2 successful, 2 total
@@ -289,7 +292,8 @@ test('changing an input file causes the task to re-run', async () => {
         build::packages/utils Finding files matching lazy.config.* took 1.00s
         build::packages/utils Finding files matching packages/utils/**/* took 1.00s
         build::packages/utils Hashed 0/3 files in 1.00s
-        build::packages/utils input manifest saved: packages/utils/.lazy/manifests/build
+        build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
+        build::packages/utils output log: packages/utils/.lazy/build/output.log
         build::packages/utils ✔ cache hit ⚡️ in 1.00s
         build::packages/core Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
         build::packages/core Finding files matching lazy.config.* took 1.00s
@@ -299,7 +303,7 @@ test('changing an input file causes the task to re-run', async () => {
         build::packages/core ± changed file packages/core/index.js
         build::packages/core 
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
-        build::packages/core input manifest saved: packages/core/.lazy/manifests/build
+        build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
         build::packages/core ✔ done in 1.00s
 
              Tasks:  2 successful, 2 total
@@ -336,7 +340,7 @@ test('deleting an input file causes the task to re-run', async () => {
         build::packages/utils Hashed 3/3 files in 1.00s
         build::packages/utils cache miss, no previous manifest found
         build::packages/utils RUN echo $RANDOM > .out.txt in packages/utils
-        build::packages/utils input manifest saved: packages/utils/.lazy/manifests/build
+        build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
         build::packages/utils ✔ done in 1.00s
         build::packages/core Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
         build::packages/core Finding files matching lazy.config.* took 1.00s
@@ -344,7 +348,7 @@ test('deleting an input file causes the task to re-run', async () => {
         build::packages/core Hashed 3/3 files in 1.00s
         build::packages/core cache miss, no previous manifest found
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
-        build::packages/core input manifest saved: packages/core/.lazy/manifests/build
+        build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
         build::packages/core ✔ done in 1.00s
 
              Tasks:  2 successful, 2 total
@@ -381,7 +385,7 @@ test('deleting an input file causes the task to re-run', async () => {
         build::packages/utils - removed file packages/utils/index.js
         build::packages/utils 
         build::packages/utils RUN echo $RANDOM > .out.txt in packages/utils
-        build::packages/utils input manifest saved: packages/utils/.lazy/manifests/build
+        build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
         build::packages/utils ✔ done in 1.00s
         build::packages/core Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
         build::packages/core Finding files matching lazy.config.* took 1.00s
@@ -391,7 +395,7 @@ test('deleting an input file causes the task to re-run', async () => {
         build::packages/core ± changed upstream package inputs build::packages/utils
         build::packages/core 
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
-        build::packages/core input manifest saved: packages/core/.lazy/manifests/build
+        build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
         build::packages/core ✔ done in 1.00s
 
              Tasks:  2 successful, 2 total
@@ -423,7 +427,8 @@ test('deleting an input file causes the task to re-run', async () => {
         build::packages/utils Finding files matching lazy.config.* took 1.00s
         build::packages/utils Finding files matching packages/utils/**/* took 1.00s
         build::packages/utils Hashed 0/2 files in 1.00s
-        build::packages/utils input manifest saved: packages/utils/.lazy/manifests/build
+        build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
+        build::packages/utils output log: packages/utils/.lazy/build/output.log
         build::packages/utils ✔ cache hit ⚡️ in 1.00s
         build::packages/core Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
         build::packages/core Finding files matching lazy.config.* took 1.00s
@@ -433,7 +438,7 @@ test('deleting an input file causes the task to re-run', async () => {
         build::packages/core - removed file packages/core/index.js
         build::packages/core 
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
-        build::packages/core input manifest saved: packages/core/.lazy/manifests/build
+        build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
         build::packages/core ✔ done in 1.00s
 
              Tasks:  2 successful, 2 total
@@ -487,6 +492,8 @@ test('when an upstream task fails the downstream tasks do not run', async () => 
         build::packages/utils Hashed 3/3 files in 1.00s
         build::packages/utils cache miss, no previous manifest found
         build::packages/utils RUN echo $RANDOM > .out.txt && exit 1 in packages/utils
+        build::packages/utils  ERROR OUTPUT 
+
         build::packages/utils ∙ ERROR ∙ failed
 
         Failed tasks: build::packages/utils
