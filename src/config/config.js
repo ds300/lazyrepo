@@ -1,3 +1,4 @@
+import slugify from '@sindresorhus/slugify'
 import micromatch from 'micromatch'
 import { isAbsolute, join, relative } from 'path'
 import pc from 'picocolors'
@@ -51,9 +52,15 @@ export class TaskConfig {
     this._config = config
   }
 
+  get urlSafeName() {
+    // Script names can contain any character, so let's slugify them and add a hex-encoded full name to avoid slug collisions
+    // h/t wireit https://github.com/google/wireit/blob/27712b767dbebd90460049a3daf87329b9fb3279/src/util/script-data-dir.ts#L25
+    return slugify(this.name) + '-' + Buffer.from(this.name).toString('hex')
+  }
+
   /** @private */
   get dataDir() {
-    return join(this.workspace.dir, '.lazy', this.name)
+    return join(this.workspace.dir, '.lazy', this.urlSafeName)
   }
 
   getManifestPath() {
