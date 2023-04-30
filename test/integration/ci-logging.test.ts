@@ -184,6 +184,8 @@ describe('on ci', () => {
         const { output, status } = await t.exec(['build'], {
           env: {
             __test__IS_CI_OVERRIDE: 'true',
+            GITHUB_ACTIONS: undefined,
+            CIRCLECI: '1',
             __test__CONSTANT_MTIME: 'true',
           },
         })
