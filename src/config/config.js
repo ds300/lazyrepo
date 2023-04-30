@@ -166,7 +166,6 @@ export class TaskConfig {
     return this.scriptConfig.parallel ?? true
   }
 
-  /** @type {import('./config-types.js').DependentCacheConfig | 'none'} */
   get cache() {
     if (this.scriptConfig.cache === 'none') {
       return this.scriptConfig.cache
