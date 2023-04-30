@@ -13,59 +13,100 @@ export const globConfigSchema = z.union([
     .strict(),
 ])
 
-/** @type {z.ZodType<import('./config-types.js').CacheConfig>} */
-export const cacheConfigSchema = z
+export const _cacheConfigSchema = z
   .object({
     inputs: globConfigSchema.optional(),
     outputs: globConfigSchema.optional(),
     envInputs: z.array(z.string()).optional(),
+  })
+  .strict()
+
+/** @type {z.ZodType<import('./config-types.js').CacheConfig>} */
+const cacheConfigSchema = _cacheConfigSchema
+
+/** @type {z.ZodType<import('./config-types.js').DependentCacheConfig>} */
+export const dependentCacheConfigSchema = _cacheConfigSchema
+  .extend({
     usesOutputFromDependencies: z.boolean().optional(),
     inheritsInputFromDependencies: z.boolean().optional(),
   })
   .strict()
 
-const baseScriptSchema = z
+/** @type {z.ZodType<import('./config-types.js').RunsAfter>} */
+const runsAfterSchema = z
   .object({
-    runsAfter: z
-      .record(
-        z
-          .object({
-            usesOutput: z.boolean().optional(),
-            inheritsInput: z.boolean().optional(),
-            in: z
-              .union([
-                z.literal('all-packages'),
-                z.literal('self-and-dependencies'),
-                z.literal('self-only'),
-              ])
-              .optional(),
-          })
-          .strict(),
-      )
+    usesOutput: z.boolean().optional(),
+    inheritsInput: z.boolean().optional(),
+    in: z
+      .union([
+        z.literal('all-packages'),
+        z.literal('self-and-dependencies'),
+        z.literal('self-only'),
+      ])
       .optional(),
-    cache: z.union([z.literal('none'), cacheConfigSchema]).optional(),
-    parallel: z.boolean().optional(),
   })
   .strict()
 
 /** @type {z.ZodType<import('./config-types.js').TopLevelScript>} */
-export const topLevelScriptSchema = baseScriptSchema
-  .extend({
+export const topLevelScriptSchema = z
+  .object({
     execution: z.literal('top-level'),
     baseCommand: z.string(),
+    cache: z.union([z.literal('none'), cacheConfigSchema]).optional(),
+    runsAfter: z.record(runsAfterSchema).optional(),
   })
   .strict()
 
-/** @type {z.ZodType<import('./config-types.js').PackageLevelScript>} */
-export const packageLevelScriptSchema = baseScriptSchema
-  .extend({
-    execution: z.union([z.literal('dependent'), z.literal('independent')]).optional(),
+/** @type {z.ZodType<import('./config-types.js').DependentScript>} */
+export const dependentScriptSchema = z
+  .object({
+    execution: z.literal('dependent').optional(),
     baseCommand: z.string().optional(),
+    cache: z.union([z.literal('none'), dependentCacheConfigSchema]).optional(),
+    parallel: z.boolean().optional(),
+    runsAfter: z.record(runsAfterSchema).optional(),
+    workspaceOverrides: z
+      .record(
+        z
+          .object({
+            baseCommand: z.string().optional(),
+            cache: z.union([z.literal('none'), dependentCacheConfigSchema]).optional(),
+            runsAfter: z.record(runsAfterSchema).optional(),
+          })
+          .strict(),
+      )
+      .optional(),
+  })
+  .strict()
+
+/** @type {z.ZodType<import('./config-types.js').IndependentScript>} */
+export const independentScriptSchema = z
+  .object({
+    execution: z.literal('independent'),
+    baseCommand: z.string().optional(),
+    cache: z.union([z.literal('none'), cacheConfigSchema]).optional(),
+    parallel: z.boolean().optional(),
+    runsAfter: z.record(runsAfterSchema).optional(),
+    workspaceOverrides: z
+      .record(
+        z
+          .object({
+            baseCommand: z.string().optional(),
+            cache: z.union([z.literal('none'), cacheConfigSchema]).optional(),
+            runsAfter: z.record(runsAfterSchema).optional(),
+          })
+          .strict(),
+      )
+      .optional(),
   })
   .strict()
 
 /** @type {z.ZodType<import('./config-types.js').LazyScript>} */
-export const lazyScriptSchema = z.union([topLevelScriptSchema, packageLevelScriptSchema])
+export const lazyScriptSchema = z.union([
+  topLevelScriptSchema,
+  dependentScriptSchema,
+  independentScriptSchema,
+])
 
 /** @type {z.ZodType<import('./config-types.js').LazyConfig>} */
 export const lazyConfigSchema = z

@@ -121,6 +121,9 @@ importers:
       husky:
         specifier: ^8.0.0
         version: 8.0.3
+      immer:
+        specifier: ^10.0.1
+        version: 10.0.1
       jest:
         specifier: ^29.5.0
         version: 29.5.0(@types/node@18.15.11)
@@ -3835,6 +3838,10 @@ packages:
   /ignore@5.2.4:
     resolution: {integrity: sha512-MAb38BcSbH0eHNBxn7ql2NH/kX33OkB3lZ1BNdh7ENeRChHTYsTvWrMubiIAMNS2llXEEgZ1MUOBtXChP3kaFQ==}
     engines: {node: '>= 4'}
+    dev: true
+
+  /immer@10.0.1:
+    resolution: {integrity: sha512-zg++jJLsKKTwXGeSYIw0HgChSYQGtu0UDTnbKx5aGLYgte4CwTmH9eJDYyQ6FheyUtBe+lQW9FrGxya1G+Dtmg==}
     dev: true
 
   /import-cwd@3.0.0:
