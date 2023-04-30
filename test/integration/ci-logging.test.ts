@@ -38,6 +38,7 @@ describe('on ci', () => {
         const { output, status } = await t.exec(['build'], {
           env: {
             __test__IS_CI_OVERRIDE: 'true',
+            GITHUB_ACTIONS: 'true',
             __test__CONSTANT_MTIME: 'true',
           },
         })
@@ -54,7 +55,7 @@ describe('on ci', () => {
           build::packages/utils Hashed 3/3 files in 1.00s
           build::packages/utils cache miss, no previous manifest found
           build::packages/utils RUN echo $RANDOM > .out.txt in packages/utils
-          build::packages/utils input manifest saved: packages/utils/.lazy/manifests/build
+          build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
           ::group::build::packages/utils  input manifest
           file	package-lock.json	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855	100.000
           file	packages/utils/index.js	e7fb2f4978d27e4f9e23fe22cea20bb3da1632fabb50362e2963c68700a6f1a5	100.000
@@ -68,7 +69,7 @@ describe('on ci', () => {
           build::packages/core Hashed 3/3 files in 1.00s
           build::packages/core cache miss, no previous manifest found
           build::packages/core RUN echo $RANDOM > .out.txt in packages/core
-          build::packages/core input manifest saved: packages/core/.lazy/manifests/build
+          build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
           ::group::build::packages/core  input manifest
           upstream package inputs	build::packages/utils	2699f1c1aec310b2069f1c207e86385d8f65cb7d9c8a03e9b31be18a5ebde35e
           file	package-lock.json	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855	100.000
@@ -99,6 +100,7 @@ describe('on ci', () => {
         const firstRun = await t.exec(['build'], {
           env: {
             __test__IS_CI_OVERRIDE: 'true',
+            GITHUB_ACTIONS: 'true',
             __test__CONSTANT_MTIME: 'true',
           },
         })
@@ -111,6 +113,7 @@ describe('on ci', () => {
         const secondRun = await t.exec(['build'], {
           env: {
             __test__IS_CI_OVERRIDE: 'true',
+            GITHUB_ACTIONS: 'true',
             __test__CONSTANT_MTIME: 'true',
           },
         })
@@ -131,7 +134,7 @@ describe('on ci', () => {
 
           ::endgroup::
           build::packages/utils RUN echo $RANDOM > .out.txt in packages/utils
-          build::packages/utils input manifest saved: packages/utils/.lazy/manifests/build
+          build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
           ::group::build::packages/utils  input manifest
           file	package-lock.json	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855	100.000
           file	packages/utils/package.json	66a4aa54ada27c4596c6e5c7103b46bedef607d952c8985ca520a85c27a16543	100.000
@@ -149,7 +152,7 @@ describe('on ci', () => {
 
           ::endgroup::
           build::packages/core RUN echo $RANDOM > .out.txt in packages/core
-          build::packages/core input manifest saved: packages/core/.lazy/manifests/build
+          build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
           ::group::build::packages/core  input manifest
           upstream package inputs	build::packages/utils	8b4a40e0f67481c7690f423d943417fa32b97951ccff33e6a167396c6be4be74
           file	package-lock.json	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855	100.000
@@ -158,6 +161,58 @@ describe('on ci', () => {
           file	packages/core/package.json	ea5dc87ceba8dcac6a0c56e525f861a648ee06094ccf5a8fa33b75ac1f3e75c4	100.000
 
           ::endgroup::
+          build::packages/core ✔ done in 1.00s
+
+               Tasks:  2 successful, 2 total
+              Cached:  0/2 cached
+                Time:  1.00s
+
+          "
+        `)
+      },
+    )
+  })
+
+  test('the grouped outputs are suppressed if the CI provider does not support grouping', async () => {
+    await runIntegrationTest(
+      {
+        structure: simpleDir,
+        packageManager: 'npm',
+        workspaceGlobs: ['packages/*'],
+      },
+      async (t) => {
+        const { output, status } = await t.exec(['build'], {
+          env: {
+            __test__IS_CI_OVERRIDE: 'true',
+            __test__CONSTANT_MTIME: 'true',
+          },
+        })
+
+        expect(status).toBe(0)
+        expect(output).toMatchInlineSnapshot(`
+          "lazyrepo 0.0.0-test
+          -------------------
+          No config files found, using default configuration.
+
+          build::packages/utils Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
+          build::packages/utils Finding files matching lazy.config.* took 1.00s
+          build::packages/utils Finding files matching packages/utils/**/* took 1.00s
+          build::packages/utils Hashed 3/3 files in 1.00s
+          build::packages/utils cache miss, no previous manifest found
+          build::packages/utils RUN echo $RANDOM > .out.txt in packages/utils
+          build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
+          build::packages/utils  input manifest
+          [ grouped content suppressed on unsupported CI environment ]
+          build::packages/utils ✔ done in 1.00s
+          build::packages/core Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
+          build::packages/core Finding files matching lazy.config.* took 1.00s
+          build::packages/core Finding files matching packages/core/**/* took 1.00s
+          build::packages/core Hashed 3/3 files in 1.00s
+          build::packages/core cache miss, no previous manifest found
+          build::packages/core RUN echo $RANDOM > .out.txt in packages/core
+          build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
+          build::packages/core  input manifest
+          [ grouped content suppressed on unsupported CI environment ]
           build::packages/core ✔ done in 1.00s
 
                Tasks:  2 successful, 2 total

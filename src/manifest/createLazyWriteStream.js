@@ -1,9 +1,11 @@
-import { createWriteStream } from '../fs.js'
+import { dirname } from 'path'
+import { createWriteStream, mkdirSync } from '../fs.js'
 
 // A little wrapper around createWriteStream that returns a Promise when the stream is closed.
 class LazyWriteStream {
   /** @param {string} path */
   constructor(path) {
+    mkdirSync(dirname(path), { recursive: true })
     this.stream = createWriteStream(path, 'utf-8')
   }
 
