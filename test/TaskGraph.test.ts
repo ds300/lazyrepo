@@ -1,73 +1,6 @@
-import { join } from 'path'
 import { LazyConfig } from '../index.js'
-import { Config } from '../src/config/config.js'
-import { Project } from '../src/project/Project.js'
-import { Workspace } from '../src/project/project-types.js'
 import { TaskGraph } from '../src/tasks/TaskGraph.js'
-
-const cwd = process.cwd()
-
-function makeWorkspace(name: string, localDeps: string[], scriptNames: string[]): Workspace {
-  return {
-    dir: join(cwd, `packages/${name}`),
-    name,
-    scripts: Object.fromEntries(scriptNames.map((name) => [name, 'whatever'])),
-    allDependencyNames: localDeps,
-    childWorkspaceGlobs: [],
-    childWorkspaceNames: [],
-    localDependencyWorkspaceNames: localDeps,
-  }
-}
-
-function makeProject(workspaces: Workspace[]): Project {
-  const workspacesByName: Record<string, Workspace> = Object.fromEntries(
-    workspaces
-      .concat([
-        {
-          dir: cwd,
-          name: 'root',
-          scripts: {},
-          allDependencyNames: [],
-          childWorkspaceGlobs: [],
-          childWorkspaceNames: [],
-          localDependencyWorkspaceNames: [],
-        } satisfies Workspace,
-      ])
-      .map((pkg) => [pkg.name, pkg]),
-  )
-  return new Project(
-    {
-      rootWorkspaceName: 'root',
-      workspacesByName,
-    },
-    'npm',
-  )
-}
-
-function createProject(): Project {
-  const workspaces: Workspace[] = [
-    makeWorkspace('core', ['utils'], ['prepack', 'pack', 'core-build']),
-    makeWorkspace('utils', [], ['prepack', 'pack', 'utils-build']),
-  ]
-  return makeProject(workspaces)
-}
-
-function makeConfig(project: Project, scripts: LazyConfig['scripts']): Config {
-  return new Config({
-    project,
-    rootConfig: {
-      config: {
-        scripts,
-      },
-      filePath: null,
-    },
-    isVerbose: false,
-  })
-}
-
-function createConfig(scripts: LazyConfig['scripts']): Config {
-  return makeConfig(createProject(), scripts)
-}
+import { createConfig, makeConfig, makeProject, makeScripts, makeWorkspace } from './test-utils.js'
 
 function makeTask(
   scriptName: string,
@@ -184,9 +117,15 @@ describe('running "pack" on its own in a package with dependencies', () => {
     return new TaskGraph({
       config: makeConfig(
         makeProject([
-          makeWorkspace('app', ['utils', 'styles'], ['prepack', 'pack', 'core-build']),
-          makeWorkspace('styles', ['utils'], ['prepack', 'pack', 'styles-build']),
-          makeWorkspace('utils', [], ['prepack', 'pack', 'utils-build']),
+          makeWorkspace('app', {
+            localDependencyWorkspaceNames: ['utils', 'styles'],
+            scripts: makeScripts(['prepack', 'pack', 'core-build']),
+          }),
+          makeWorkspace('styles', {
+            localDependencyWorkspaceNames: ['utils'],
+            scripts: makeScripts(['prepack', 'pack', 'styles-build']),
+          }),
+          makeWorkspace('utils', { scripts: makeScripts(['prepack', 'pack', 'utils-build']) }),
         ]),
         taskConfig,
       ),
@@ -332,9 +271,15 @@ describe('running "pack" on its own in a package with both dependents and depend
     return new TaskGraph({
       config: makeConfig(
         makeProject([
-          makeWorkspace('app', ['utils', 'styles'], ['prepack', 'pack', 'core-build']),
-          makeWorkspace('styles', ['utils'], ['prepack', 'pack', 'styles-build']),
-          makeWorkspace('utils', [], ['prepack', 'pack', 'utils-build']),
+          makeWorkspace('app', {
+            localDependencyWorkspaceNames: ['utils', 'styles'],
+            scripts: makeScripts(['prepack', 'pack', 'core-build']),
+          }),
+          makeWorkspace('styles', {
+            localDependencyWorkspaceNames: ['utils'],
+            scripts: makeScripts(['prepack', 'pack', 'styles-build']),
+          }),
+          makeWorkspace('utils', { scripts: makeScripts(['prepack', 'pack', 'utils-build']) }),
         ]),
         taskConfig,
       ),

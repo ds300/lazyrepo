@@ -1,72 +1,6 @@
 import { join } from 'path'
-import { LazyConfig } from '../index.js'
 import { Config } from '../src/config/config.js'
-import { Project } from '../src/project/Project.js'
-import { Workspace } from '../src/project/project-types.js'
-
-const cwd = process.cwd()
-
-function makeWorkspace(name: string, localDeps: string[], scriptNames: string[]): Workspace {
-  return {
-    dir: join(cwd, `packages/${name}`),
-    name,
-    scripts: Object.fromEntries(scriptNames.map((name) => [name, 'whatever'])),
-    allDependencyNames: localDeps,
-    childWorkspaceGlobs: [],
-    childWorkspaceNames: [],
-    localDependencyWorkspaceNames: localDeps,
-  }
-}
-
-function makeProject(workspaces: Workspace[]): Project {
-  const workspacesByName: Record<string, Workspace> = Object.fromEntries(
-    workspaces
-      .concat([
-        {
-          dir: cwd,
-          name: 'root',
-          scripts: {},
-          allDependencyNames: [],
-          childWorkspaceGlobs: [],
-          childWorkspaceNames: [],
-          localDependencyWorkspaceNames: [],
-        } satisfies Workspace,
-      ])
-      .map((pkg) => [pkg.name, pkg]),
-  )
-  return new Project(
-    {
-      rootWorkspaceName: 'root',
-      workspacesByName,
-    },
-    'npm',
-  )
-}
-
-function createProject(): Project {
-  const workspaces: Workspace[] = [
-    makeWorkspace('core', ['utils'], ['prepack', 'pack', 'core-build']),
-    makeWorkspace('utils', [], ['prepack', 'pack', 'utils-build']),
-  ]
-  return makeProject(workspaces)
-}
-
-function makeConfig(project: Project, scripts: LazyConfig['scripts']): Config {
-  return new Config({
-    project,
-    rootConfig: {
-      config: {
-        scripts,
-      },
-      filePath: null,
-    },
-    isVerbose: false,
-  })
-}
-
-function createConfig(scripts: LazyConfig['scripts']): Config {
-  return makeConfig(createProject(), scripts)
-}
+import { createConfig, makeConfig, makeProject, makeScripts, makeWorkspace } from './test-utils.js'
 
 const getTaskConfig = (config: Config, reltativeDir: string, taskName: string) => {
   return config.getTaskConfig(
@@ -129,10 +63,10 @@ describe('script overrides', () => {
   it('allows overriding by package name rather than dir', () => {
     const config = makeConfig(
       makeProject([
-        { ...makeWorkspace('core', [], ['build']), name: '@foo/core' },
-        { ...makeWorkspace('utils', [], ['build']), name: '@foo/utils' },
-        { ...makeWorkspace('underwear', [], ['build']), name: '@foo/underwear' },
-        { ...makeWorkspace('nothing', [], ['build']), name: '@bar/nothing' },
+        makeWorkspace('@foo/core', { scripts: makeScripts(['build']) }),
+        makeWorkspace('@foo/utils', { scripts: makeScripts(['build']) }),
+        makeWorkspace('@foo/underwear', { scripts: makeScripts(['build']) }),
+        makeWorkspace('@bar/nothing', { scripts: makeScripts(['build']) }),
       ]),
       {
         build: {
@@ -163,10 +97,10 @@ describe('script overrides', () => {
   it('complains if a workspace matches more than one override', () => {
     const config = makeConfig(
       makeProject([
-        { ...makeWorkspace('core', [], ['build']), name: '@foo/core' },
-        { ...makeWorkspace('utils', [], ['build']), name: '@foo/utils' },
-        { ...makeWorkspace('underwear', [], ['build']), name: '@foo/underwear' },
-        { ...makeWorkspace('nothing', [], ['build']), name: '@bar/nothing' },
+        makeWorkspace('@foo/core', { scripts: makeScripts(['build']) }),
+        makeWorkspace('@foo/utils', { scripts: makeScripts(['build']) }),
+        makeWorkspace('@foo/underwear', { scripts: makeScripts(['build']) }),
+        makeWorkspace('@bar/nothing', { scripts: makeScripts(['build']) }),
       ]),
       {
         build: {
