@@ -2,7 +2,7 @@
 
 import pc from 'picocolors'
 import _sliceAnsi from 'slice-ansi'
-import { createTimer } from '../createTimer.js'
+import { createTimer } from '../utils/createTimer.js'
 import { LazyError } from './LazyError.js'
 import {
   formatDiffMessage,
@@ -111,12 +111,6 @@ export class InteractiveLogger {
       this.tty.write(args.join(' ') + '\n')
     })
   }
-  /**
-   * @param {string[]} args
-   */
-  logErr(...args) {
-    this.log(...args)
-  }
 
   /**
    * @param {string} headline
@@ -159,11 +153,16 @@ export class InteractiveLogger {
     this.log(formatSuccessMessage(message))
   }
 
+  get isVerbose() {
+    return false
+  }
+
   /**
    * @param {string} taskName
+   * @param {boolean} isVerbose
    * @returns {import('../types.js').TaskLogger}
    */
-  task(taskName) {
+  task(taskName, isVerbose) {
     const timer = createTimer()
     const color = getColorForString(taskName)
     const prefix = color.fg(`${taskName} `)
@@ -236,15 +235,13 @@ export class InteractiveLogger {
     }
 
     return {
+      isVerbose,
       restartTimer: () => {
         assertNotDone()
         timer.reset()
         task.startedAt = timer.getStartTime()
       },
       log: (...args) => {
-        log('running', ...args)
-      },
-      logErr: (...args) => {
         log('running', ...args)
       },
       fail: (headline, more) => {

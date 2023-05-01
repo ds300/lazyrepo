@@ -1,7 +1,7 @@
 import glob from 'fast-glob'
 import { logger } from '../logger/logger.js'
 import { Project } from '../project/Project.js'
-import { rimraf } from '../rimraf.js'
+import { rimraf } from '../utils/rimraf.js'
 
 export function clean() {
   const project = Project.fromCwd(process.cwd())

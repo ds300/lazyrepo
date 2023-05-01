@@ -29,14 +29,14 @@ test('run passes args after -- to the script', async () => {
         -------------------
         Loaded config file: lazy.config.js
 
-        build::<rootDir> Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-        build::<rootDir> Finding files matching lazy.config.* took 1.00s
-        build::<rootDir> Finding files matching **/* took 1.00s
-        build::<rootDir> Hashed 5/5 files in 1.00s
+        build::<rootDir> finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
+        build::<rootDir> finding files matching lazy.config.* took 1.00s
+        build::<rootDir> finding files matching **/* took 1.00s
+        build::<rootDir> hashed 5/5 files in 1.00s
         build::<rootDir> cache miss, no previous manifest found
         build::<rootDir> RUN node index.js foo bar in 
         build::<rootDir> ["foo","bar"]
-        build::<rootDir> input manifest: .lazy/build-6275696c64/manifest.tsv
+        build::<rootDir> input manifest: .lazy/build/manifest.tsv
         build::<rootDir> ✔ done in 1.00s
 
              Tasks:  1 successful, 1 total

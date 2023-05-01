@@ -55,6 +55,7 @@ test(`help prints with exit 0 when you pass --help`, async () => {
         Options:
           --filter="<path-glob>"  [string] only run the script in packages that match the given path glob 
           --force                 [boolean] ignore the cache (default: false)
+          --verbose               [boolean] verbose log output (default: false)
           -h, --help              Display this message 
         "
       `)
@@ -100,6 +101,7 @@ test(`help prints with exit 1 if you pass nothing`, async () => {
         Options:
           --filter="<path-glob>"  [string] only run the script in packages that match the given path glob 
           --force                 [boolean] ignore the cache (default: false)
+          --verbose               [boolean] verbose log output (default: false)
           -h, --help              Display this message 
         "
       `)

@@ -1,14 +1,12 @@
 import { vol } from 'memfs'
-import os from 'os'
 import { dirname, join } from 'path'
-import { rimraf } from 'rimraf'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from '../src/fs.js'
 import { ManifestConstructor } from '../src/manifest/ManifestConstructor.js'
 import { compareManifestTypes, types } from '../src/manifest/computeManifest.js'
 import { LazyWriter } from '../src/manifest/manifest-types.js'
 
 jest.mock('../src/fs.js', () => {
-  return require('memfs')
+  return { ...require('memfs') }
 })
 
 jest.mock('../src/manifest/createLazyWriteStream.js', () => {
@@ -33,12 +31,10 @@ beforeEach(() => {
   vol.reset()
 })
 
-const tmpdir = join(os.tmpdir(), 'lazyrepo-test')
 function setup() {
-  rimraf.sync(tmpdir)
-  const previousManifestPath = join(tmpdir, 'manifests', 'test')
-  const nextManifestPath = join(tmpdir, 'manifests', 'test.next')
-  const diffPath = join(tmpdir, 'diffs', 'test')
+  const previousManifestPath = join('manifests', 'test')
+  const nextManifestPath = join('manifests', 'test.next')
+  const diffPath = join('diffs', 'test')
 
   if (!existsSync(dirname(previousManifestPath))) {
     mkdirSync(dirname(previousManifestPath), { recursive: true })

@@ -3,7 +3,7 @@ import yaml from 'yaml'
 import { z } from 'zod'
 import { fromZodError } from 'zod-validation-error'
 import { readFileSync } from '../fs.js'
-import { uniq } from '../uniq.js'
+import { uniq } from '../utils/uniq.js'
 
 const packageJsonSchema = z.object({
   name: z.string(),

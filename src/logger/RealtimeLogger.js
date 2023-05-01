@@ -1,6 +1,6 @@
 /** @typedef {import('../types.js').CliLogger} CliLogger */
 import pc from 'picocolors'
-import { createTimer } from '../createTimer.js'
+import { createTimer } from '../utils/createTimer.js'
 import {
   formatDiffMessage,
   formatFailMessage,
@@ -20,11 +20,9 @@ import { LazyError } from './LazyError.js'
 export class RealtimeLogger {
   /**
    * @param {import('node:stream').Writable} stdout
-   * @param {import('node:stream').Writable} stderr
    */
-  constructor(stdout, stderr) {
+  constructor(stdout) {
     this.stdout = stdout
-    this.stderr = stderr
   }
 
   /**
@@ -32,13 +30,6 @@ export class RealtimeLogger {
    */
   log(...args) {
     this.stdout.write(args.join(' ') + '\n')
-  }
-
-  /**
-   * @param {string[]} args
-   */
-  logErr(...args) {
-    this.stderr.write(args.join(' ') + '\n')
   }
 
   stop() {
@@ -113,11 +104,16 @@ export class RealtimeLogger {
     }
   }
 
+  get isVerbose() {
+    return false
+  }
+
   /**
    * @param {string} taskName
+   * @param {boolean} isVerbose
    * @returns {import('../types.js').TaskLogger}
    */
-  task(taskName) {
+  task(taskName, isVerbose) {
     const timer = createTimer()
     const color = getColorForString(taskName)
     const prefix = color.fg(`${taskName} `)
@@ -133,20 +129,16 @@ export class RealtimeLogger {
       assertNotDone()
       this.log(prefixLines(prefix, args.join(' ')))
     }
-    const logErr = (/** @type {string[]} */ ...args) => {
-      assertNotDone()
-      this.logErr(prefixLines(prefix, args.join(' ')))
-    }
 
     return {
+      isVerbose,
       restartTimer: () => {
         assertNotDone()
         timer.reset()
       },
       log,
-      logErr,
       fail: (headline, more) => {
-        logErr(formatFailMessage(headline, more))
+        log(formatFailMessage(headline, more))
         isDone = true
       },
       success: (message) => {

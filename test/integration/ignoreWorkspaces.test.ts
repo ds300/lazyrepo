@@ -62,13 +62,13 @@ test('a workspace can be ignored and things will not run in it', async () => {
         -------------------
         Loaded config file: lazy.config.js
 
-        build::packages/core Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-        build::packages/core Finding files matching lazy.config.* took 1.00s
-        build::packages/core Finding files matching packages/core/**/* took 1.00s
-        build::packages/core Hashed 4/4 files in 1.00s
+        build::packages/core finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
+        build::packages/core finding files matching lazy.config.* took 1.00s
+        build::packages/core finding files matching packages/core/**/* took 1.00s
+        build::packages/core hashed 4/4 files in 1.00s
         build::packages/core cache miss, no previous manifest found
         build::packages/core RUN echo $RANDOM > out.txt in packages/core
-        build::packages/core input manifest: packages/core/.lazy/build-6275696c64/manifest.tsv
+        build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
         build::packages/core ✔ done in 1.00s
 
              Tasks:  1 successful, 1 total
@@ -101,13 +101,13 @@ test('a workspace can be ignored with a glob pattern', async () => {
         -------------------
         Loaded config file: lazy.config.js
 
-        build::packages/utils Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-        build::packages/utils Finding files matching lazy.config.* took 1.00s
-        build::packages/utils Finding files matching packages/utils/**/* took 1.00s
-        build::packages/utils Hashed 4/4 files in 1.00s
+        build::packages/utils finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
+        build::packages/utils finding files matching lazy.config.* took 1.00s
+        build::packages/utils finding files matching packages/utils/**/* took 1.00s
+        build::packages/utils hashed 4/4 files in 1.00s
         build::packages/utils cache miss, no previous manifest found
         build::packages/utils RUN echo $RANDOM > out.txt in packages/utils
-        build::packages/utils input manifest: packages/utils/.lazy/build-6275696c64/manifest.tsv
+        build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
         build::packages/utils ✔ done in 1.00s
 
              Tasks:  1 successful, 1 total

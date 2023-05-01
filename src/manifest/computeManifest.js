@@ -1,9 +1,10 @@
+import assert from 'assert'
 import path, { join } from 'path'
 import pc from 'picocolors'
-import { createTimer } from '../createTimer.js'
 import { existsSync, mkdirSync, statSync } from '../fs.js'
-import { isTest } from '../isTest.js'
-import { uniq } from '../uniq.js'
+import { createTimer } from '../utils/createTimer.js'
+import { isTest } from '../utils/isTest.js'
+import { uniq } from '../utils/uniq.js'
 import { ManifestConstructor } from './ManifestConstructor.js'
 import { getInputFiles } from './getInputFiles.js'
 import { hashFile, hashString } from './hash.js'
@@ -34,7 +35,7 @@ export const compareManifestTypes = (a, b) => {
 }
 
 /**
- * @param {{ task: import('../types.js').ScheduledTask, tasks: import('../TaskGraph.js').TaskGraph }} param0
+ * @param {{ task: import('../types.js').ScheduledTask, tasks: import('../tasks/TaskGraph.js').TaskGraph }} param0
  * @returns
  */
 export async function computeManifest({ tasks, task }) {
@@ -60,6 +61,7 @@ export async function computeManifest({ tasks, task }) {
     nextManifestPath,
   })
 
+  /** @type {string[][]} */
   const extraFiles = []
 
   for (const [otherScriptName, depConfig] of task.taskConfig.runsAfterEntries) {
@@ -76,21 +78,16 @@ export async function computeManifest({ tasks, task }) {
     if (!depTask) continue
 
     if (depConfig.inheritsInput) {
-      if (!depTask.inputManifestCacheKey) {
-        throw new Error(`Missing inputManifestCacheKey for task: ${key}.`)
-      }
-
+      assert(depTask.inputManifestCacheKey, `Missing inputManifestCacheKey for task: ${key}.`)
       manifestConstructor.update('upstream task inputs', key, depTask.inputManifestCacheKey)
     }
     if (depConfig.usesOutput !== false) {
+      assert(depTask.outputFiles, `Missing outputFiles for task: ${key}.`)
       extraFiles.push(depTask.outputFiles)
     }
   }
 
-  if (
-    task.taskConfig.execution !== 'independent' &&
-    (task.taskConfig.cache?.inheritsInputFromDependencies ?? true)
-  ) {
+  if (task.taskConfig.execution === 'dependent') {
     // TODO: test that localDeps is always sorted
     const upstreamTaskKeys = task.workspace.localDependencyWorkspaceNames
       .map((packageName) => {
@@ -99,15 +96,17 @@ export async function computeManifest({ tasks, task }) {
         return key
       })
       .sort()
-    if (upstreamTaskKeys) {
-      for (const key of upstreamTaskKeys) {
-        const depTask = tasks.allTasks[key]
-        if (!depTask) continue
-        if (!depTask.inputManifestCacheKey) {
-          throw new Error(`Missing inputManifestCacheKey for task: ${key}.`)
-        }
+    for (const key of upstreamTaskKeys) {
+      const depTask = tasks.allTasks[key]
+      if (!depTask) continue
+      assert(depTask.inputManifestCacheKey, `Missing inputManifestCacheKey for task: ${key}.`)
+      assert(depTask.outputFiles, `Missing outputFiles for task: ${key}.`)
 
+      if (task.taskConfig.cache.inheritsInputFromDependencies) {
         manifestConstructor.update('upstream package inputs', key, depTask.inputManifestCacheKey)
+      }
+      if (task.taskConfig.cache.usesOutputFromDependencies) {
+        extraFiles.push(depTask.outputFiles)
       }
     }
   }
@@ -151,7 +150,7 @@ export async function computeManifest({ tasks, task }) {
   // todo: always log this if verbose
   if (timer.getElapsedMs() > 100) {
     task.logger.note(
-      `Hashed ${numHashed}/${numSkipped + numHashed} files in ${pc.cyan(
+      `hashed ${numHashed}/${numSkipped + numHashed} files in ${pc.cyan(
         timer.formatElapsedTime(),
       )}`,
     )

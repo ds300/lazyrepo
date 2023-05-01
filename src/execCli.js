@@ -5,10 +5,10 @@ import { inherit } from './commands/inherit.js'
 import { init } from './commands/init.js'
 import { run } from './commands/run.js'
 import { readFileSync } from './fs.js'
-import { isTest } from './isTest.js'
 import { LazyError } from './logger/LazyError.js'
 import { logger } from './logger/logger.js'
-import { rainbow } from './rainbow.js'
+import { rainbow } from './logger/rainbow.js'
+import { isTest } from './utils/isTest.js'
 
 const cli = cac('lazy')
 
@@ -19,6 +19,9 @@ cli
     '[string] only run the script in packages that match the given path glob',
   )
   .option('--force', '[boolean] ignore the cache', {
+    default: false,
+  })
+  .option('--verbose', '[boolean] verbose log output', {
     default: false,
   })
   .action(async (scriptName, options) => {
@@ -33,6 +36,9 @@ cli
     '[string] only run the script in packages that match the given path glob',
   )
   .option('--force', '[boolean] ignore the cache', {
+    default: false,
+  })
+  .option('--verbose', '[boolean] verbose log output', {
     default: false,
   })
   .action(async (scriptName, options) => {
@@ -54,6 +60,9 @@ cli
     '(use in package.json "scripts" only) Runs the command specified in the lazy config file for the script name.',
   )
   .option('--force', '[boolean] ignore the cache', { default: false })
+  .option('--verbose', '[boolean] verbose log output', {
+    default: false,
+  })
   .action(async (options) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     return await inherit(options)
@@ -95,10 +104,10 @@ export async function execCli(argv) {
       console.log(pc.red(msg) + '\n')
       cli.outputHelp()
     } else if (e instanceof LazyError) {
-      logger.logErr(e.format())
+      logger.log(e.format())
     } else {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-      logger.logErr(e.stack ?? e.message ?? e)
+      logger.log(e.stack ?? e.message ?? e)
     }
     return 1
   } finally {

@@ -55,7 +55,11 @@ export class TaskConfig {
   get urlSafeName() {
     // Script names can contain any character, so let's slugify them and add a hex-encoded full name to avoid slug collisions
     // h/t wireit https://github.com/google/wireit/blob/27712b767dbebd90460049a3daf87329b9fb3279/src/util/script-data-dir.ts#L25
-    return slugify(this.name) + '-' + Buffer.from(this.name).toString('hex')
+    const slug = slugify(this.name)
+    if (slug !== this.name) {
+      return slug + '-' + Buffer.from(this.name).toString('hex')
+    }
+    return this.name
   }
 
   /** @private */
@@ -65,6 +69,10 @@ export class TaskConfig {
 
   getManifestPath() {
     return join(this.dataDir, 'manifest.tsv')
+  }
+
+  getOutputManifestPath() {
+    return join(this.dataDir, 'output-manifest.tsv')
   }
 
   getNextManifestPath() {
@@ -187,8 +195,8 @@ export class TaskConfig {
 
       return {
         envInputs: this.scriptConfig.cache?.envInputs ?? [],
-        inputs: extractGlobPattern(this.scriptConfig.cache?.inputs),
-        outputs: extractGlobPattern(this.scriptConfig.cache?.outputs),
+        inputs: extractGlobPattern(this.scriptConfig.cache?.inputs, ['**/*']),
+        outputs: extractGlobPattern(this.scriptConfig.cache?.outputs, []),
         inheritsInputFromDependencies,
         usesOutputFromDependencies,
       }
@@ -243,14 +251,14 @@ export function extractInheritMatch(command) {
 }
 
 /**
- *
  * @param {import('./config-types.js').GlobConfig | null | undefined} glob
- * @returns {{include: string[], exclude: string[]}}
+ * @param {string[]} defaultInclude
+ * @returns {{include: string[];exclude: string[];}}
  */
-function extractGlobPattern(glob) {
+function extractGlobPattern(glob, defaultInclude) {
   if (!glob) {
     return {
-      include: ['**/*'],
+      include: defaultInclude,
       exclude: [],
     }
   }
@@ -261,7 +269,7 @@ function extractGlobPattern(glob) {
     }
   }
 
-  return { include: glob.include ?? ['**/*'], exclude: glob.exclude ?? [] }
+  return { include: glob.include ?? defaultInclude, exclude: glob.exclude ?? [] }
 }
 
 export class Config {
@@ -273,17 +281,19 @@ export class Config {
    *
    * @property {Project} project
    * @property {import('./resolveConfig.js').ResolvedConfig} rootConfig
+   * @property {boolean} isVerbose
    */
   /** @param {ConfigWrapperOptions} options */
-  constructor({ project, rootConfig }) {
+  constructor({ project, rootConfig, isVerbose }) {
     this.project = project
     this.rootConfig = rootConfig
+    this.isVerbose = !!isVerbose
   }
 
   /**
    * @param {string} cwd
    */
-  static async fromCwd(cwd) {
+  static async fromCwd(cwd, isVerbose = false) {
     let project = Project.fromCwd(cwd)
     const rootConfig = await resolveConfig(project.root.dir)
     project = project.withoutIgnoredWorkspaces(rootConfig.config.ignoreWorkspaces ?? [])
@@ -297,6 +307,7 @@ export class Config {
     return new Config({
       project,
       rootConfig,
+      isVerbose,
     })
   }
   /**
