@@ -150,7 +150,7 @@ export async function computeManifest({ tasks, task }) {
   // todo: always log this if verbose
   if (timer.getElapsedMs() > 100) {
     task.logger.note(
-      `Hashed ${numHashed}/${numSkipped + numHashed} files in ${pc.cyan(
+      `hashed ${numHashed}/${numSkipped + numHashed} files in ${pc.cyan(
         timer.formatElapsedTime(),
       )}`,
     )

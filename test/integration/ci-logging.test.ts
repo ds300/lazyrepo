@@ -49,10 +49,10 @@ describe('on ci', () => {
           -------------------
           No config files found, using default configuration.
 
-          build::packages/utils Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-          build::packages/utils Finding files matching lazy.config.* took 1.00s
-          build::packages/utils Finding files matching packages/utils/**/* took 1.00s
-          build::packages/utils Hashed 3/3 files in 1.00s
+          build::packages/utils finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
+          build::packages/utils finding files matching lazy.config.* took 1.00s
+          build::packages/utils finding files matching packages/utils/**/* took 1.00s
+          build::packages/utils hashed 3/3 files in 1.00s
           build::packages/utils cache miss, no previous manifest found
           build::packages/utils RUN echo $RANDOM > .out.txt in packages/utils
           build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
@@ -63,10 +63,10 @@ describe('on ci', () => {
 
           ::endgroup::
           build::packages/utils ✔ done in 1.00s
-          build::packages/core Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-          build::packages/core Finding files matching lazy.config.* took 1.00s
-          build::packages/core Finding files matching packages/core/**/* took 1.00s
-          build::packages/core Hashed 3/3 files in 1.00s
+          build::packages/core finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
+          build::packages/core finding files matching lazy.config.* took 1.00s
+          build::packages/core finding files matching packages/core/**/* took 1.00s
+          build::packages/core hashed 3/3 files in 1.00s
           build::packages/core cache miss, no previous manifest found
           build::packages/core RUN echo $RANDOM > .out.txt in packages/core
           build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
@@ -124,10 +124,10 @@ describe('on ci', () => {
           -------------------
           No config files found, using default configuration.
 
-          build::packages/utils Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-          build::packages/utils Finding files matching lazy.config.* took 1.00s
-          build::packages/utils Finding files matching packages/utils/**/* took 1.00s
-          build::packages/utils Hashed 1/2 files in 1.00s
+          build::packages/utils finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
+          build::packages/utils finding files matching lazy.config.* took 1.00s
+          build::packages/utils finding files matching packages/utils/**/* took 1.00s
+          build::packages/utils hashed 1/2 files in 1.00s
           build::packages/utils cache miss
           ::group::build::packages/utils  changes since last run
           - removed file packages/utils/index.js
@@ -141,10 +141,10 @@ describe('on ci', () => {
 
           ::endgroup::
           build::packages/utils ✔ done in 1.00s
-          build::packages/core Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-          build::packages/core Finding files matching lazy.config.* took 1.00s
-          build::packages/core Finding files matching packages/core/**/* took 1.00s
-          build::packages/core Hashed 1/4 files in 1.00s
+          build::packages/core finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
+          build::packages/core finding files matching lazy.config.* took 1.00s
+          build::packages/core finding files matching packages/core/**/* took 1.00s
+          build::packages/core hashed 1/4 files in 1.00s
           build::packages/core cache miss
           ::group::build::packages/core  changes since last run
           ± changed upstream package inputs build::packages/utils
@@ -196,20 +196,20 @@ describe('on ci', () => {
           -------------------
           No config files found, using default configuration.
 
-          build::packages/utils Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-          build::packages/utils Finding files matching lazy.config.* took 1.00s
-          build::packages/utils Finding files matching packages/utils/**/* took 1.00s
-          build::packages/utils Hashed 3/3 files in 1.00s
+          build::packages/utils finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
+          build::packages/utils finding files matching lazy.config.* took 1.00s
+          build::packages/utils finding files matching packages/utils/**/* took 1.00s
+          build::packages/utils hashed 3/3 files in 1.00s
           build::packages/utils cache miss, no previous manifest found
           build::packages/utils RUN echo $RANDOM > .out.txt in packages/utils
           build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
           build::packages/utils  input manifest
           [ grouped content suppressed on unsupported CI environment ]
           build::packages/utils ✔ done in 1.00s
-          build::packages/core Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-          build::packages/core Finding files matching lazy.config.* took 1.00s
-          build::packages/core Finding files matching packages/core/**/* took 1.00s
-          build::packages/core Hashed 3/3 files in 1.00s
+          build::packages/core finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
+          build::packages/core finding files matching lazy.config.* took 1.00s
+          build::packages/core finding files matching packages/core/**/* took 1.00s
+          build::packages/core hashed 3/3 files in 1.00s
           build::packages/core cache miss, no previous manifest found
           build::packages/core RUN echo $RANDOM > .out.txt in packages/core
           build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv

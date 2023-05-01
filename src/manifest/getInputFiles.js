@@ -32,7 +32,7 @@ function globCacheConfig({ includes, excludes, task, workspaceRoot }) {
     // todo: always log this if verbose
     if (timer.getElapsedMs() > 100) {
       task.logger.note(
-        `Finding files matching ${path.relative(
+        `finding files matching ${path.relative(
           process.cwd(),
           isAbsolute(pattern) ? pattern : join(task.workspace.dir, pattern),
         )} took ${pc.cyan(timer.formatElapsedTime())}`,

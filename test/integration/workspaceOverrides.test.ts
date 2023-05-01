@@ -60,10 +60,10 @@ test('cache config can be overridden', async () => {
         -------------------
         Loaded config file: lazy.config.js
 
-        build::packages/utils Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-        build::packages/utils Finding files matching lazy.config.* took 1.00s
-        build::packages/utils Finding files matching packages/utils/index.js took 1.00s
-        build::packages/utils Hashed 3/3 files in 1.00s
+        build::packages/utils finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
+        build::packages/utils finding files matching lazy.config.* took 1.00s
+        build::packages/utils finding files matching packages/utils/index.js took 1.00s
+        build::packages/utils hashed 3/3 files in 1.00s
         build::packages/utils cache miss, no previous manifest found
         build::packages/utils RUN echo $RANDOM > .out.utils.txt in packages/utils
         build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
@@ -96,10 +96,10 @@ test('cache config can be overridden', async () => {
         -------------------
         Loaded config file: lazy.config.js
 
-        build::packages/utils Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-        build::packages/utils Finding files matching lazy.config.* took 1.00s
-        build::packages/utils Finding files matching packages/utils/index.js took 1.00s
-        build::packages/utils Hashed 0/3 files in 1.00s
+        build::packages/utils finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
+        build::packages/utils finding files matching lazy.config.* took 1.00s
+        build::packages/utils finding files matching packages/utils/index.js took 1.00s
+        build::packages/utils hashed 0/3 files in 1.00s
         build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
         build::packages/utils output log: packages/utils/.lazy/build/output.log
         build::packages/utils ✔ cache hit ⚡️ in 1.00s
@@ -139,10 +139,10 @@ test('runsAfter can be overridden', async () => {
         -------------------
         Loaded config file: lazy.config.js
 
-        test::packages/utils Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-        test::packages/utils Finding files matching lazy.config.* took 1.00s
-        test::packages/utils Finding files matching packages/utils/**/* took 1.00s
-        test::packages/utils Hashed 4/4 files in 1.00s
+        test::packages/utils finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
+        test::packages/utils finding files matching lazy.config.* took 1.00s
+        test::packages/utils finding files matching packages/utils/**/* took 1.00s
+        test::packages/utils hashed 4/4 files in 1.00s
         test::packages/utils cache miss, no previous manifest found
         test::packages/utils RUN echo $RANDOM > .out.utils.test.txt in packages/utils
         test::packages/utils input manifest: packages/utils/.lazy/test/manifest.tsv
