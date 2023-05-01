@@ -1,6 +1,7 @@
 import glob from 'fast-glob'
 import path, { isAbsolute, join } from 'path'
 import pc from 'picocolors'
+import { Config } from '../config/config.js'
 import { readdirSync, statSync } from '../fs.js'
 import { createTimer } from '../utils/createTimer.js'
 import { uniq } from '../utils/uniq.js'
@@ -63,12 +64,12 @@ export function getInputFiles(tasks, task, extraFiles) {
     workspaceRoot: tasks.config.project.root.dir,
     includes: makeGlobsAbsolute(
       uniq([...baseCacheConfig.include, ...cacheConfig.inputs.include]),
-      tasks.config.project.root.dir,
+      tasks.config,
       task.workspace.dir,
     ),
     excludes: makeGlobsAbsolute(
       uniq([...baseCacheConfig.exclude, ...cacheConfig.inputs.exclude]),
-      tasks.config.project.root.dir,
+      tasks.config,
       task.workspace.dir,
     ),
   })
@@ -78,20 +79,29 @@ export function getInputFiles(tasks, task, extraFiles) {
 
 /**
  * @param {string[]} arr
- * @param {string} workspaceRoot
+ * @param {Config} config
  * @param {string} taskDir
  * @returns
  */
-const makeGlobsAbsolute = (arr, workspaceRoot, taskDir) =>
-  arr.map((str) => {
-    if (str.startsWith('<rootDir>/')) {
-      return path.join(workspaceRoot, str.replace('<rootDir>/', ''))
+export const makeGlobsAbsolute = (arr, config, taskDir) => {
+  const workspaceRoot = config.project.root.dir
+  const allWorkspaceDirs = [...config.project.workspacesByDir.keys()].map((dir) =>
+    path.relative(workspaceRoot, dir),
+  )
+  const allWorkspaceDirsGlob = workspaceRoot + `/{${allWorkspaceDirs.join(',')}}`
+  return arr.map((str) => {
+    if (str.startsWith('<allWorkspaceDirs>')) {
+      return str.replace('<allWorkspaceDirs>', allWorkspaceDirsGlob)
+    } else if (str.startsWith('<rootDir>')) {
+      return str.replace('<rootDir>', workspaceRoot)
     } else if (str.startsWith('/')) {
       return str
     } else {
       return path.join(taskDir, str)
     }
   })
+}
+
 /**
  *
  * @param {string} dir
@@ -125,16 +135,8 @@ export function getOutputFiles(tasks, task) {
   const localFiles = globCacheConfig({
     task,
     workspaceRoot: tasks.config.project.root.dir,
-    includes: makeGlobsAbsolute(
-      cacheConfig.outputs.include,
-      tasks.config.project.root.dir,
-      task.workspace.dir,
-    ),
-    excludes: makeGlobsAbsolute(
-      cacheConfig.outputs.exclude,
-      tasks.config.project.root.dir,
-      task.workspace.dir,
-    ),
+    includes: makeGlobsAbsolute(cacheConfig.outputs.include, tasks.config, task.workspace.dir),
+    excludes: makeGlobsAbsolute(cacheConfig.outputs.exclude, tasks.config, task.workspace.dir),
   })
 
   return [...localFiles].sort()
