@@ -1,5 +1,5 @@
 import assert from 'assert'
-import { join } from 'path'
+import { join, relative } from 'path'
 import { readFileSync, statSync } from '../fs.js'
 import { getOutputFiles } from '../manifest/getInputFiles.js'
 import { rimraf } from '../utils/rimraf.js'
@@ -11,16 +11,21 @@ import { copyFileWithMtime } from './copyFileWithMtime.js'
  */
 export function restoreOutputs(tasks, task) {
   const outputFiles = getOutputFiles(tasks, task)
-  if (!outputFiles) return
+  if (!outputFiles) {
+    task.outputFiles = []
+    return
+  }
 
   const taskConfig = tasks.config.getTaskConfig(task.workspace, task.scriptName)
   const outDir = taskConfig.getOutputPath()
-  const outManifest = taskConfig.getOutputManifestPath()
-  const manifest = readFileSync(outManifest, 'utf-8')
+  const outManifestPath = taskConfig.getOutputManifestPath()
+  const manifest = readFileSync(outManifestPath, 'utf-8')
     .toString()
     .trim()
     .split('\n')
     .map((line) => line.split('\t'))
+
+  task.outputFiles = manifest.map(([file]) => file)
 
   const workspaceRoot = tasks.config.project.root.dir
 
@@ -74,6 +79,9 @@ export function restoreOutputs(tasks, task) {
 
   const n = manifest.length
   if (n) {
-    task.logger.log(`restored ${n} output file${n === 1 ? '' : 's'}`)
+    task.logger.log('output manifest:', relative(process.cwd(), outManifestPath))
+    if (task.logger.isVerbose) {
+      task.logger.log(`restored ${n} output file${n === 1 ? '' : 's'}`)
+    }
   }
 }

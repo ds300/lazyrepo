@@ -71,9 +71,9 @@ function hydrateChildWorkspaces(workspace, allWorkspacesByName) {
  */
 function hydrateLocalDependencies(allWorkspacesByName) {
   for (const workspace of [...allWorkspacesByName.values()]) {
-    const localDependencyWorkspaceNames = workspace.allDependencyNames.filter((depName) =>
-      allWorkspacesByName.has(depName),
-    )
+    const localDependencyWorkspaceNames = workspace.allDependencyNames
+      .filter((depName) => allWorkspacesByName.has(depName))
+      .sort()
 
     allWorkspacesByName.set(workspace.name, {
       ...workspace,

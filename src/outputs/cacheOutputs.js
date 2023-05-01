@@ -1,4 +1,4 @@
-import { dirname, join } from 'path'
+import { dirname, join, relative } from 'path'
 import { mkdirSync, statSync } from '../fs.js'
 import { logger } from '../logger/logger.js'
 import { createLazyWriteStream } from '../manifest/createLazyWriteStream.js'
@@ -14,17 +14,22 @@ export async function cacheOutputs(tasks, task) {
   const outputFiles = getOutputFiles(tasks, task)
   const taskConfig = tasks.config.getTaskConfig(task.workspace, task.scriptName)
   const outDir = taskConfig.getOutputPath()
-  const outManifest = taskConfig.getOutputManifestPath()
+  const outManifestPath = taskConfig.getOutputManifestPath()
   rimraf(outDir)
-  rimraf(outManifest)
+  rimraf(outManifestPath)
 
-  if (!outputFiles || outputFiles.length === 0) return
+  if (!outputFiles || outputFiles.length === 0) {
+    task.outputFiles = []
+    return
+  } else {
+    task.outputFiles = outputFiles
+  }
 
   mkdirSync(outDir, { recursive: true })
 
   const rootWorkspaceDir = tasks.config.project.root.dir
 
-  const manifest = createLazyWriteStream(outManifest)
+  const manifest = createLazyWriteStream(outManifestPath)
 
   for (const file of outputFiles) {
     if (file.startsWith('..')) {
@@ -41,4 +46,5 @@ export async function cacheOutputs(tasks, task) {
   }
 
   await manifest.close()
+  task.logger.log('output manifest:', relative(process.cwd(), outManifestPath))
 }

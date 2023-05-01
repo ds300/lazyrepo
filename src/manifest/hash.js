@@ -1,5 +1,5 @@
 import crypto from 'crypto'
-import { openSync, readSync } from '../fs.js'
+import { closeSync, openSync, readSync } from '../fs.js'
 
 const bufferSize = 1024
 
@@ -30,6 +30,7 @@ export function hashFile(filePath, fileSize) {
     }
     totalBytesRead += bytesRead
   }
+  closeSync(fileDescriptor)
   return sha.digest('hex')
 }
 

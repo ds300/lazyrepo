@@ -10,7 +10,7 @@ export interface ScheduledTask {
   status: TaskStatus
   force: boolean
   extraArgs: string[]
-  outputFiles: string[]
+  outputFiles: string[] | null
   dependencies: string[]
   inputManifestCacheKey: string | null
   workspace: Workspace
