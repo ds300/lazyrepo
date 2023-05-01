@@ -2,9 +2,9 @@ import { join } from 'path'
 import { Config } from '../src/config/config.js'
 import { createConfig, makeConfig, makeProject, makeScripts, makeWorkspace } from './test-utils.js'
 
-const getTaskConfig = (config: Config, reltativeDir: string, taskName: string) => {
+const getTaskConfig = (config: Config, relativeDir: string, taskName: string) => {
   return config.getTaskConfig(
-    config.project.getWorkspaceByDir(join(config.project.root.dir, reltativeDir)),
+    config.project.getWorkspaceByDir(join(config.project.root.dir, relativeDir)),
     taskName,
   )
 }

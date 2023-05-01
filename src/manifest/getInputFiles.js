@@ -3,6 +3,7 @@ import path, { isAbsolute, join } from 'path'
 import pc from 'picocolors'
 import { Config } from '../config/config.js'
 import { readdirSync, statSync } from '../fs.js'
+import { logger } from '../logger/logger.js'
 import { createTimer } from '../utils/createTimer.js'
 import { uniq } from '../utils/uniq.js'
 
@@ -77,6 +78,9 @@ export function getInputFiles(tasks, task, extraFiles) {
   return [...new Set([...localFiles, ...extraFiles])].sort()
 }
 
+export const ALL_WORKSPACES_MACRO = '<allWorkspaceDirs>'
+export const ROOT_DIR_MACRO = '<rootDir>'
+
 /**
  * @param {string[]} arr
  * @param {Config} config
@@ -90,10 +94,24 @@ export const makeGlobsAbsolute = (arr, config, taskDir) => {
   )
   const allWorkspaceDirsGlob = workspaceRoot + `/{${allWorkspaceDirs.join(',')}}`
   return arr.map((str) => {
-    if (str.startsWith('<allWorkspaceDirs>')) {
-      return str.replace('<allWorkspaceDirs>', allWorkspaceDirsGlob)
-    } else if (str.startsWith('<rootDir>')) {
-      return str.replace('<rootDir>', workspaceRoot)
+    const allWorkspaceIdx = str.indexOf(ALL_WORKSPACES_MACRO)
+    if (allWorkspaceIdx > 0) {
+      throw logger.fail(
+        `Invalid glob: '${str}'. ${ALL_WORKSPACES_MACRO} must be at the start of the string.`,
+      )
+    }
+
+    const rootDirIdx = str.indexOf(ROOT_DIR_MACRO)
+    if (rootDirIdx > 0) {
+      throw logger.fail(
+        `Invalid glob: '${str}'. ${ROOT_DIR_MACRO} must be at the start of the string.`,
+      )
+    }
+
+    if (allWorkspaceIdx === 0) {
+      return str.replace(ALL_WORKSPACES_MACRO, allWorkspaceDirsGlob)
+    } else if (rootDirIdx === 0) {
+      return str.replace(ROOT_DIR_MACRO, workspaceRoot)
     } else if (str.startsWith('/')) {
       return str
     } else {

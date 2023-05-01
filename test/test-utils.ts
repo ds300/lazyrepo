@@ -10,9 +10,9 @@ export function makeScripts(names: string[], command = 'echo whatever'): Record<
   return Object.fromEntries(names.map((name) => [name, command]))
 }
 
-export function makeWorkspace(name: string, w: Partial<Omit<Workspace, 'name'>>): Workspace {
+export function makeWorkspace(name: string, w: Partial<Omit<Workspace, 'name'>> = {}): Workspace {
   return {
-    dir: join(cwd, `packages/${basename(name)}`),
+    dir: w.dir ?? join(cwd, `packages/${basename(name)}`),
     name,
     scripts: w.scripts ?? {},
     allDependencyNames: w.allDependencyNames ?? w.localDependencyWorkspaceNames ?? [],
