@@ -57,7 +57,7 @@ test('running a top-level tasks works', async () => {
         build::<rootDir> Hashed 8/8 files in 1.00s
         build::<rootDir> cache miss, no previous manifest found
         build::<rootDir> RUN echo hello > out.txt in 
-        build::<rootDir> input manifest: .lazy/build-6275696c64/manifest.tsv
+        build::<rootDir> input manifest: .lazy/build/manifest.tsv
         build::<rootDir> ✔ done in 1.00s
 
              Tasks:  1 successful, 1 total
@@ -79,8 +79,8 @@ test('running a top-level tasks works', async () => {
         build::<rootDir> Finding files matching lazy.config.* took 1.00s
         build::<rootDir> Finding files matching **/* took 1.00s
         build::<rootDir> Hashed 0/8 files in 1.00s
-        build::<rootDir> input manifest: .lazy/build-6275696c64/manifest.tsv
-        build::<rootDir> output log: .lazy/build-6275696c64/output.log
+        build::<rootDir> input manifest: .lazy/build/manifest.tsv
+        build::<rootDir> output log: .lazy/build/output.log
         build::<rootDir> ✔ cache hit ⚡️ in 1.00s
 
              Tasks:  1 successful, 1 total

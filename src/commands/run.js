@@ -1,12 +1,12 @@
 import pc from 'picocolors'
 import { dedent } from 'ts-dedent'
-import { TaskGraph } from '../TaskGraph.js'
 import { Config } from '../config/config.js'
-import { createTimer } from '../createTimer.js'
 import { InteractiveLogger } from '../logger/InteractiveLogger.js'
 import { getColorForString, pipe } from '../logger/formatting.js'
 import { logger } from '../logger/logger.js'
-import { rainbow } from '../rainbow.js'
+import { rainbow } from '../logger/rainbow.js'
+import { TaskGraph } from '../tasks/TaskGraph.js'
+import { createTimer } from '../utils/createTimer.js'
 
 /**
  * @param {{scriptName: string, options: import('../types.js').CLIOption}} args
@@ -14,7 +14,7 @@ import { rainbow } from '../rainbow.js'
  */
 export async function run({ scriptName, options }, _config) {
   const timer = createTimer()
-  const config = _config ?? (await Config.fromCwd(process.cwd()))
+  const config = _config ?? (await Config.fromCwd(process.cwd(), options.verbose))
 
   const filterPaths = options.filter
     ? Array.isArray(options.filter)
@@ -51,7 +51,7 @@ export async function run({ scriptName, options }, _config) {
 
   const failedTasks = tasks.allFailedTaskKeys()
   if (failedTasks.length > 0) {
-    logger.logErr(
+    logger.log(
       pc.bold(pc.red('\nFailed tasks:')),
       failedTasks.map((t) => getColorForString(t).fg(t)).join(', '),
     )

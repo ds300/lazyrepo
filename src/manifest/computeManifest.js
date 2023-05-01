@@ -1,9 +1,9 @@
 import path, { join } from 'path'
 import pc from 'picocolors'
-import { createTimer } from '../createTimer.js'
 import { existsSync, mkdirSync, statSync } from '../fs.js'
-import { isTest } from '../isTest.js'
-import { uniq } from '../uniq.js'
+import { createTimer } from '../utils/createTimer.js'
+import { isTest } from '../utils/isTest.js'
+import { uniq } from '../utils/uniq.js'
 import { ManifestConstructor } from './ManifestConstructor.js'
 import { getInputFiles } from './getInputFiles.js'
 import { hashFile, hashString } from './hash.js'
@@ -34,7 +34,7 @@ export const compareManifestTypes = (a, b) => {
 }
 
 /**
- * @param {{ task: import('../types.js').ScheduledTask, tasks: import('../TaskGraph.js').TaskGraph }} param0
+ * @param {{ task: import('../types.js').ScheduledTask, tasks: import('../tasks/TaskGraph.js').TaskGraph }} param0
  * @returns
  */
 export async function computeManifest({ tasks, task }) {

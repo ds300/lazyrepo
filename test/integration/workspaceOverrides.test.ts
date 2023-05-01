@@ -66,11 +66,11 @@ test('cache config can be overridden', async () => {
         build::packages/utils Hashed 3/3 files in 1.00s
         build::packages/utils cache miss, no previous manifest found
         build::packages/utils RUN echo $RANDOM > .out.utils.txt in packages/utils
-        build::packages/utils input manifest: packages/utils/.lazy/build-6275696c64/manifest.tsv
+        build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
         build::packages/utils ✔ done in 1.00s
         build::packages/core cache disabled
         build::packages/core RUN echo $RANDOM > .out.core.txt in packages/core
-        build::packages/core input manifest: packages/core/.lazy/build-6275696c64/manifest.tsv
+        build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
         build::packages/core ✔ done in 1.00s
 
              Tasks:  2 successful, 2 total
@@ -100,12 +100,12 @@ test('cache config can be overridden', async () => {
         build::packages/utils Finding files matching lazy.config.* took 1.00s
         build::packages/utils Finding files matching packages/utils/index.js took 1.00s
         build::packages/utils Hashed 0/3 files in 1.00s
-        build::packages/utils input manifest: packages/utils/.lazy/build-6275696c64/manifest.tsv
-        build::packages/utils output log: packages/utils/.lazy/build-6275696c64/output.log
+        build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
+        build::packages/utils output log: packages/utils/.lazy/build/output.log
         build::packages/utils ✔ cache hit ⚡️ in 1.00s
         build::packages/core cache disabled
         build::packages/core RUN echo $RANDOM > .out.core.txt in packages/core
-        build::packages/core input manifest: packages/core/.lazy/build-6275696c64/manifest.tsv
+        build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
         build::packages/core ✔ done in 1.00s
 
              Tasks:  2 successful, 2 total
@@ -145,15 +145,15 @@ test('runsAfter can be overridden', async () => {
         test::packages/utils Hashed 4/4 files in 1.00s
         test::packages/utils cache miss, no previous manifest found
         test::packages/utils RUN echo $RANDOM > .out.utils.test.txt in packages/utils
-        test::packages/utils input manifest: packages/utils/.lazy/test-74657374/manifest.tsv
+        test::packages/utils input manifest: packages/utils/.lazy/test/manifest.tsv
         test::packages/utils ✔ done in 1.00s
         build::packages/utils cache disabled
         build::packages/utils RUN echo $RANDOM > .out.utils.txt in packages/utils
-        build::packages/utils input manifest: packages/utils/.lazy/build-6275696c64/manifest.tsv
+        build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
         build::packages/utils ✔ done in 1.00s
         build::packages/core cache disabled
         build::packages/core RUN echo $RANDOM > .out.core.txt in packages/core
-        build::packages/core input manifest: packages/core/.lazy/build-6275696c64/manifest.tsv
+        build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
         build::packages/core ✔ done in 1.00s
 
              Tasks:  3 successful, 3 total

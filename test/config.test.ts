@@ -60,6 +60,7 @@ function makeConfig(project: Project, scripts: LazyConfig['scripts']): Config {
       },
       filePath: null,
     },
+    isVerbose: false,
   })
 }
 
@@ -118,9 +119,7 @@ describe('script overrides', () => {
         },
         "outputs": {
           "exclude": [],
-          "include": [
-            "**/*",
-          ],
+          "include": [],
         },
         "usesOutputFromDependencies": true,
       }

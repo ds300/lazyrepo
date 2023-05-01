@@ -68,7 +68,7 @@ test('a workspace can be ignored and things will not run in it', async () => {
         build::packages/core Hashed 4/4 files in 1.00s
         build::packages/core cache miss, no previous manifest found
         build::packages/core RUN echo $RANDOM > out.txt in packages/core
-        build::packages/core input manifest: packages/core/.lazy/build-6275696c64/manifest.tsv
+        build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
         build::packages/core ✔ done in 1.00s
 
              Tasks:  1 successful, 1 total
@@ -107,7 +107,7 @@ test('a workspace can be ignored with a glob pattern', async () => {
         build::packages/utils Hashed 4/4 files in 1.00s
         build::packages/utils cache miss, no previous manifest found
         build::packages/utils RUN echo $RANDOM > out.txt in packages/utils
-        build::packages/utils input manifest: packages/utils/.lazy/build-6275696c64/manifest.tsv
+        build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
         build::packages/utils ✔ done in 1.00s
 
              Tasks:  1 successful, 1 total

@@ -32,15 +32,15 @@ export type RequestedTask = {
 export type CLIOption = {
   force: boolean
   filter?: string | string[]
+  verbose: boolean
   '--': string[]
 }
 
 export interface Logger {
+  isVerbose: boolean
+
   log(...message: string[]): void
-  logErr(...message: string[]): void
-
   group(title: string, content: string): void
-
   info(...message: string[]): void
   note(...message: string[]): void
   warn(...message: string[]): void
@@ -66,5 +66,5 @@ export interface TaskLogger extends Logger {
 }
 
 export interface CliLogger extends Logger {
-  task(scriptName: string, sortOrder: number): TaskLogger
+  task(scriptName: string, isVerbose: boolean): TaskLogger
 }

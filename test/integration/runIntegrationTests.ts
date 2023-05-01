@@ -5,8 +5,8 @@ import { join } from 'path'
 import stripAnsi from 'strip-ansi'
 import { LazyConfig } from '../../index.js'
 import { execCli } from '../../src/execCli.js'
-import { rimraf } from '../../src/rimraf.js'
 import { PackageJson } from '../../src/types.js'
+import { rimraf } from '../../src/utils/rimraf.js'
 
 const cleanup = ({ text, rootDir }: { text: string; rootDir: string }) =>
   stripAnsi(text)

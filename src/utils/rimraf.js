@@ -1,4 +1,4 @@
-import { rmSync } from './fs.js'
+import { rmSync } from '../fs.js'
 
 /**
  * @param {string} path

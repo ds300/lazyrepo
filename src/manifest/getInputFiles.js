@@ -1,9 +1,9 @@
 import glob from 'fast-glob'
 import path, { isAbsolute, join } from 'path'
 import pc from 'picocolors'
-import { createTimer } from '../createTimer.js'
 import { readdirSync, statSync } from '../fs.js'
-import { uniq } from '../uniq.js'
+import { createTimer } from '../utils/createTimer.js'
+import { uniq } from '../utils/uniq.js'
 
 /**
  * @param {{task: import('../types.js').ScheduledTask, includes: string[], excludes: string[], workspaceRoot: string}} param
@@ -43,7 +43,7 @@ function globCacheConfig({ includes, excludes, task, workspaceRoot }) {
 
 /**
  *
- * @param {import('../TaskGraph.js').TaskGraph} tasks
+ * @param {import('../tasks/TaskGraph.js').TaskGraph} tasks
  * @param {import('../types.js').ScheduledTask} task
  * @param {string[]} extraFiles
  * @returns
@@ -106,4 +106,36 @@ function visitAllFiles(dir, visit) {
       visit(fullPath)
     }
   }
+}
+
+/**
+ *
+ * @param {import('../tasks/TaskGraph.js').TaskGraph} tasks
+ * @param {import('../types.js').ScheduledTask} task
+ * @returns
+ */
+export function getOutputFiles(tasks, task) {
+  const taskConfig = tasks.config.getTaskConfig(task.workspace, task.scriptName)
+
+  const cacheConfig = taskConfig.cache
+  if (cacheConfig === 'none' || cacheConfig.outputs.include.length === 0) {
+    return null
+  }
+
+  const localFiles = globCacheConfig({
+    task,
+    workspaceRoot: tasks.config.project.root.dir,
+    includes: makeGlobsAbsolute(
+      cacheConfig.outputs.include,
+      tasks.config.project.root.dir,
+      task.workspace.dir,
+    ),
+    excludes: makeGlobsAbsolute(
+      cacheConfig.outputs.exclude,
+      tasks.config.project.root.dir,
+      task.workspace.dir,
+    ),
+  })
+
+  return [...localFiles].sort()
 }

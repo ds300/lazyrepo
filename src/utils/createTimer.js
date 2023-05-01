@@ -1,5 +1,5 @@
+import { duration } from '../logger/formatting.js'
 import { isTest } from './isTest.js'
-import { duration } from './logger/formatting.js'
 
 const TEST_DURATION = 1000
 

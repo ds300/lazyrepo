@@ -14,7 +14,7 @@ export async function inherit(options) {
       'No npm_lifecycle_event found. Did you run `lazy inherit` directly instead of via "scripts"?',
     )
   }
-  const config = await Config.fromCwd(process.cwd())
+  const config = await Config.fromCwd(process.cwd(), options.verbose)
   const workspace =
     process.cwd() === config.project.root.dir
       ? config.project.root

@@ -326,7 +326,7 @@ it('warns you if you are using the old .tasks key but it still works', async () 
         build::<rootDir> cache miss, no previous manifest found
         build::<rootDir> RUN echo BUILD_SUCCESS in 
         build::<rootDir> BUILD_SUCCESS
-        build::<rootDir> input manifest: .lazy/build-6275696c64/manifest.tsv
+        build::<rootDir> input manifest: .lazy/build/manifest.tsv
         build::<rootDir> ✔ done in 1.00s
 
              Tasks:  1 successful, 1 total

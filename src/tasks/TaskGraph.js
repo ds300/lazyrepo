@@ -2,10 +2,10 @@ import micromatch from 'micromatch'
 import { cpus } from 'os'
 import { isAbsolute, join } from 'path'
 import pc from 'picocolors'
-import { isTest } from './isTest.js'
-import { logger } from './logger/logger.js'
-import { runTaskIfNeeded } from './runTask.js'
-import { uniq } from './uniq.js'
+import { logger } from '../logger/logger.js'
+import { isTest } from '../utils/isTest.js'
+import { uniq } from '../utils/uniq.js'
+import { runTaskIfNeeded } from './runTaskIfNeeded.js'
 
 /**
  * @typedef {Object} TaskKeyProps
@@ -25,19 +25,19 @@ const maxConcurrentTasks = process.env.__test__FORCE_PARALLEL
 /**
  * @typedef {Object} TaskGraphProps
  *
- * @property {import('./config/config.js').Config} config
- * @property {import('./types.js').RequestedTask[]} requestedTasks
+ * @property {import('../config/config.js').Config} config
+ * @property {import('../types.js').RequestedTask[]} requestedTasks
  */
 
 export class TaskGraph {
   /**
    * @readonly
-   * @type {import('./config/config.js').Config}
+   * @type {import('../config/config.js').Config}
    */
   config
   /**
    * @readonly
-   * @type {Record<string, import('./types.js').ScheduledTask>}
+   * @type {Record<string, import('../types.js').ScheduledTask>}
    */
   allTasks = {}
   /**
@@ -54,7 +54,7 @@ export class TaskGraph {
 
     /**
      * @param {string[]} path
-     * @param {{ requestedTask: import('./types.js').RequestedTask, workspace: import('./project/project-types.js').Workspace }} arg
+     * @param {{ requestedTask: import('../types.js').RequestedTask, workspace: import('../project/project-types.js').Workspace }} arg
      * @returns
      */
     const visit = (path, { requestedTask, workspace }) => {
@@ -78,7 +78,7 @@ export class TaskGraph {
         dependencies: [],
         inputManifestCacheKey: null,
         workspace,
-        logger: logger.task(key),
+        logger: logger.task(key, config.isVerbose),
       }
       const result = this.allTasks[key]
 
@@ -128,7 +128,7 @@ export class TaskGraph {
     /**
      *
      * @param {string[]} path
-     * @param {import('./types.js').RequestedTask} requestedTask
+     * @param {import('../types.js').RequestedTask} requestedTask
      * @param {string[]} [dependencies]
      * @returns
      */
@@ -293,7 +293,7 @@ export class TaskGraph {
  * Match a list of filter path globs against the list of package directories.
  *
  * @param {string} workspaceRoot
- * @param {import('./project/Project.js').Project} project
+ * @param {import('../project/Project.js').Project} project
  * @param {string[]} filterPaths
  */
 function filterPackageDirs(workspaceRoot, project, filterPaths) {

@@ -1,9 +1,9 @@
 import { join } from 'path'
 import { LazyConfig } from '../index.js'
-import { TaskGraph } from '../src/TaskGraph.js'
 import { Config } from '../src/config/config.js'
 import { Project } from '../src/project/Project.js'
 import { Workspace } from '../src/project/project-types.js'
+import { TaskGraph } from '../src/tasks/TaskGraph.js'
 
 const cwd = process.cwd()
 
@@ -61,6 +61,7 @@ function makeConfig(project: Project, scripts: LazyConfig['scripts']): Config {
       },
       filePath: null,
     },
+    isVerbose: false,
   })
 }
 

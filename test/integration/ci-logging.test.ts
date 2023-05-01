@@ -55,7 +55,7 @@ describe('on ci', () => {
           build::packages/utils Hashed 3/3 files in 1.00s
           build::packages/utils cache miss, no previous manifest found
           build::packages/utils RUN echo $RANDOM > .out.txt in packages/utils
-          build::packages/utils input manifest: packages/utils/.lazy/build-6275696c64/manifest.tsv
+          build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
           ::group::build::packages/utils  input manifest
           file	package-lock.json	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855	100.000
           file	packages/utils/index.js	e7fb2f4978d27e4f9e23fe22cea20bb3da1632fabb50362e2963c68700a6f1a5	100.000
@@ -69,7 +69,7 @@ describe('on ci', () => {
           build::packages/core Hashed 3/3 files in 1.00s
           build::packages/core cache miss, no previous manifest found
           build::packages/core RUN echo $RANDOM > .out.txt in packages/core
-          build::packages/core input manifest: packages/core/.lazy/build-6275696c64/manifest.tsv
+          build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
           ::group::build::packages/core  input manifest
           upstream package inputs	build::packages/utils	2699f1c1aec310b2069f1c207e86385d8f65cb7d9c8a03e9b31be18a5ebde35e
           file	package-lock.json	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855	100.000
@@ -134,7 +134,7 @@ describe('on ci', () => {
 
           ::endgroup::
           build::packages/utils RUN echo $RANDOM > .out.txt in packages/utils
-          build::packages/utils input manifest: packages/utils/.lazy/build-6275696c64/manifest.tsv
+          build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
           ::group::build::packages/utils  input manifest
           file	package-lock.json	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855	100.000
           file	packages/utils/package.json	66a4aa54ada27c4596c6e5c7103b46bedef607d952c8985ca520a85c27a16543	100.000
@@ -152,7 +152,7 @@ describe('on ci', () => {
 
           ::endgroup::
           build::packages/core RUN echo $RANDOM > .out.txt in packages/core
-          build::packages/core input manifest: packages/core/.lazy/build-6275696c64/manifest.tsv
+          build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
           ::group::build::packages/core  input manifest
           upstream package inputs	build::packages/utils	8b4a40e0f67481c7690f423d943417fa32b97951ccff33e6a167396c6be4be74
           file	package-lock.json	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855	100.000
@@ -202,7 +202,7 @@ describe('on ci', () => {
           build::packages/utils Hashed 3/3 files in 1.00s
           build::packages/utils cache miss, no previous manifest found
           build::packages/utils RUN echo $RANDOM > .out.txt in packages/utils
-          build::packages/utils input manifest: packages/utils/.lazy/build-6275696c64/manifest.tsv
+          build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
           build::packages/utils  input manifest
           [ grouped content suppressed on unsupported CI environment ]
           build::packages/utils ✔ done in 1.00s
@@ -212,7 +212,7 @@ describe('on ci', () => {
           build::packages/core Hashed 3/3 files in 1.00s
           build::packages/core cache miss, no previous manifest found
           build::packages/core RUN echo $RANDOM > .out.txt in packages/core
-          build::packages/core input manifest: packages/core/.lazy/build-6275696c64/manifest.tsv
+          build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
           build::packages/core  input manifest
           [ grouped content suppressed on unsupported CI environment ]
           build::packages/core ✔ done in 1.00s

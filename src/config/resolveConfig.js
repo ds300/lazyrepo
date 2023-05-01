@@ -1,8 +1,8 @@
 import glob from 'fast-glob'
 import { join } from 'path'
 import { existsSync, mkdirSync, writeFileSync } from '../fs.js'
-import { isTest } from '../isTest.js'
 import { logger } from '../logger/logger.js'
+import { isTest } from '../utils/isTest.js'
 import { validateConfig } from './validateConfig.js'
 
 /**

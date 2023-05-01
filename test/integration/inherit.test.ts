@@ -69,7 +69,7 @@ test('lazy inherit looks up the command in the config file', async () => {
         build::packages/utils Hashed 4/4 files in 1.00s
         build::packages/utils cache miss, no previous manifest found
         build::packages/utils RUN echo $RANDOM > out.txt in packages/utils
-        build::packages/utils input manifest: packages/utils/.lazy/build-6275696c64/manifest.tsv
+        build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
         build::packages/utils ✔ done in 1.00s
         build::packages/core Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
         build::packages/core Finding files matching lazy.config.* took 1.00s
@@ -77,7 +77,7 @@ test('lazy inherit looks up the command in the config file', async () => {
         build::packages/core Hashed 4/4 files in 1.00s
         build::packages/core cache miss, no previous manifest found
         build::packages/core RUN echo $RANDOM > out.txt in packages/core
-        build::packages/core input manifest: packages/core/.lazy/build-6275696c64/manifest.tsv
+        build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
         build::packages/core ✔ done in 1.00s
 
              Tasks:  2 successful, 2 total
@@ -99,15 +99,15 @@ test('lazy inherit looks up the command in the config file', async () => {
         build::packages/utils Finding files matching lazy.config.* took 1.00s
         build::packages/utils Finding files matching packages/utils/**/* took 1.00s
         build::packages/utils Hashed 0/4 files in 1.00s
-        build::packages/utils input manifest: packages/utils/.lazy/build-6275696c64/manifest.tsv
-        build::packages/utils output log: packages/utils/.lazy/build-6275696c64/output.log
+        build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
+        build::packages/utils output log: packages/utils/.lazy/build/output.log
         build::packages/utils ✔ cache hit ⚡️ in 1.00s
         build::packages/core Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
         build::packages/core Finding files matching lazy.config.* took 1.00s
         build::packages/core Finding files matching packages/core/**/* took 1.00s
         build::packages/core Hashed 0/4 files in 1.00s
-        build::packages/core input manifest: packages/core/.lazy/build-6275696c64/manifest.tsv
-        build::packages/core output log: packages/core/.lazy/build-6275696c64/output.log
+        build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
+        build::packages/core output log: packages/core/.lazy/build/output.log
         build::packages/core ✔ cache hit ⚡️ in 1.00s
 
              Tasks:  2 successful, 2 total
@@ -145,7 +145,7 @@ test('lazy inherit supports setting env vars', async () => {
         build::packages/utils Hashed 4/4 files in 1.00s
         build::packages/utils cache miss, no previous manifest found
         build::packages/utils RUN SECRET_VAR=howdy node __ROOT_DIR__/build.js > out.txt in packages/utils
-        build::packages/utils input manifest: packages/utils/.lazy/build-6275696c64/manifest.tsv
+        build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
         build::packages/utils ✔ done in 1.00s
         build::packages/core Finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
         build::packages/core Finding files matching lazy.config.* took 1.00s
@@ -153,7 +153,7 @@ test('lazy inherit supports setting env vars', async () => {
         build::packages/core Hashed 4/4 files in 1.00s
         build::packages/core cache miss, no previous manifest found
         build::packages/core RUN SECRET_VAR=sup node __ROOT_DIR__/build.js > out.txt in packages/core
-        build::packages/core input manifest: packages/core/.lazy/build-6275696c64/manifest.tsv
+        build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
         build::packages/core ✔ done in 1.00s
 
              Tasks:  2 successful, 2 total
