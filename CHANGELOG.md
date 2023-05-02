@@ -1,3 +1,35 @@
+# v0.0.0-alpha.24 (Tue May 02 2023)
+
+### Release Notes
+
+#### Cache console output ([#92](https://github.com/ds300/lazyrepo/pull/92))
+
+- Add support for a `logMode` option with the following options:
+  - `'none'` – console output from tasks is only written to log files, never printed.
+  - `'new-only'` (default) – console output from tasks is only printed if the task actually runs (i.e. is a cache miss or has cache disabled)
+  - `'errors-only'` – only log the output if the task fails
+  - `'full'` – always log the output, including the cached output if the task was a cache hit.
+- Changes the output paths of manifests and diffs.
+
+---
+
+#### 🚀 Enhancement
+
+- Cache output files [#95](https://github.com/ds300/lazyrepo/pull/95) ([@ds300](https://github.com/ds300))
+- Cache console output [#92](https://github.com/ds300/lazyrepo/pull/92) ([@ds300](https://github.com/ds300))
+- Support workspace overrides [#86](https://github.com/ds300/lazyrepo/pull/86) ([@ds300](https://github.com/ds300))
+
+#### 🐛 Bug Fix
+
+- URL-safe paths based on script names [#94](https://github.com/ds300/lazyrepo/pull/94) ([@ds300](https://github.com/ds300))
+- log.fail should throw [#90](https://github.com/ds300/lazyrepo/pull/90) ([@ds300](https://github.com/ds300))
+
+#### Authors: 1
+
+- David Sheldrick ([@ds300](https://github.com/ds300))
+
+---
+
 # v0.0.0-alpha.23 (Fri Apr 28 2023)
 
 #### 💥 Breaking Change

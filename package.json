@@ -1,6 +1,6 @@
 {
   "name": "lazyrepo",
-  "version": "0.0.0-alpha.23",
+  "version": "0.0.0-alpha.24",
   "description": "lazyrepo is a caching task runner for npm/yarn/pnpm monorepos",
   "engines": {
     "node": ">=16.0.0"
