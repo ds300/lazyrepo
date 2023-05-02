@@ -1,3 +1,15 @@
+# v0.0.0-alpha.26 (Tue May 02 2023)
+
+#### 🐛 Bug Fix
+
+- [fix] allow top-level scripts to run after other scripts [#98](https://github.com/ds300/lazyrepo/pull/98) ([@ds300](https://github.com/ds300))
+
+#### Authors: 1
+
+- David Sheldrick ([@ds300](https://github.com/ds300))
+
+---
+
 # v0.0.0-alpha.25 (Tue May 02 2023)
 
 #### 🐛 Bug Fix
