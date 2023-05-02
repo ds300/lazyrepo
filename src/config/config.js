@@ -169,7 +169,6 @@ export class TaskConfig {
 
   /** @type {[string, RunsAfterConfig][]} */
   get runsAfterEntries() {
-    if (this.scriptConfig.execution === 'top-level') return []
     return Object.entries(this.scriptConfig.runsAfter ?? {}).map(([name, config]) => {
       return [name, new RunsAfterConfig(config)]
     })
