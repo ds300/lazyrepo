@@ -1,8 +1,8 @@
 import glob from 'fast-glob'
 import { join } from 'path'
 import { existsSync, mkdirSync, writeFileSync } from '../fs.js'
-import { isTest } from '../isTest.js'
 import { logger } from '../logger/logger.js'
+import { isTest } from '../utils/isTest.js'
 import { validateConfig } from './validateConfig.js'
 
 /**
@@ -28,10 +28,9 @@ export async function resolveConfig(dir) {
   })
 
   if (files.length > 1) {
-    logger.fail(`Found multiple lazy config files in dir '${dir}'.`, {
+    throw logger.fail(`Found multiple lazy config files in dir '${dir}'.`, {
       detail: `Remove all but one of the following files: ${files.join(', ')}`,
     })
-    process.exit(1)
   }
 
   if (files.length === 0) {
@@ -45,10 +44,9 @@ export async function resolveConfig(dir) {
 
       return { filePath: file, config }
     } catch (err) {
-      logger.fail(`Failed reading config file at '${file}'`, {
+      throw logger.fail(`Failed reading config file at '${file}'`, {
         detail: err instanceof Error ? err.message : undefined,
       })
-      process.exit(1)
     }
   }
 }
@@ -86,7 +84,6 @@ async function loadConfig(dir, file) {
   })
 
   if (!isTest) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
     await import('source-map-support/register.js')
   }

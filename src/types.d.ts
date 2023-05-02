@@ -6,11 +6,11 @@ export type TaskStatus = 'pending' | 'running' | 'success:eager' | 'success:lazy
 export interface ScheduledTask {
   key: string
   taskConfig: TaskConfig
-  taskName: string
+  scriptName: string
   status: TaskStatus
   force: boolean
   extraArgs: string[]
-  outputFiles: string[]
+  outputFiles: string[] | null
   dependencies: string[]
   inputManifestCacheKey: string | null
   workspace: Workspace
@@ -23,7 +23,7 @@ export type ManifestChange = {
 }
 
 export type RequestedTask = {
-  taskName: string
+  scriptName: string
   filterPaths: string[]
   extraArgs: string[]
   force: boolean
@@ -32,13 +32,15 @@ export type RequestedTask = {
 export type CLIOption = {
   force: boolean
   filter?: string | string[]
+  verbose: boolean
   '--': string[]
 }
 
 export interface Logger {
-  log(...message: string[]): void
-  logErr(...message: string[]): void
+  isVerbose: boolean
 
+  log(...message: string[]): void
+  group(title: string, content: string): void
   info(...message: string[]): void
   note(...message: string[]): void
   warn(...message: string[]): void
@@ -64,5 +66,5 @@ export interface TaskLogger extends Logger {
 }
 
 export interface CliLogger extends Logger {
-  task(taskName: string, sortOrder: number): TaskLogger
+  task(scriptName: string, isVerbose: boolean): TaskLogger
 }

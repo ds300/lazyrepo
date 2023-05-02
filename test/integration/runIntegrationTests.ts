@@ -1,4 +1,3 @@
-/* eslint-disable jest/no-export */
 import spawn from 'cross-spawn'
 import { existsSync, mkdirSync, readFileSync, statSync, utimesSync, writeFileSync } from 'fs'
 import { nanoid } from 'nanoid'
@@ -6,8 +5,8 @@ import { join } from 'path'
 import stripAnsi from 'strip-ansi'
 import { LazyConfig } from '../../index.js'
 import { execCli } from '../../src/execCli.js'
-import { naiveRimraf } from '../../src/naiveRimraf.js'
 import { PackageJson } from '../../src/types.js'
+import { rimraf } from '../../src/utils/rimraf.js'
 
 const cleanup = ({ text, rootDir }: { text: string; rootDir: string }) =>
   stripAnsi(text)
@@ -52,7 +51,7 @@ class TestHarness {
   }
 
   remove(path: string) {
-    naiveRimraf(join(this.config.dir, path))
+    rimraf(join(this.config.dir, path))
   }
 
   install() {
@@ -104,7 +103,6 @@ class TestHarness {
       if ((expectError && didError) || (!expectError && !didError)) {
         return { output: cleanup({ text: output, rootDir: this.config.dir }), status }
       }
-      // eslint-disable-next-line no-console
       console.error(cleanup({ text: output, rootDir: this.config.dir }))
       throw new Error(
         `Exited with code ${status} ${cleanup({ text: output, rootDir: this.config.dir })}`,
@@ -135,6 +133,7 @@ class TestHarness {
           cwd: options?.packageDir ? join(this.config.dir, options.packageDir) : this.config.dir,
           env: {
             ...process.env,
+            __test__IS_CI_OVERRIDE: 'false',
             ...options?.env,
           },
         },
@@ -155,7 +154,6 @@ class TestHarness {
             status: code ?? 1,
           })
         } else {
-          // eslint-disable-next-line no-console
           console.error(output)
           reject(
             new Error(
@@ -224,7 +222,7 @@ export async function runIntegrationTest(
 export function makePackageJson(opts: Partial<PackageJson>) {
   return JSON.stringify({
     name: 'test',
-    version: '1.0.0-' + nanoid(),
+    version: '1.0.0-test',
     ...opts,
   })
 }

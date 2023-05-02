@@ -10,12 +10,11 @@ import { run } from './run.js'
 export async function inherit(options) {
   const scriptName = process.env.npm_lifecycle_event
   if (!scriptName) {
-    logger.fail(
+    throw logger.fail(
       'No npm_lifecycle_event found. Did you run `lazy inherit` directly instead of via "scripts"?',
     )
-    process.exit(1)
   }
-  const config = await Config.fromCwd(process.cwd())
+  const config = await Config.fromCwd(process.cwd(), options.verbose)
   const workspace =
     process.cwd() === config.project.root.dir
       ? config.project.root
@@ -23,10 +22,9 @@ export async function inherit(options) {
 
   const task = config.getTaskConfig(workspace, scriptName)
   if (!task.baseCommand) {
-    logger.fail(
+    throw logger.fail(
       `No baseCommand found for task '${scriptName}'. Using 'lazy inherit' requires you to add a baseCommand for the relevant task in your lazy.config file!`,
     )
-    process.exit(1)
   }
 
   if (process.env.__LAZY_WORKFLOW__ === 'true') {
@@ -34,8 +32,11 @@ export async function inherit(options) {
       stdio: 'inherit',
       shell: true,
     })
-    process.exit(result.status ?? 1)
+    return result.status ?? 1
   } else {
-    await run({ taskName: scriptName, options: { ...options, filter: [process.cwd()] } }, config)
+    return await run(
+      { scriptName: scriptName, options: { ...options, filter: [process.cwd()] } },
+      config,
+    )
   }
 }

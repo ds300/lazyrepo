@@ -1,19 +1,22 @@
+import assert from 'assert'
 import path, { join } from 'path'
 import pc from 'picocolors'
-import { createTimer } from '../createTimer.js'
 import { existsSync, mkdirSync, statSync } from '../fs.js'
-import { uniq } from '../uniq.js'
+import { createTimer } from '../utils/createTimer.js'
+import { isTest } from '../utils/isTest.js'
+import { uniq } from '../utils/uniq.js'
 import { ManifestConstructor } from './ManifestConstructor.js'
 import { getInputFiles } from './getInputFiles.js'
 import { hashFile, hashString } from './hash.js'
 
-const types = {
+export const types = /** @type {const} */ ({
   upstreamTaskInputs: 'upstream task inputs',
   dependencyTaskInputs: 'dependency task inputs',
   envVar: 'env var',
   file: 'file',
-}
+})
 
+/** @type {string[]} */
 const order = [types.upstreamTaskInputs, types.dependencyTaskInputs, types.envVar, types.file]
 
 /**
@@ -32,7 +35,7 @@ export const compareManifestTypes = (a, b) => {
 }
 
 /**
- * @param {{ task: import('../types.js').ScheduledTask, tasks: import('../TaskGraph.js').TaskGraph }} param0
+ * @param {{ task: import('../types.js').ScheduledTask, tasks: import('../tasks/TaskGraph.js').TaskGraph }} param0
  * @returns
  */
 export async function computeManifest({ tasks, task }) {
@@ -58,62 +61,58 @@ export async function computeManifest({ tasks, task }) {
     nextManifestPath,
   })
 
+  /** @type {string[][]} */
   const extraFiles = []
 
-  for (const [otherTaskName, depConfig] of task.taskConfig.runsAfterEntries) {
+  for (const [otherScriptName, depConfig] of task.taskConfig.runsAfterEntries) {
     if (!depConfig.inheritsInput && depConfig.usesOutput === false) continue
     const isTopLevel =
-      tasks.config.getTaskConfig(task.workspace, otherTaskName).execution === 'top-level'
+      tasks.config.getTaskConfig(task.workspace, otherScriptName).execution === 'top-level'
 
     const key = tasks.config.getTaskKey(
       isTopLevel ? tasks.config.project.root.dir : task.workspace.dir,
-      otherTaskName,
+      otherScriptName,
     )
     const depTask = tasks.allTasks[key]
     if (isTopLevel && !depTask) throw new Error(`Missing task: ${key}.`)
     if (!depTask) continue
 
     if (depConfig.inheritsInput) {
-      if (!depTask.inputManifestCacheKey) {
-        throw new Error(`Missing inputManifestCacheKey for task: ${key}.`)
-      }
-
+      assert(depTask.inputManifestCacheKey, `Missing inputManifestCacheKey for task: ${key}.`)
       manifestConstructor.update('upstream task inputs', key, depTask.inputManifestCacheKey)
     }
     if (depConfig.usesOutput !== false) {
+      assert(depTask.outputFiles, `Missing outputFiles for task: ${key}.`)
       extraFiles.push(depTask.outputFiles)
     }
   }
 
-  if (
-    task.taskConfig.execution !== 'independent' &&
-    (task.taskConfig.cache?.inheritsInputFromDependencies ?? true)
-  ) {
+  if (task.taskConfig.execution === 'dependent') {
     // TODO: test that localDeps is always sorted
     const upstreamTaskKeys = task.workspace.localDependencyWorkspaceNames
       .map((packageName) => {
         const depPackage = tasks.config.project.getWorkspaceByName(packageName)
-        const key = tasks.config.getTaskKey(depPackage.dir, task.taskName)
+        const key = tasks.config.getTaskKey(depPackage.dir, task.scriptName)
         return key
       })
       .sort()
-    if (upstreamTaskKeys) {
-      for (const key of upstreamTaskKeys) {
-        const depTask = tasks.allTasks[key]
-        if (!depTask) continue
-        if (!depTask.inputManifestCacheKey) {
-          throw new Error(`Missing inputManifestCacheKey for task: ${key}.`)
-        }
+    for (const key of upstreamTaskKeys) {
+      const depTask = tasks.allTasks[key]
+      if (!depTask) continue
+      assert(depTask.inputManifestCacheKey, `Missing inputManifestCacheKey for task: ${key}.`)
+      assert(depTask.outputFiles, `Missing outputFiles for task: ${key}.`)
 
+      if (task.taskConfig.cache.inheritsInputFromDependencies) {
         manifestConstructor.update('upstream package inputs', key, depTask.inputManifestCacheKey)
+      }
+      if (task.taskConfig.cache.usesOutputFromDependencies) {
+        extraFiles.push(depTask.outputFiles)
       }
     }
   }
 
   const allEnvVars = uniq(
-    (tasks.config.getBaseCacheConfig().envInputs ?? []).concat(
-      task.taskConfig.cache?.envInputs ?? [],
-    ),
+    tasks.config.getBaseCacheConfig().envInputs.concat(task.taskConfig.cache.envInputs),
   ).sort()
 
   for (const envVar of allEnvVars) {
@@ -133,7 +132,8 @@ export async function computeManifest({ tasks, task }) {
   for (const file of files.sort()) {
     const fullPath = join(tasks.config.project.root.dir, file)
     const stat = statSync(fullPath)
-    const timestamp = String(stat.mtimeMs)
+    const timestamp =
+      isTest && process.env.__test__CONSTANT_MTIME ? '100.000' : String(stat.mtimeMs)
 
     if (manifestConstructor.copyLineOverIfMetaIsSame('file', file, timestamp)) {
       numSkipped++
@@ -145,12 +145,12 @@ export async function computeManifest({ tasks, task }) {
     manifestConstructor.update('file', file, hash, timestamp)
   }
 
-  const { didChange, hash } = await manifestConstructor.end()
+  const { didChange, hash, didWriteManifest, didWriteDiff } = await manifestConstructor.end()
 
   // todo: always log this if verbose
   if (timer.getElapsedMs() > 100) {
     task.logger.note(
-      `Hashed ${numHashed}/${numSkipped + numHashed} files in ${pc.cyan(
+      `hashed ${numHashed}/${numSkipped + numHashed} files in ${pc.cyan(
         timer.formatElapsedTime(),
       )}`,
     )
@@ -158,5 +158,5 @@ export async function computeManifest({ tasks, task }) {
 
   task.inputManifestCacheKey = hash
 
-  return didChange
+  return { didChange, didWriteManifest, didWriteDiff }
 }

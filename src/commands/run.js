@@ -1,20 +1,20 @@
 import pc from 'picocolors'
 import { dedent } from 'ts-dedent'
-import { TaskGraph } from '../TaskGraph.js'
 import { Config } from '../config/config.js'
-import { createTimer } from '../createTimer.js'
 import { InteractiveLogger } from '../logger/InteractiveLogger.js'
 import { getColorForString, pipe } from '../logger/formatting.js'
 import { logger } from '../logger/logger.js'
-import { rainbow } from '../rainbow.js'
+import { rainbow } from '../logger/rainbow.js'
+import { TaskGraph } from '../tasks/TaskGraph.js'
+import { createTimer } from '../utils/createTimer.js'
 
 /**
- * @param {{taskName: string, options: import('../types.js').CLIOption}} args
+ * @param {{scriptName: string, options: import('../types.js').CLIOption}} args
  * @param {import('../config/config.js').Config} [_config]
  */
-export async function run({ taskName, options }, _config) {
+export async function run({ scriptName, options }, _config) {
   const timer = createTimer()
-  const config = _config ?? (await Config.fromCwd(process.cwd()))
+  const config = _config ?? (await Config.fromCwd(process.cwd(), options.verbose))
 
   const filterPaths = options.filter
     ? Array.isArray(options.filter)
@@ -26,7 +26,7 @@ export async function run({ taskName, options }, _config) {
   /** @type {import('../types.js').RequestedTask[]} */
   const requestedTasks = [
     {
-      taskName: taskName,
+      scriptName,
       filterPaths,
       force: options.force,
       extraArgs: options['--'] ?? [],
@@ -40,7 +40,7 @@ export async function run({ taskName, options }, _config) {
 
   if (tasks.sortedTaskKeys.length === 0) {
     logger.fail(
-      `No tasks found matching [${requestedTasks.map((t) => t.taskName).join(', ')}] in ${
+      `No tasks found matching [${requestedTasks.map((t) => t.scriptName).join(', ')}] in ${
         config.project.root.dir
       }`,
     )
@@ -49,9 +49,9 @@ export async function run({ taskName, options }, _config) {
   await tasks.runAllTasks()
   if (logger instanceof InteractiveLogger) logger.clearTasks()
 
-  const failedTasks = tasks.allFailedTasks()
+  const failedTasks = tasks.allFailedTaskKeys()
   if (failedTasks.length > 0) {
-    logger.logErr(
+    logger.log(
       pc.bold(pc.red('\nFailed tasks:')),
       failedTasks.map((t) => getColorForString(t).fg(t)).join(', '),
     )
@@ -77,9 +77,5 @@ export async function run({ taskName, options }, _config) {
     
   `
   logger.log(output)
-  if (failedTasks.length > 0) {
-    process.exit(1)
-  } else {
-    process.exit(0)
-  }
+  return failedTasks.length > 0 ? 1 : 0
 }

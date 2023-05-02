@@ -1,24 +1,30 @@
+/** @type {import('eslint').Linter.Config} */
 module.exports = {
   root: true,
   env: {
     es2021: true,
     node: true,
   },
-  extends: ['eslint:recommended', 'plugin:n/recommended', 'plugin:@typescript-eslint/recommended'],
+  extends: [
+    'eslint:recommended',
+    'plugin:n/recommended',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:@typescript-eslint/recommended-requiring-type-checking',
+  ],
   parser: '@typescript-eslint/parser',
   overrides: [
     {
-      files: ['*.ts', '*.js'],
-      extends: [
-        'plugin:@typescript-eslint/recommended',
-        'plugin:@typescript-eslint/recommended-requiring-type-checking',
-      ],
-      parserOptions: {
-        project: ['./tsconfig.json'],
+      files: ['src/**', 'bin.js', 'index.js', 'index.d.ts'],
+      rules: {
+        'no-restricted-imports': ['error', 'fs', 'fs/promises', 'node:fs', 'node:fs/promises'],
+        'no-console': 'error',
+        '@typescript-eslint/no-empty-function': ['error', { allow: ['arrowFunctions'] }],
+        '@typescript-eslint/ban-ts-comment': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
       },
     },
     {
-      files: ['{test,scripts}/**'],
+      files: ['test/**'],
       env: {
         'jest/globals': true,
       },
@@ -31,29 +37,33 @@ module.exports = {
         '@typescript-eslint/no-non-null-assertion': 'off',
         '@typescript-eslint/no-unused-vars': 'off',
         '@typescript-eslint/restrict-template-expressions': 'off',
+        '@typescript-eslint/no-unsafe-return': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/restrict-plus-operands': 'off',
+        '@typescript-eslint/ban-ts-comment': 'off',
+      },
+    },
+    {
+      files: ['scripts/**'],
+      rules: {
+        'n/no-process-exit': 'off',
       },
     },
   ],
+  reportUnusedDisableDirectives: true,
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
+    project: true,
   },
   rules: {
-    'no-restricted-imports': ['error', 'fs', 'fs/promises', 'node:fs', 'node:fs/promises'],
-    'no-console': 'error',
-    'no-extra-semi': 'off',
-    eqeqeq: ['error', 'always'],
-
-    'n/no-process-exit': 'off',
+    '@typescript-eslint/restrict-template-expressions': 'off',
     'n/no-missing-import': 'off',
     'n/no-missing-require': 'off',
     'n/no-unpublished-import': 'off',
     'n/no-unpublished-require': 'off',
-
-    '@typescript-eslint/no-empty-function': ['error', { allow: ['arrowFunctions'] }],
-    '@typescript-eslint/ban-ts-comment': 'off',
     '@typescript-eslint/no-extra-semi': 'off',
-    '@typescript-eslint/no-unused-vars': 'off',
-    '@typescript-eslint/restrict-template-expressions': 'off',
+    'no-extra-semi': 'off',
+    eqeqeq: ['error', 'always'],
   },
 }

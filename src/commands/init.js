@@ -14,4 +14,5 @@ export function init() {
 export default {}\n`,
   )
   logger.success(`\nCreated config file at '${configPath}'`)
+  return 0
 }

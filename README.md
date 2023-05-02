@@ -2,7 +2,7 @@
   <img alt="LAZYREPO" src="https://github.com/ds300/lazyrepo/raw/main/assets/lazyrepo.svg" />
 </div>
 
-> 💡 Currently in the prototyping stage, expect breaking changes! Get help or join in development on [discord](https://discord.gg/XWb3NGHkfD).
+> **Warning** Currently in the prototyping stage, expect breaking changes! Get help or join in development on [discord](https://discord.gg/XWb3NGHkfD).
 
 `lazyrepo` is a zero-config caching task runner for `npm`/`pnpm`/`yarn` monorepos.
 
@@ -37,13 +37,13 @@ And finally add `.lazy` to your .gitignore
 
 ### Running Tasks
 
-Run tasks defined in `"scripts"` entries using:
+Run scripts defined in `"scripts"` entries using:
 
-    lazy <script-name>
+    lazy run <script-name>
 
 You can pass arguments to the task script after a `--`
 
-    lazy test -- --runInBand
+    lazy run test -- --runInBand
 
 The default behavior is optimized for `"test"` scripts, where the order of execution matters if your packages depend on each other.
 
@@ -55,11 +55,11 @@ graph TD
     A -->|depends on| C[packages/primitives]
 ```
 
-With no config, when you run `lazy test` in the project root:
+With no config, when you run `lazy run test` in the project root:
 
 - The tests for `utils` and `primitives` will begin concurrently. The tests for `core` will only be started if both `utils` and `primitives` finish successfully.
-- If you change a source file in `core` and run `lazy test` again, only `core`'s tests will be executed.
-- If you change a source file in `utils` and run `lazy test` again, both `utils` and `core`'s tests will be executed, in that order.
+- If you change a source file in `core` and run `lazy run test` again, only `core`'s tests will be executed.
+- If you change a source file in `utils` and run `lazy run test` again, both `utils` and `core`'s tests will be executed, in that order.
 
 ### Other commands
 
@@ -89,7 +89,7 @@ With no config, when you run `lazy test` in the project root:
   Then add this in your lazy config file:
 
   ```diff
-   "tasks": {
+   "scripts": {
      "test": {
   +    "baseCommand": "jest --runInBand --noCache --coverage"
      }
@@ -98,11 +98,11 @@ With no config, when you run `lazy test` in the project root:
 
   Now when you run `npm test`, or whatever, in one of your package directories, it will look up the actual command to run from your lazy config file and run that.
 
-- `lazy run <task> [-- <forward-args>]`
+- `lazy run <script> [-- <forward-args>]`
 
-  Runs the given task, forwarding any args passed after the `--`
+  Runs the given script, forwarding any args passed after the `--`
 
-  You may filter the packages that a task should run in using the `--filter` option.
+  You may filter the packages that a script should run in using the `--filter` option, which supports glob patterns.
 
   e.g. to test only packages that end in `-utils`
 
@@ -122,7 +122,7 @@ To create a `.js` config file, in your project root run:
 
 ```ts
 export default {
-  tasks: {
+  scripts: {
     test: {
       cache: {
         // by default we consider all files in the package directory

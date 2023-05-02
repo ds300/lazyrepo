@@ -1,6 +1,6 @@
 /** @typedef {import('../types.js').CliLogger} CliLogger */
 import pc from 'picocolors'
-import { createTimer } from '../createTimer.js'
+import { createTimer } from '../utils/createTimer.js'
 import {
   formatDiffMessage,
   formatFailMessage,
@@ -12,17 +12,17 @@ import {
   prefixLines,
 } from './formatting.js'
 
+import ci from 'ci-info'
+import { LazyError } from './LazyError.js'
 /**
  * @implements {CliLogger}
  */
 export class RealtimeLogger {
   /**
    * @param {import('node:stream').Writable} stdout
-   * @param {import('node:stream').Writable} stderr
    */
-  constructor(stdout, stderr) {
+  constructor(stdout) {
     this.stdout = stdout
-    this.stderr = stderr
   }
 
   /**
@@ -32,11 +32,8 @@ export class RealtimeLogger {
     this.stdout.write(args.join(' ') + '\n')
   }
 
-  /**
-   * @param {string[]} args
-   */
-  logErr(...args) {
-    this.stderr.write(args.join(' ') + '\n')
+  stop() {
+    // noop
   }
 
   /**
@@ -45,10 +42,7 @@ export class RealtimeLogger {
    * @returns {never}
    */
   fail(headline, more) {
-    this.stderr.write('\n\n')
-    this.stderr.write(formatFailMessage(headline, more))
-    this.stderr.write('\n')
-    process.exit(1)
+    throw new LazyError(headline, more)
   }
 
   /**
@@ -80,10 +74,46 @@ export class RealtimeLogger {
   }
 
   /**
+   * @param {string} title
+   * @param {string} content
+   */
+  group(title, content) {
+    if (ci.TRAVIS) {
+      this.log(`travis_fold:start:${title}`)
+      this.log(content)
+      this.log(`travis_fold:end:${title}`)
+    } else if (ci.GITLAB) {
+      this.log(
+        `section_start:${Math.floor(Date.now() / 1000)}:${title
+          .toLowerCase()
+          .replace(/\W+/g, `_`)}[collapsed=true]\r\x1b[0K${title}`,
+      )
+      this.log(content)
+      this.log(
+        `section_end:${Math.floor(Date.now() / 1000)}:${title
+          .toLowerCase()
+          .replace(/\W+/g, `_`)}\r\x1b[0K`,
+      )
+    } else if (ci.GITHUB_ACTIONS) {
+      this.log(`::group::${title}`)
+      this.log(content)
+      this.log('::endgroup::')
+    } else {
+      this.log(title)
+      this.log('[ grouped content suppressed on unsupported CI environment ]')
+    }
+  }
+
+  get isVerbose() {
+    return false
+  }
+
+  /**
    * @param {string} taskName
+   * @param {boolean} isVerbose
    * @returns {import('../types.js').TaskLogger}
    */
-  task(taskName) {
+  task(taskName, isVerbose) {
     const timer = createTimer()
     const color = getColorForString(taskName)
     const prefix = color.fg(`${taskName} `)
@@ -99,20 +129,16 @@ export class RealtimeLogger {
       assertNotDone()
       this.log(prefixLines(prefix, args.join(' ')))
     }
-    const logErr = (/** @type {string[]} */ ...args) => {
-      assertNotDone()
-      this.logErr(prefixLines(prefix, args.join(' ')))
-    }
 
     return {
+      isVerbose,
       restartTimer: () => {
         assertNotDone()
         timer.reset()
       },
       log,
-      logErr,
       fail: (headline, more) => {
-        logErr(formatFailMessage(headline, more))
+        log(formatFailMessage(headline, more))
         isDone = true
       },
       success: (message) => {
@@ -121,6 +147,9 @@ export class RealtimeLogger {
       },
       info: (...args) => {
         log(formatInfoMessage(...args))
+      },
+      group: (title, content) => {
+        this.group(prefix + ' ' + title, content)
       },
       note: (...args) => {
         log(formatInfoMessage(...args))

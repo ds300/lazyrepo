@@ -1,3 +1,4 @@
 import { execCli } from './execCli.js'
 
-await execCli(process.argv)
+// eslint-disable-next-line n/no-process-exit
+process.exit(await execCli(process.argv))

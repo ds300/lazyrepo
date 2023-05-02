@@ -2,7 +2,8 @@
 
 import pc from 'picocolors'
 import _sliceAnsi from 'slice-ansi'
-import { createTimer } from '../createTimer.js'
+import { createTimer } from '../utils/createTimer.js'
+import { LazyError } from './LazyError.js'
 import {
   formatDiffMessage,
   formatFailMessage,
@@ -46,6 +47,10 @@ export class InteractiveLogger {
    */
   constructor(tty) {
     this.tty = tty
+  }
+
+  stop() {
+    if (this.animationInterval) clearInterval(this.animationInterval)
   }
 
   /** @private */
@@ -106,12 +111,6 @@ export class InteractiveLogger {
       this.tty.write(args.join(' ') + '\n')
     })
   }
-  /**
-   * @param {string[]} args
-   */
-  logErr(...args) {
-    this.log(...args)
-  }
 
   /**
    * @param {string} headline
@@ -119,10 +118,7 @@ export class InteractiveLogger {
    * @returns {never}
    */
   fail(headline, more) {
-    this.tty.write('\n\n')
-    this.tty.write(formatFailMessage(headline, more))
-    this.tty.write('\n')
-    process.exit(1)
+    throw new LazyError(headline, more)
   }
 
   /**
@@ -146,6 +142,10 @@ export class InteractiveLogger {
     this.log(formatWarningMessage(...args))
   }
 
+  group() {
+    // noop, ci only
+  }
+
   /**
    * @param {string} message
    */
@@ -153,11 +153,16 @@ export class InteractiveLogger {
     this.log(formatSuccessMessage(message))
   }
 
+  get isVerbose() {
+    return false
+  }
+
   /**
    * @param {string} taskName
+   * @param {boolean} isVerbose
    * @returns {import('../types.js').TaskLogger}
    */
-  task(taskName) {
+  task(taskName, isVerbose) {
     const timer = createTimer()
     const color = getColorForString(taskName)
     const prefix = color.fg(`${taskName} `)
@@ -230,6 +235,7 @@ export class InteractiveLogger {
     }
 
     return {
+      isVerbose,
       restartTimer: () => {
         assertNotDone()
         timer.reset()
@@ -238,14 +244,14 @@ export class InteractiveLogger {
       log: (...args) => {
         log('running', ...args)
       },
-      logErr: (...args) => {
-        log('running', ...args)
-      },
       fail: (headline, more) => {
         complete('failed', formatFailMessage(headline, more))
       },
       success: (message) => {
         complete('done', formatSuccessMessage(message, pc.gray(`in ${timer.formatElapsedTime()}`)))
+      },
+      group: () => {
+        // noop, ci only
       },
       info: (...args) => {
         log('running', formatInfoMessage(...args))

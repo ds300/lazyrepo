@@ -1,9 +1,11 @@
 import glob from 'fast-glob'
 import path, { isAbsolute, join } from 'path'
 import pc from 'picocolors'
-import { createTimer } from '../createTimer.js'
+import { Config } from '../config/config.js'
 import { readdirSync, statSync } from '../fs.js'
-import { uniq } from '../uniq.js'
+import { logger } from '../logger/logger.js'
+import { createTimer } from '../utils/createTimer.js'
+import { uniq } from '../utils/uniq.js'
 
 /**
  * @param {{task: import('../types.js').ScheduledTask, includes: string[], excludes: string[], workspaceRoot: string}} param
@@ -30,7 +32,7 @@ function globCacheConfig({ includes, excludes, task, workspaceRoot }) {
     // todo: always log this if verbose
     if (timer.getElapsedMs() > 100) {
       task.logger.note(
-        `Finding files matching ${path.relative(
+        `finding files matching ${path.relative(
           process.cwd(),
           isAbsolute(pattern) ? pattern : join(task.workspace.dir, pattern),
         )} took ${pc.cyan(timer.formatElapsedTime())}`,
@@ -43,13 +45,13 @@ function globCacheConfig({ includes, excludes, task, workspaceRoot }) {
 
 /**
  *
- * @param {import('../TaskGraph.js').TaskGraph} tasks
+ * @param {import('../tasks/TaskGraph.js').TaskGraph} tasks
  * @param {import('../types.js').ScheduledTask} task
  * @param {string[]} extraFiles
  * @returns
  */
 export function getInputFiles(tasks, task, extraFiles) {
-  const taskConfig = tasks.config.getTaskConfig(task.workspace, task.taskName)
+  const taskConfig = tasks.config.getTaskConfig(task.workspace, task.scriptName)
 
   const cacheConfig = taskConfig.cache
   if (cacheConfig === 'none') {
@@ -63,12 +65,12 @@ export function getInputFiles(tasks, task, extraFiles) {
     workspaceRoot: tasks.config.project.root.dir,
     includes: makeGlobsAbsolute(
       uniq([...baseCacheConfig.include, ...cacheConfig.inputs.include]),
-      tasks.config.project.root.dir,
+      tasks.config,
       task.workspace.dir,
     ),
     excludes: makeGlobsAbsolute(
       uniq([...baseCacheConfig.exclude, ...cacheConfig.inputs.exclude]),
-      tasks.config.project.root.dir,
+      tasks.config,
       task.workspace.dir,
     ),
   })
@@ -76,22 +78,48 @@ export function getInputFiles(tasks, task, extraFiles) {
   return [...new Set([...localFiles, ...extraFiles])].sort()
 }
 
+export const ALL_WORKSPACES_MACRO = '<allWorkspaceDirs>'
+export const ROOT_DIR_MACRO = '<rootDir>'
+
 /**
  * @param {string[]} arr
- * @param {string} workspaceRoot
+ * @param {Config} config
  * @param {string} taskDir
  * @returns
  */
-const makeGlobsAbsolute = (arr, workspaceRoot, taskDir) =>
-  arr.map((str) => {
-    if (str.startsWith('<rootDir>/')) {
-      return path.join(workspaceRoot, str.replace('<rootDir>/', ''))
+export const makeGlobsAbsolute = (arr, config, taskDir) => {
+  const workspaceRoot = config.project.root.dir
+  const allWorkspaceDirs = [...config.project.workspacesByDir.keys()].map((dir) =>
+    path.relative(workspaceRoot, dir),
+  )
+  const allWorkspaceDirsGlob = workspaceRoot + `/{${allWorkspaceDirs.join(',')}}`
+  return arr.map((str) => {
+    const allWorkspaceIdx = str.indexOf(ALL_WORKSPACES_MACRO)
+    if (allWorkspaceIdx > 0) {
+      throw logger.fail(
+        `Invalid glob: '${str}'. ${ALL_WORKSPACES_MACRO} must be at the start of the string.`,
+      )
+    }
+
+    const rootDirIdx = str.indexOf(ROOT_DIR_MACRO)
+    if (rootDirIdx > 0) {
+      throw logger.fail(
+        `Invalid glob: '${str}'. ${ROOT_DIR_MACRO} must be at the start of the string.`,
+      )
+    }
+
+    if (allWorkspaceIdx === 0) {
+      return str.replace(ALL_WORKSPACES_MACRO, allWorkspaceDirsGlob)
+    } else if (rootDirIdx === 0) {
+      return str.replace(ROOT_DIR_MACRO, workspaceRoot)
     } else if (str.startsWith('/')) {
       return str
     } else {
       return path.join(taskDir, str)
     }
   })
+}
+
 /**
  *
  * @param {string} dir
@@ -106,4 +134,28 @@ function visitAllFiles(dir, visit) {
       visit(fullPath)
     }
   }
+}
+
+/**
+ *
+ * @param {import('../tasks/TaskGraph.js').TaskGraph} tasks
+ * @param {import('../types.js').ScheduledTask} task
+ * @returns
+ */
+export function getOutputFiles(tasks, task) {
+  const taskConfig = tasks.config.getTaskConfig(task.workspace, task.scriptName)
+
+  const cacheConfig = taskConfig.cache
+  if (cacheConfig === 'none' || cacheConfig.outputs.include.length === 0) {
+    return null
+  }
+
+  const localFiles = globCacheConfig({
+    task,
+    workspaceRoot: tasks.config.project.root.dir,
+    includes: makeGlobsAbsolute(cacheConfig.outputs.include, tasks.config, task.workspace.dir),
+    excludes: makeGlobsAbsolute(cacheConfig.outputs.exclude, tasks.config, task.workspace.dir),
+  })
+
+  return [...localFiles].sort()
 }

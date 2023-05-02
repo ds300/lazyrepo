@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { formatZodError } from '../formatZodError.js'
 import { readFileSync } from '../fs.js'
 import { logger } from '../logger/logger.js'
-import { uniq } from '../uniq.js'
+import { uniq } from '../utils/uniq.js'
 
 const packageJsonSchema = z.object({
   name: z.string(),

@@ -169,8 +169,6 @@ test('logs error with exit 1 when config is invalid', async () => {
       expect(output).toMatchInlineSnapshot(`
         "lazyrepo 0.0.0-test
         -------------------
-
-
         ∙ ERROR ∙ Failed reading config file at '__ROOT_DIR__/lazy.config.mjs'
         Unrecognized key(s) in object: 'foo'
         "
@@ -300,4 +298,43 @@ describe('in nested workspaces', () => {
       },
     )
   })
+})
+
+it('warns you if you are using the old .tasks key but it still works', async () => {
+  await runIntegrationTest(
+    {
+      packageManager: 'npm',
+      structure: makeRepo({
+        configFileContent: `export default { tasks: { build: { execution: 'top-level', baseCommand: 'echo BUILD_SUCCESS' } } }`,
+      }),
+      workspaceGlobs: ['packages/*'],
+    },
+    async (t) => {
+      const { status, output } = await t.exec(['build'])
+
+      expect(status).toBe(0)
+      expect(output).toMatchInlineSnapshot(`
+        "lazyrepo 0.0.0-test
+        -------------------
+        ⚠️ The "tasks" property is deprecated. Please use "scripts" instead.
+        Loaded config file: lazy.config.js
+
+        build::<rootDir> finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
+        build::<rootDir> finding files matching lazy.config.* took 1.00s
+        build::<rootDir> finding files matching **/* took 1.00s
+        build::<rootDir> hashed 7/7 files in 1.00s
+        build::<rootDir> cache miss, no previous manifest found
+        build::<rootDir> RUN echo BUILD_SUCCESS in 
+        build::<rootDir> BUILD_SUCCESS
+        build::<rootDir> input manifest: .lazy/build/manifest.tsv
+        build::<rootDir> ✔ done in 1.00s
+
+             Tasks:  1 successful, 1 total
+            Cached:  0/1 cached
+              Time:  1.00s
+
+        "
+      `)
+    },
+  )
 })

@@ -1,3 +1,114 @@
+# v0.0.0-alpha.26 (Tue May 02 2023)
+
+#### 🐛 Bug Fix
+
+- [fix] allow top-level scripts to run after other scripts [#98](https://github.com/ds300/lazyrepo/pull/98) ([@ds300](https://github.com/ds300))
+
+#### Authors: 1
+
+- David Sheldrick ([@ds300](https://github.com/ds300))
+
+---
+
+# v0.0.0-alpha.25 (Tue May 02 2023)
+
+#### 🐛 Bug Fix
+
+- fix filter option. closes #96 [#97](https://github.com/ds300/lazyrepo/pull/97) ([@ds300](https://github.com/ds300))
+
+#### Authors: 1
+
+- David Sheldrick ([@ds300](https://github.com/ds300))
+
+---
+
+# v0.0.0-alpha.24 (Tue May 02 2023)
+
+### Release Notes
+
+#### Cache console output ([#92](https://github.com/ds300/lazyrepo/pull/92))
+
+- Add support for a `logMode` option with the following options:
+  - `'none'` – console output from tasks is only written to log files, never printed.
+  - `'new-only'` (default) – console output from tasks is only printed if the task actually runs (i.e. is a cache miss or has cache disabled)
+  - `'errors-only'` – only log the output if the task fails
+  - `'full'` – always log the output, including the cached output if the task was a cache hit.
+- Changes the output paths of manifests and diffs.
+
+---
+
+#### 🚀 Enhancement
+
+- Cache output files [#95](https://github.com/ds300/lazyrepo/pull/95) ([@ds300](https://github.com/ds300))
+- Cache console output [#92](https://github.com/ds300/lazyrepo/pull/92) ([@ds300](https://github.com/ds300))
+- Support workspace overrides [#86](https://github.com/ds300/lazyrepo/pull/86) ([@ds300](https://github.com/ds300))
+
+#### 🐛 Bug Fix
+
+- URL-safe paths based on script names [#94](https://github.com/ds300/lazyrepo/pull/94) ([@ds300](https://github.com/ds300))
+- log.fail should throw [#90](https://github.com/ds300/lazyrepo/pull/90) ([@ds300](https://github.com/ds300))
+
+#### Authors: 1
+
+- David Sheldrick ([@ds300](https://github.com/ds300))
+
+---
+
+# v0.0.0-alpha.23 (Fri Apr 28 2023)
+
+#### 💥 Breaking Change
+
+- Rename "tasks" config option to "scripts" [#83](https://github.com/ds300/lazyrepo/pull/83) ([@ds300](https://github.com/ds300))
+
+#### 🚀 Enhancement
+
+- Log full diff + manifest on CI [#85](https://github.com/ds300/lazyrepo/pull/85) ([@ds300](https://github.com/ds300))
+
+#### ⚠️ Pushed to `main`
+
+- fix canary script ([@ds300](https://github.com/ds300))
+- prettier ([@ds300](https://github.com/ds300))
+- Update README.md ([@ds300](https://github.com/ds300))
+
+#### 🏠 Internal
+
+- add pr-label-enforcer worker to repo [#82](https://github.com/ds300/lazyrepo/pull/82) ([@ds300](https://github.com/ds300))
+
+#### Authors: 1
+
+- David Sheldrick ([@ds300](https://github.com/ds300))
+
+---
+
+# v0.0.0-alpha.22 (Tue Apr 25 2023)
+
+#### 🐛 Bug Fix
+
+- tests(manifest constructor): add property-based-tests & fix bugs [#80](https://github.com/ds300/lazyrepo/pull/80) ([@ds300](https://github.com/ds300))
+
+#### ⚠️ Pushed to `main`
+
+- Update README.md ([@ds300](https://github.com/ds300))
+- center logo ([@ds300](https://github.com/ds300))
+- simplify svg ([@ds300](https://github.com/ds300))
+- refine logo ([@ds300](https://github.com/ds300))
+- update logo again ([@ds300](https://github.com/ds300))
+- update logo ([@ds300](https://github.com/ds300))
+
+#### 🏠 Internal
+
+- Run Label Enforcer on Cloudflare worker [#81](https://github.com/ds300/lazyrepo/pull/81) ([@ds300](https://github.com/ds300))
+
+#### 🧪 Tests
+
+- tests: use memfs in ManifestConstructor.test [#78](https://github.com/ds300/lazyrepo/pull/78) ([@ds300](https://github.com/ds300))
+
+#### Authors: 1
+
+- David Sheldrick ([@ds300](https://github.com/ds300))
+
+---
+
 # v0.0.0-alpha.21 (Sat Apr 22 2023)
 
 #### 🐛 Bug Fix
