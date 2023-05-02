@@ -53,10 +53,10 @@ test(`help prints with exit 0 when you pass --help`, async () => {
           $ lazy inherit --help
 
         Options:
-          --filter="<path-glob>"  [string] only run the script in packages that match the given path glob 
-          --force                 [boolean] ignore the cache (default: false)
-          --verbose               [boolean] verbose log output (default: false)
-          -h, --help              Display this message 
+          --filter <path-glob>  [string] only run the script in packages that match the given path glob 
+          --force               [boolean] ignore the cache (default: false)
+          --verbose             [boolean] verbose log output (default: false)
+          -h, --help            Display this message 
         "
       `)
       expect(status).toBe(0)
@@ -99,10 +99,10 @@ test(`help prints with exit 1 if you pass nothing`, async () => {
           $ lazy inherit --help
 
         Options:
-          --filter="<path-glob>"  [string] only run the script in packages that match the given path glob 
-          --force                 [boolean] ignore the cache (default: false)
-          --verbose               [boolean] verbose log output (default: false)
-          -h, --help              Display this message 
+          --filter <path-glob>  [string] only run the script in packages that match the given path glob 
+          --force               [boolean] ignore the cache (default: false)
+          --verbose             [boolean] verbose log output (default: false)
+          -h, --help            Display this message 
         "
       `)
       expect(status).toBe(1)

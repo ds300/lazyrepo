@@ -15,7 +15,7 @@ const cli = cac('lazy')
 cli
   .command('<script>', 'run the script in all packages that support it')
   .option(
-    '--filter="<path-glob>"',
+    '--filter <path-glob>',
     '[string] only run the script in packages that match the given path glob',
   )
   .option('--force', '[boolean] ignore the cache', {
@@ -32,7 +32,7 @@ cli
 cli
   .command('run <script>', 'run the script in all packages that support it')
   .option(
-    '--filter="<path-glob>"',
+    '--filter <path-glob>',
     '[string] only run the script in packages that match the given path glob',
   )
   .option('--force', '[boolean] ignore the cache', {
