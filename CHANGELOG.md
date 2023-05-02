@@ -1,3 +1,15 @@
+# v0.0.0-alpha.25 (Tue May 02 2023)
+
+#### 🐛 Bug Fix
+
+- fix filter option. closes #96 [#97](https://github.com/ds300/lazyrepo/pull/97) ([@ds300](https://github.com/ds300))
+
+#### Authors: 1
+
+- David Sheldrick ([@ds300](https://github.com/ds300))
+
+---
+
 # v0.0.0-alpha.24 (Tue May 02 2023)
 
 ### Release Notes
