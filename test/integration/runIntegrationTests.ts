@@ -191,27 +191,39 @@ const create = (path: string, file: File) => {
 
 type PackageManager = 'yarn' | 'npm' | 'pnpm'
 
+type RootConfig = {
+  packageJson?: string
+  pnpmWorkspaceYaml?: string
+}
+
 export async function runIntegrationTest(
   config: {
     packageManager: 'yarn' | 'npm' | 'pnpm'
     workspaceGlobs: string[]
     structure: Dir
+    workspaceConfig?: RootConfig
   },
   fn: (t: TestHarness) => Promise<void>,
 ) {
   const dir = join(process.cwd(), '.test', nanoid())
+  const packageJson =
+    config.workspaceConfig?.packageJson ??
+    makePackageJson({
+      type: 'module',
+      workspaces: config.packageManager === 'pnpm' ? undefined : config.workspaceGlobs,
+    })
+  const pnpmWorkspaceYaml =
+    config.workspaceConfig?.pnpmWorkspaceYaml ??
+    (config.packageManager === 'pnpm' ? makePnpmWorkspaceYaml(config.workspaceGlobs) : undefined)
+
   // create file structure in dir
 
   create(dir, {
     'pnpm-lock.yaml': config.packageManager === 'pnpm' ? '' : undefined,
     'yarn.lock': config.packageManager === 'yarn' ? '' : undefined,
     'package-lock.json': config.packageManager === 'npm' ? '' : undefined,
-    'pnpm-workspace.yaml':
-      config.packageManager === 'pnpm' ? makeWorkspaceYaml(config.workspaceGlobs) : undefined,
-    'package.json': makePackageJson({
-      type: 'module',
-      workspaces: config.packageManager === 'pnpm' ? undefined : config.workspaceGlobs,
-    }),
+    'pnpm-workspace.yaml': pnpmWorkspaceYaml,
+    'package.json': packageJson,
     ...config.structure,
   })
 
@@ -231,6 +243,6 @@ export function makeConfigFile(config: LazyConfig) {
   return `export default ${JSON.stringify(config)}`
 }
 
-function makeWorkspaceYaml(globs: string[]) {
+export function makePnpmWorkspaceYaml(globs: string[]) {
   return `packages:\n${globs.map((glob) => `  - ${glob}`).join('\n')}\n`
 }
