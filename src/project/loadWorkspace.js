@@ -79,14 +79,21 @@ export function loadWorkspace(dir) {
   try {
     packageJson = readPackageJsonIfExists(dir)
   } catch (err) {
-    logger.fail(`Failed reading package.json in '${dir}'`, {
+    throw logger.fail(`Failed reading package.json in '${dir}'`, {
       detail: err instanceof Error ? err.message : undefined,
     })
   }
   if (!packageJson) {
     throw new Error(`Could not find package.json in '${dir}'`)
   }
-  const pnpmWorkspaceYaml = readPnpmWorkspaceYamlIfExists(dir)
+  let pnpmWorkspaceYaml
+  try {
+    pnpmWorkspaceYaml = readPnpmWorkspaceYamlIfExists(dir)
+  } catch (err) {
+    throw logger.fail(`Failed reading pnpm-workspace.yaml in '${dir}'`, {
+      detail: err instanceof Error ? err.message : undefined,
+    })
+  }
   if (packageJson.workspaces && pnpmWorkspaceYaml) {
     throw new Error(`Both pnpm-workspace.yaml and package.json workspaces are defined in '${dir}'`)
   }
