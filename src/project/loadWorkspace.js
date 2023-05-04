@@ -84,7 +84,7 @@ export function loadWorkspace(dir) {
     })
   }
   if (!packageJson) {
-    throw new Error(`Could not find package.json in '${dir}'`)
+    throw logger.fail(`Could not find package.json in '${dir}'`)
   }
   let pnpmWorkspaceYaml
   try {
@@ -95,7 +95,9 @@ export function loadWorkspace(dir) {
     })
   }
   if (packageJson.workspaces && pnpmWorkspaceYaml) {
-    throw new Error(`Both pnpm-workspace.yaml and package.json workspaces are defined in '${dir}'`)
+    throw logger.fail(
+      `Both pnpm-workspace.yaml and package.json workspaces are defined in '${dir}'`,
+    )
   }
   return {
     dir,

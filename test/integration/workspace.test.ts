@@ -143,9 +143,12 @@ test('throws error with exit 1 when both package.json and pnpm-workspace.yaml wo
     async (t) => {
       const { status, output } = await t.exec(['build'], { expectError: true })
       expect(status).toBe(1)
-      expect(output).toContain(
-        "Both pnpm-workspace.yaml and package.json workspaces are defined in '__ROOT_DIR__'",
-      )
+      expect(output).toMatchInlineSnapshot(`
+        "lazyrepo 0.0.0-test
+        -------------------
+        ∙ ERROR ∙ Both pnpm-workspace.yaml and package.json workspaces are defined in '__ROOT_DIR__'
+        "
+      `)
     },
   )
 })
