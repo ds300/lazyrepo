@@ -319,9 +319,7 @@ it('warns you if you are using the old .tasks key but it still works', async () 
         ⚠️ The "tasks" property is deprecated. Please use "scripts" instead.
         Loaded config file: lazy.config.js
 
-        build::<rootDir> finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-        build::<rootDir> finding files matching lazy.config.* took 1.00s
-        build::<rootDir> finding files matching **/* took 1.00s
+        build::<rootDir> finding files took 1.00s
         build::<rootDir> hashed 7/7 files in 1.00s
         build::<rootDir> cache miss, no previous manifest found
         build::<rootDir> RUN echo BUILD_SUCCESS in 

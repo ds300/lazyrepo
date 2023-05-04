@@ -49,9 +49,7 @@ describe('on ci', () => {
           -------------------
           No config files found, using default configuration.
 
-          build::packages/utils finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-          build::packages/utils finding files matching lazy.config.* took 1.00s
-          build::packages/utils finding files matching packages/utils/**/* took 1.00s
+          build::packages/utils finding files took 1.00s
           build::packages/utils hashed 3/3 files in 1.00s
           build::packages/utils cache miss, no previous manifest found
           build::packages/utils RUN echo $RANDOM > .out.txt in packages/utils
@@ -63,9 +61,7 @@ describe('on ci', () => {
 
           ::endgroup::
           build::packages/utils ✔ done in 1.00s
-          build::packages/core finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-          build::packages/core finding files matching lazy.config.* took 1.00s
-          build::packages/core finding files matching packages/core/**/* took 1.00s
+          build::packages/core finding files took 1.00s
           build::packages/core hashed 3/3 files in 1.00s
           build::packages/core cache miss, no previous manifest found
           build::packages/core RUN echo $RANDOM > .out.txt in packages/core
@@ -124,9 +120,7 @@ describe('on ci', () => {
           -------------------
           No config files found, using default configuration.
 
-          build::packages/utils finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-          build::packages/utils finding files matching lazy.config.* took 1.00s
-          build::packages/utils finding files matching packages/utils/**/* took 1.00s
+          build::packages/utils finding files took 1.00s
           build::packages/utils hashed 1/2 files in 1.00s
           build::packages/utils cache miss
           ::group::build::packages/utils  changes since last run
@@ -141,9 +135,7 @@ describe('on ci', () => {
 
           ::endgroup::
           build::packages/utils ✔ done in 1.00s
-          build::packages/core finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-          build::packages/core finding files matching lazy.config.* took 1.00s
-          build::packages/core finding files matching packages/core/**/* took 1.00s
+          build::packages/core finding files took 1.00s
           build::packages/core hashed 1/4 files in 1.00s
           build::packages/core cache miss
           ::group::build::packages/core  changes since last run
@@ -196,9 +188,7 @@ describe('on ci', () => {
           -------------------
           No config files found, using default configuration.
 
-          build::packages/utils finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-          build::packages/utils finding files matching lazy.config.* took 1.00s
-          build::packages/utils finding files matching packages/utils/**/* took 1.00s
+          build::packages/utils finding files took 1.00s
           build::packages/utils hashed 3/3 files in 1.00s
           build::packages/utils cache miss, no previous manifest found
           build::packages/utils RUN echo $RANDOM > .out.txt in packages/utils
@@ -206,9 +196,7 @@ describe('on ci', () => {
           build::packages/utils  input manifest
           [ grouped content suppressed on unsupported CI environment ]
           build::packages/utils ✔ done in 1.00s
-          build::packages/core finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-          build::packages/core finding files matching lazy.config.* took 1.00s
-          build::packages/core finding files matching packages/core/**/* took 1.00s
+          build::packages/core finding files took 1.00s
           build::packages/core hashed 3/3 files in 1.00s
           build::packages/core cache miss, no previous manifest found
           build::packages/core RUN echo $RANDOM > .out.txt in packages/core
