@@ -1,8 +1,9 @@
 import path from 'path'
 import yaml from 'yaml'
 import { z } from 'zod'
-import { fromZodError } from 'zod-validation-error'
+import { formatZodError } from '../formatZodError.js'
 import { readFileSync } from '../fs.js'
+import { logger } from '../logger/logger.js'
 import { uniq } from '../utils/uniq.js'
 
 const packageJsonSchema = z.object({
@@ -39,11 +40,7 @@ function readPackageJsonIfExists(dir) {
     return packageJsonSchema.parse(JSON.parse(packageJsonString))
   } catch (err) {
     if (err instanceof z.ZodError) {
-      const validationError = fromZodError(err, {
-        issueSeparator: '\n',
-        prefix: '',
-        prefixSeparator: '',
-      })
+      const validationError = formatZodError(err)
       throw new Error(validationError.message)
     }
     throw err
@@ -66,11 +63,7 @@ function readPnpmWorkspaceYamlIfExists(dir) {
     return pnpmWorkspaceYamlSchema.parse(yaml.parse(pnpmWorkspaceYamlString))
   } catch (err) {
     if (err instanceof z.ZodError) {
-      const validationError = fromZodError(err, {
-        issueSeparator: '\n',
-        prefix: '',
-        prefixSeparator: '',
-      })
+      const validationError = formatZodError(err)
       throw new Error(validationError.message)
     }
     throw err
@@ -82,13 +75,29 @@ function readPnpmWorkspaceYamlIfExists(dir) {
  * @returns {import('./project-types.js').PartialWorkspace}
  */
 export function loadWorkspace(dir) {
-  const packageJson = readPackageJsonIfExists(dir)
-  if (!packageJson) {
-    throw new Error(`Could not find package.json in ${dir}`)
+  let packageJson
+  try {
+    packageJson = readPackageJsonIfExists(dir)
+  } catch (err) {
+    throw logger.fail(`Failed reading package.json in '${dir}'`, {
+      detail: err instanceof Error ? err.message : undefined,
+    })
   }
-  const pnpmWorkspaceYaml = readPnpmWorkspaceYamlIfExists(dir)
+  if (!packageJson) {
+    throw logger.fail(`Could not find package.json in '${dir}'`)
+  }
+  let pnpmWorkspaceYaml
+  try {
+    pnpmWorkspaceYaml = readPnpmWorkspaceYamlIfExists(dir)
+  } catch (err) {
+    throw logger.fail(`Failed reading pnpm-workspace.yaml in '${dir}'`, {
+      detail: err instanceof Error ? err.message : undefined,
+    })
+  }
   if (packageJson.workspaces && pnpmWorkspaceYaml) {
-    throw new Error(`Both pnpm-workspace.yaml and package.json workspaces are defined in ${dir}`)
+    throw logger.fail(
+      `Both pnpm-workspace.yaml and package.json workspaces are defined in '${dir}'`,
+    )
   }
   return {
     dir,
