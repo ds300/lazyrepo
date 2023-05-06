@@ -1,11 +1,11 @@
 import assert from 'assert'
-import glob from 'fast-glob'
 import micromatch from 'micromatch'
 import path, { isAbsolute, join } from 'path'
 import pc from 'picocolors'
 import { readdirSync, statSync } from '../fs.js'
 import { createTimer } from '../utils/createTimer.js'
 import { uniq } from '../utils/uniq.js'
+import { glob } from './lazyglob.js'
 
 /**
  * @param {{task: import('../types.js').ScheduledTask, includes: string[], excludes: string[], workspaceRoot: string}} param
@@ -20,7 +20,6 @@ function globCacheConfig({ includes, excludes, task, workspaceRoot }) {
   for (const file of glob.sync(includes, {
     cwd: task.workspace.dir,
     ignore: [join(workspaceRoot, '**/node_modules/**'), ...excludes],
-    absolute: true,
   })) {
     if (statSync(file).isDirectory()) {
       visitAllFiles(file, (filePath) => files.add(filePath))

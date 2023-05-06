@@ -31,7 +31,7 @@ const spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '
  * @property {string} coloredPrefix
  * @property {string} lastLogLine
  * @property {TaskStatus} status
- * @property {number} startedAt
+ * @property {bigint} startedAt
  */
 
 /** @implements {CliLogger} */
