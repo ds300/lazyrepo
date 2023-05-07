@@ -2,7 +2,6 @@ import assert from 'assert'
 import micromatch from 'micromatch'
 import { basename, isAbsolute, join, normalize } from 'path'
 import { readdirSync, statSync } from '../fs.js'
-import { logger } from '../logger/logger.js'
 import { hashFile } from './hash.js'
 
 class LogicalClock {
@@ -162,9 +161,8 @@ class LazyDir {
         } else if (entry.isFile() && (!result || !(result instanceof LazyFile))) {
           result = new LazyFile(this.#clock, join(this.path, entry.name), 0, 0)
         }
-        if (!result) {
-          logger.warn('Unsupported entry type at path ' + join(this.path, entry.name))
-        } else {
+        // TODO: handle symlinks
+        if (result) {
           this.#_listing.order.push(result)
           this.#_listing.byName[entry.name] = result
         }
