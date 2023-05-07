@@ -51,7 +51,6 @@
     "ci-info": "^3.8.0",
     "cross-spawn": "^7.0.3",
     "esbuild": "^0.17.15",
-    "fast-glob": "^3.2.12",
     "fast-json-stable-stringify": "^2.1.0",
     "micromatch": "^4.0.5",
     "picocolors": "^1.0.0",
