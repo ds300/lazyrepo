@@ -185,11 +185,12 @@ class RegExpMatcher {
 
   /**
    * @param {string} source
+   * @param {RegExp} pattern
    * @param {boolean} negating
    */
-  constructor(source, negating) {
-    this.#pattern = new RegExp(source)
+  constructor(source, pattern, negating) {
     this.source = source
+    this.#pattern = pattern
     this.negating = negating
   }
 
@@ -198,13 +199,11 @@ class RegExpMatcher {
 
   /**
    * @param {LazyEntry} entry
-   * @param {MatchOptions} options
+   * @param {MatchOptions} _options
    * @return {MatchResult}
    */
-  match(entry, options) {
-    const ignore =
-      entry.name[0] === '.' && !options.dot && !this.negating && !this.source.startsWith('^\\.')
-    if (this.#pattern.test(entry.name) && !ignore) {
+  match(entry, _options) {
+    if (this.#pattern.test(entry.name)) {
       return this.next.length === 0 ? 'terminal' : 'partial'
     } else {
       return 'none'
@@ -362,13 +361,14 @@ function findSimpaticoMatcher(next, negating, terminal, pred) {
 
 /**
  *
+ * @param {MatchOptions} opts
  * @param {Matcher} prev
  * @param {string} segment
  * @param {boolean} negating
  * @param {boolean} terminal
  * @returns {Matcher}
  */
-function compilePathSegment(prev, segment, negating, terminal) {
+function compilePathSegment(opts, prev, segment, negating, terminal) {
   if (segment === '**') {
     const existing = findSimpaticoMatcher(
       prev.next,
@@ -405,55 +405,39 @@ function compilePathSegment(prev, segment, negating, terminal) {
     prev.next.push(matcher)
     return matcher
   }
-  // ? means any single character
-  // * means any number of characters
-  // otherwise it's a literal string to match
-  // let's convert anything odd looking into \uXXXX format
-  let regex = '^'
-  for (const char of segment) {
-    if (char === '.') {
-      regex += '\\.'
-    } else if (char === '?') {
-      regex += '.'
-    } else if (char === '*') {
-      regex += '.*'
-    } else if (!char.match(/(\w|-)/)) {
-      regex += '\\u' + char.charCodeAt(0).toString(16).padStart(4, '0')
-    } else {
-      regex += char
-    }
-  }
-  regex += '$'
 
   const existing = findSimpaticoMatcher(
     prev.next,
     negating,
     terminal,
-    (m) => m instanceof RegExpMatcher && m.source === regex,
+    (m) => m instanceof RegExpMatcher && m.source === segment,
   )
   if (existing) return existing
 
-  const matcher = new RegExpMatcher(regex, negating)
+  const regex = micromatch.makeRe(segment, { dot: opts.dot || negating })
+  const matcher = new RegExpMatcher(segment, regex, negating)
   prev.next.push(matcher)
   return matcher
 }
 
 /**
+ * @param {MatchOptions} opts
  * @param {string[]} patterns
  * @param {string} cwd
  */
-function compileMatchers(patterns, cwd) {
+function compileMatchers(opts, patterns, cwd) {
   const root = new RootMatcher()
 
   /**
+   * @param {MatchOptions} opts
    * @param {string[]} segments
    * @param {boolean} negating
    */
-  function addSegments(segments, negating) {
+  function addSegments(opts, segments, negating) {
     let prev = root
     for (let i = 0; i < segments.length; i++) {
       const segment = segments[i]
-      prev = compilePathSegment(prev, segment, negating, i === segments.length - 1)
+      prev = compilePathSegment(opts, prev, segment, negating, i === segments.length - 1)
     }
   }
 
@@ -473,7 +457,7 @@ function compileMatchers(patterns, cwd) {
       negating = true
       if (isFirst) {
         // negating the first matcher implies a "**/*" above it
-        addSegments([...cwd.split('/').filter(Boolean), '**', '*'], false)
+        addSegments(opts, [...cwd.split('/').filter(Boolean), '**', '*'], false)
       }
     }
     if (expansion.includes('\\')) {
@@ -488,7 +472,7 @@ function compileMatchers(patterns, cwd) {
       continue
     }
 
-    addSegments(segments, negating)
+    addSegments(opts, segments, negating)
   }
 
   return root
@@ -619,8 +603,17 @@ class LazyGlob {
     /** @type {LazyGlobOptions['cache']} */
     const cache = opts?.cache ?? 'normal'
 
+    /** @type {MatchOptions} */
+    const matchOpts = {
+      dot: opts?.dot ?? false,
+      types: opts?.types ?? 'files',
+      cwd,
+      expandDirectories: opts?.expandDirectories ?? false,
+    }
+
     const start = process.hrtime.bigint()
     const rootMatcher = compileMatchers(
+      matchOpts,
       patterns.concat(opts?.ignore?.map((p) => '!' + p) ?? []),
       cwd,
     )
