@@ -1,8 +1,10 @@
 /* eslint-disable jest/expect-expect */
+import assert from 'assert'
 import { vol } from 'memfs'
 import { minimatch } from 'minimatch'
 import { dirname, isAbsolute, join } from 'path'
 import { glob } from '../src/manifest/lazyglob.js'
+import { Dir, File } from './integration/runIntegrationTests.js'
 import { Random } from './test-utils.js'
 
 jest.mock('../src/fs.js', () => {
@@ -12,8 +14,6 @@ jest.mock('../src/fs.js', () => {
 beforeEach(() => {
   vol.reset()
 })
-
-type Tree = 'ok' | { [key: string]: Tree }
 
 const FILE_NAMES = ['jeff', 'bulb', 'stove', 'banana', 'stick'] as const
 const EXTENSIONS = ['.js', '.ts', '.json', '.md', '.txt'] as const
@@ -42,47 +42,34 @@ class Source extends Random {
     return name
   }
 
-  getRandomPath(): string {
+  getRandomPath(dir: boolean): string {
     const numSegments = this.random(4) + 1
 
     const segments = []
     for (let i = 0; i < numSegments - 1; i++) {
       segments.push(this.getRandomDirName())
     }
-    segments.push(this.getRandomFileName())
+    if (!dir) {
+      segments.push(this.getRandomFileName())
+    }
     return '/' + segments.join('/')
   }
 
-  getRandomTree(): Tree {
-    const result: Tree = {}
+  getRandomTree(): Dir {
+    const result: Dir = {}
     const numFiles = this.random(10)
     for (let i = 0; i < numFiles; i++) {
-      const path = this.getRandomPath().split('/').filter(Boolean)
-      let node: Exclude<Tree, string> = result
+      const isDir = this.random(4) === 0
+      const path = this.getRandomPath(isDir).split('/').filter(Boolean)
+      let node: Exclude<Dir, string> = result
       for (const segment of path.slice(0, -1)) {
         if (typeof node[segment] !== 'object') {
           node[segment] = {}
         }
-        node = node[segment] as Exclude<Tree, string>
+        node = node[segment] as Exclude<Dir, string>
       }
-      node[path[path.length - 1]] = 'ok'
+      node[path[path.length - 1]] = isDir ? {} : 'ok'
     }
-    return result
-  }
-
-  getRandomPaths(): string[] {
-    const tree = this.getRandomTree()
-    const result: string[] = []
-    const traverse = (path: string[], node: Tree) => {
-      if (node === 'ok') {
-        result.push('/' + path.join('/'))
-        return
-      }
-      for (const [segment, childNode] of Object.entries(node)) {
-        traverse([...path, segment], childNode)
-      }
-    }
-    traverse([], tree)
     return result
   }
 
@@ -126,17 +113,75 @@ class Source extends Random {
     ])
   }
 
-  randomDirFromPaths(paths: string[]): string {
-    if (paths.length === 0) {
-      return '/'
+  randomPathFromDir(dir: Dir): string {
+    const maxLength = this.random(4)
+    let node = dir as File
+    const path = []
+    for (let i = 0; i < maxLength; i++) {
+      if (!node || typeof node !== 'object') {
+        break
+      }
+      const segment = this.useOneOf(Object.keys(node))
+      if (segment) {
+        path.push(segment)
+        node = node[segment]
+      } else {
+        break
+      }
     }
-    const parts = this.useOneOf(paths).split('/').filter(Boolean)
 
-    return '/' + parts.slice(0, this.random(parts.length)).join('/')
+    return '/' + path.join('/')
   }
 }
 
-function referenceGlob(paths: string[], patterns: string[], options: MatchOptions) {
+function extractDirs(dir: Dir) {
+  const result: string[] = []
+  const traverse = (path: string[], node: File) => {
+    if (!node) return
+    if (typeof node === 'string') return
+    if (path.length) {
+      result.push('/' + path.join('/'))
+    }
+    for (const [segment, childNode] of Object.entries(node)) {
+      traverse([...path, segment], childNode)
+    }
+  }
+  traverse([], dir)
+  return result
+}
+
+function extractFiles(dir: Dir) {
+  const result: string[] = []
+  const traverse = (path: string[], node: File) => {
+    if (!node) return
+    if (typeof node === 'string') {
+      result.push('/' + path.join('/'))
+      return
+    }
+    for (const [segment, childNode] of Object.entries(node)) {
+      traverse([...path, segment], childNode)
+    }
+  }
+  traverse([], dir)
+  return result
+}
+
+function referenceGlob(paths: string[] | Dir, patterns: string[], options: MatchOptions) {
+  if (!Array.isArray(paths)) {
+    switch (options.types) {
+      case 'dirs':
+        paths = extractDirs(paths)
+        break
+      case 'files':
+        paths = extractFiles(paths)
+        break
+      case 'all':
+        paths = [...extractDirs(paths), ...extractFiles(paths)].sort()
+        break
+      default:
+        assert(false)
+    }
+  }
   // todo: if options.dirs then extract dirs from paths
   const result = new Set<string>()
   for (let pattern of patterns) {
@@ -165,17 +210,36 @@ function referenceGlob(paths: string[], patterns: string[], options: MatchOption
   return [...result].sort()
 }
 
-function makeFiles(paths: string[]) {
-  for (const path of paths) {
-    const dir = dirname(path)
-    vol.mkdirSync(dir, { recursive: true })
-    vol.writeFileSync(path, 'ok')
-    vol.statSync(dir)
-    vol.statSync(path)
+const create = (path: string, file: File) => {
+  if (typeof file === 'undefined') {
+    // ignore
+  } else if (typeof file === 'string') {
+    // create file
+    vol.writeFileSync(path, file)
+  } else {
+    // create dir
+    vol.mkdirSync(path, { recursive: true })
+    Object.entries(file).forEach(([fileName, file]) => {
+      create(join(path, fileName), file)
+    })
   }
 }
 
-function both(paths: string[], pattern: string[], options: MatchOptions) {
+function makeFiles(paths: string[] | Dir) {
+  if (Array.isArray(paths)) {
+    for (const path of paths) {
+      const dir = dirname(path)
+      vol.mkdirSync(dir, { recursive: true })
+      vol.writeFileSync(path, 'ok')
+      vol.statSync(dir)
+      vol.statSync(path)
+    }
+  } else {
+    create('/', paths)
+  }
+}
+
+function both(paths: string[] | Dir, pattern: string[], options: MatchOptions) {
   const actual = glob.sync(pattern, { ...options, cache: 'none' }).sort()
   const expected = referenceGlob(paths, pattern, options).sort()
   expect(actual).toEqual(expected)
@@ -188,32 +252,37 @@ function doComparison({
   paths,
   expandDirectories,
   dot,
+  types,
 }: {
   pattern: string
   cwd: string
-  paths: string[]
+  paths: string[] | Dir
   expandDirectories: boolean
   dot: boolean
+  types: MatchTypes
 }) {
   makeFiles(paths)
-  both(paths, [pattern], { dot, types: 'files', cwd, expandDirectories })
+  return both(paths, [pattern], { dot, types, cwd, expandDirectories })
 }
 
 function runTest(seed: number) {
   const source = new Source(seed)
-  const paths = source.getRandomPaths()
+  const paths = source.getRandomTree()
 
   const pattern = source.getRandomPattern()
-  const cwd = source.randomDirFromPaths(paths)
+  const cwd = source.randomPathFromDir(paths)
 
   const expandDirectories = source.random(2) === 0
   const dot = source.random(2) === 0
+
+  const types = source.useOneOf(['files', 'dirs', 'all'] as const)
+
   try {
-    doComparison({ pattern, cwd, paths, expandDirectories, dot })
+    doComparison({ pattern, cwd, paths, expandDirectories, dot, types })
   } catch (e) {
     console.error(
       'failed with seed ' + seed,
-      JSON.stringify({ pattern, cwd, paths, expandDirectories, dot }, null, 2),
+      JSON.stringify({ pattern, cwd, paths, expandDirectories, dot, types }, null, 2),
     )
     throw e
   }
@@ -239,6 +308,7 @@ test(`regression`, () => {
     ],
     expandDirectories: true,
     dot: false,
+    types: 'files',
   })
 })
 
@@ -255,6 +325,7 @@ test(`regression 2`, () => {
     ],
     expandDirectories: true,
     dot: false,
+    types: 'files',
   })
 })
 
@@ -272,6 +343,7 @@ test('regression 3', () => {
     ],
     expandDirectories: true,
     dot: false,
+    types: 'files',
   })
 })
 
@@ -290,6 +362,7 @@ test('regression 4', () => {
     ],
     expandDirectories: true,
     dot: false,
+    types: 'files',
   })
 })
 
@@ -308,6 +381,7 @@ test('regression 5', () => {
     ],
     expandDirectories: true,
     dot: false,
+    types: 'files',
   })
 })
 
@@ -318,6 +392,7 @@ test('regression 6', () => {
     paths: ['/.src/dist/dist_lib/bulb.txt'],
     expandDirectories: true,
     dot: false,
+    types: 'files',
   })
 })
 
@@ -328,6 +403,7 @@ test('regression 7', () => {
     paths: ['/.dist-src'],
     expandDirectories: true,
     dot: false,
+    types: 'files',
   })
 })
 
@@ -338,6 +414,7 @@ test('regression 8', () => {
     paths: ['/lib/src/.dist-lib'],
     expandDirectories: true,
     dot: false,
+    types: 'files',
   })
 })
 
@@ -348,10 +425,11 @@ test('regression 9', () => {
     paths: ['/src-node_modules/banana.ts'],
     expandDirectories: false,
     dot: false,
+    types: 'files',
   })
 })
 
-test('expandDirectories', () => {
+test('the "expandDirectories" option', () => {
   const paths = ['/src/stick.txt', '/src/banana/stick.txt', '/sugar.log', '/berthold']
   makeFiles(paths)
   const expanded = both(paths, ['s*'], {
@@ -373,7 +451,7 @@ test('expandDirectories', () => {
   expect(notExpanded).toEqual(['/sugar.log'])
 })
 
-describe('dot', () => {
+describe('the "dot" option', () => {
   const paths = [
     '/src/stick.txt',
     '/src/.test/stick.txt',
@@ -429,4 +507,136 @@ describe('dot', () => {
 
     expect(result).toEqual(['/src/.ignore', '/src/.test/stick.txt', '/src/stick.txt'])
   })
+})
+
+describe('the "types" option', () => {
+  const dir: Dir = {
+    src: {
+      'banana.js': 'ok',
+      'bubbles.js': 'ok',
+      utils: {
+        'index.js': 'ok',
+      },
+      '.test': {
+        'index.test.js': 'ok',
+      },
+    },
+    lib: {
+      'index.js': 'ok',
+    },
+    'package.json': 'ok',
+    '.gitignore': 'ok',
+    '.lazy': {
+      manifest: 'ok',
+    },
+  }
+  beforeEach(() => {
+    create('/', dir)
+  })
+
+  it('should return only files when "files" is passed', () => {
+    const result = both(dir, ['**'], {
+      cwd: '/',
+      expandDirectories: true,
+      dot: true,
+      types: 'files',
+    })
+
+    expect(result).toEqual([
+      '/.gitignore',
+      '/.lazy/manifest',
+      '/lib/index.js',
+      '/package.json',
+      '/src/.test/index.test.js',
+      '/src/banana.js',
+      '/src/bubbles.js',
+      '/src/utils/index.js',
+    ])
+  })
+
+  it('should return only dirs when "dirs" is passed', () => {
+    const result = both(dir, ['**'], {
+      cwd: '/',
+      expandDirectories: true,
+      dot: true,
+      types: 'dirs',
+    })
+
+    expect(result).toEqual(['/.lazy', '/lib', '/src', '/src/.test', '/src/utils'])
+  })
+
+  it('should return both files and dirs when "all" is passed', () => {
+    const result = both(dir, ['**'], {
+      cwd: '/',
+      expandDirectories: true,
+      dot: true,
+      types: 'all',
+    })
+
+    expect(result).toEqual([
+      '/.gitignore',
+      '/.lazy',
+      '/.lazy/manifest',
+      '/lib',
+      '/lib/index.js',
+      '/package.json',
+      '/src',
+      '/src/.test',
+      '/src/.test/index.test.js',
+      '/src/banana.js',
+      '/src/bubbles.js',
+      '/src/utils',
+      '/src/utils/index.js',
+    ])
+  })
+})
+
+test('regression 10', () => {
+  expect(
+    doComparison({
+      pattern: '**',
+      cwd: '/lib',
+      paths: {
+        lib: {
+          node_modules: {
+            banana: 'ok',
+          },
+        },
+      },
+      expandDirectories: true,
+      dot: false,
+      types: 'dirs',
+    }),
+  ).toMatchInlineSnapshot(`
+    [
+      "/lib/node_modules",
+    ]
+  `)
+})
+
+test('regression 11', () => {
+  expect(
+    doComparison({
+      pattern: '**',
+      cwd: '/lib',
+      paths: {
+        lib: {
+          node_modules: {
+            lib_dist: {
+              stove: 'ok',
+            },
+          },
+        },
+      },
+      expandDirectories: false,
+      dot: true,
+      types: 'all',
+    }),
+  ).toMatchInlineSnapshot(`
+    [
+      "/lib/node_modules",
+      "/lib/node_modules/lib_dist",
+      "/lib/node_modules/lib_dist/stove",
+    ]
+  `)
 })

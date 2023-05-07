@@ -514,6 +514,7 @@ function isDirThatExists(path) {
  */
 function matchInDir(dir, options, matchers, result = []) {
   for (const child of dir.listing.order) {
+    if (options.types === 'dirs' && !(child instanceof LazyDir)) continue
     matchDirEntry(child, options, matchers, result)
   }
   return result
@@ -532,6 +533,13 @@ function matchDirEntry(entry, options, layers, result) {
    */
   const nextLayers = []
   let didPush = false
+
+  const includeEntry = () => {
+    if (!didPush) {
+      result.push(entry.path)
+      didPush = true
+    }
+  }
 
   /** @param {Matcher} matcher */
   function checkLayer(matcher, recursive = false) {
@@ -554,6 +562,13 @@ function matchDirEntry(entry, options, layers, result) {
         if (match !== 'try-next') {
           nextLayers.unshift(matcher)
         }
+        if (
+          matcher.next.length === 0 &&
+          entry instanceof LazyDir &&
+          (options.types === 'all' || options.types === 'dirs')
+        ) {
+          includeEntry()
+        }
         break
       case 'terminal':
         if (matcher.negating) {
@@ -568,10 +583,16 @@ function matchDirEntry(entry, options, layers, result) {
               nextLayers.unshift(new RecursiveWildcardMatcher(false))
             }
           }
-        } else if (!didPush) {
-          result.push(entry.path)
-          didPush = true
         }
+
+        if (
+          options.types === 'all' ||
+          (options.types === 'dirs' && entry instanceof LazyDir) ||
+          (options.types === 'files' && entry instanceof LazyFile)
+        ) {
+          includeEntry()
+        }
+
         break
       default:
         throw new Error(`Unknown match type: ${match}`)
