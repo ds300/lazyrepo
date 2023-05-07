@@ -148,7 +148,9 @@ function referenceGlob(paths: string[], patterns: string[], options: MatchOption
       pattern = join(options.cwd, pattern)
     }
     const matches = paths.filter((p) => {
-      return minimatch(p, options.expandDirectories ? pattern + '{,/**}' : pattern, { dot: false })
+      return minimatch(p, options.expandDirectories ? pattern + '{,/**}' : pattern, {
+        dot: options.dot,
+      })
     })
     if (isNegative) {
       for (const match of matches) {
@@ -185,14 +187,16 @@ function doComparison({
   cwd,
   paths,
   expandDirectories,
+  dot,
 }: {
   pattern: string
   cwd: string
   paths: string[]
   expandDirectories: boolean
+  dot: boolean
 }) {
   makeFiles(paths)
-  both(paths, [pattern], { dot: false, types: 'files', cwd, expandDirectories })
+  both(paths, [pattern], { dot, types: 'files', cwd, expandDirectories })
 }
 
 function runTest(seed: number) {
@@ -203,12 +207,13 @@ function runTest(seed: number) {
   const cwd = source.randomDirFromPaths(paths)
 
   const expandDirectories = source.random(2) === 0
+  const dot = source.random(2) === 0
   try {
-    doComparison({ pattern, cwd, paths, expandDirectories })
+    doComparison({ pattern, cwd, paths, expandDirectories, dot })
   } catch (e) {
     console.error(
       'failed with seed ' + seed,
-      JSON.stringify({ pattern, cwd, paths, expandDirectories }, null, 2),
+      JSON.stringify({ pattern, cwd, paths, expandDirectories, dot }, null, 2),
     )
     throw e
   }
@@ -233,6 +238,7 @@ test(`regression`, () => {
       '/node_modules/src_lib/src-lib/banana-stove.js',
     ],
     expandDirectories: true,
+    dot: false,
   })
 })
 
@@ -248,6 +254,7 @@ test(`regression 2`, () => {
       '/stick-bulb',
     ],
     expandDirectories: true,
+    dot: false,
   })
 })
 
@@ -264,6 +271,7 @@ test('regression 3', () => {
       '/dist-node_modules/node_modules/bulb.json',
     ],
     expandDirectories: true,
+    dot: false,
   })
 })
 
@@ -281,6 +289,7 @@ test('regression 4', () => {
       '/src-lib/node_modules_node_modules/stove',
     ],
     expandDirectories: true,
+    dot: false,
   })
 })
 
@@ -298,6 +307,7 @@ test('regression 5', () => {
       '/src/dist-dist/bulb-stick.js',
     ],
     expandDirectories: true,
+    dot: false,
   })
 })
 
@@ -307,6 +317,7 @@ test('regression 6', () => {
     cwd: '/.src/node_modules-dist/node_modules_src',
     paths: ['/.src/dist/dist_lib/bulb.txt'],
     expandDirectories: true,
+    dot: false,
   })
 })
 
@@ -316,6 +327,7 @@ test('regression 7', () => {
     cwd: '/',
     paths: ['/.dist-src'],
     expandDirectories: true,
+    dot: false,
   })
 })
 
@@ -325,6 +337,7 @@ test('regression 8', () => {
     cwd: '/',
     paths: ['/lib/src/.dist-lib'],
     expandDirectories: true,
+    dot: false,
   })
 })
 
@@ -334,6 +347,7 @@ test('regression 9', () => {
     cwd: '/node_modules_node_modules/dist',
     paths: ['/src-node_modules/banana.ts'],
     expandDirectories: false,
+    dot: false,
   })
 })
 
@@ -345,7 +359,7 @@ test('expandDirectories', () => {
     expandDirectories: true,
     dot: false,
     types: 'files',
-  }).sort()
+  })
 
   expect(expanded).toEqual(['/src/banana/stick.txt', '/src/stick.txt', '/sugar.log'])
 
@@ -357,4 +371,62 @@ test('expandDirectories', () => {
   })
 
   expect(notExpanded).toEqual(['/sugar.log'])
+})
+
+describe('dot', () => {
+  const paths = [
+    '/src/stick.txt',
+    '/src/.test/stick.txt',
+    '/src/.ignore',
+    '/.ignore',
+    '/.lazy/manifest',
+  ].sort()
+
+  it('ignores dot files when false', () => {
+    makeFiles(paths)
+    const result = both(paths, ['**'], {
+      cwd: '/',
+      expandDirectories: false,
+      dot: false,
+      types: 'files',
+    }).sort()
+
+    expect(result).toEqual(['/src/stick.txt'])
+  })
+
+  it('ignores dot files in expanded directories', () => {
+    makeFiles(paths)
+    const result = both(paths, ['src'], {
+      cwd: '/',
+      expandDirectories: true,
+      dot: false,
+      types: 'files',
+    }).sort()
+
+    expect(result).toEqual(['/src/stick.txt'])
+  })
+
+  it('does not ignore dot files when true', () => {
+    makeFiles(paths)
+    const result = both(paths, ['**'], {
+      cwd: '/',
+      expandDirectories: false,
+      dot: true,
+      types: 'files',
+    }).sort()
+
+    expect(result).toEqual(paths)
+  })
+
+  it('does not ignore dot files when true in expanded dirs', () => {
+    makeFiles(paths)
+    const result = both(paths, ['src'], {
+      cwd: '/',
+      expandDirectories: true,
+      dot: true,
+      types: 'files',
+    }).sort()
+
+    expect(result).toEqual(['/src/.ignore', '/src/.test/stick.txt', '/src/stick.txt'])
+  })
 })
