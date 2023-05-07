@@ -75,6 +75,7 @@ class Source extends Random {
 
   getRandomPattern(): string {
     const absolute = this.random(4) === 0
+    const negate = this.random(4) === 0
 
     const numParts = this.random(4) + 1
 
@@ -85,6 +86,9 @@ class Source extends Random {
     let result = parts.join('/')
     if (absolute) {
       result = '/' + result
+    }
+    if (negate) {
+      result = '!' + result
     }
     return result
   }
@@ -182,6 +186,9 @@ function referenceGlob(paths: string[] | Dir, patterns: string[], options: Match
         assert(false)
     }
   }
+  if (patterns[0].startsWith('!')) {
+    patterns = ['**', ...patterns]
+  }
   // todo: if options.dirs then extract dirs from paths
   const result = new Set<string>()
   for (let pattern of patterns) {
@@ -193,9 +200,13 @@ function referenceGlob(paths: string[] | Dir, patterns: string[], options: Match
       pattern = join(options.cwd, pattern)
     }
     const matches = paths.filter((p) => {
-      return minimatch(p, options.expandDirectories ? pattern + '{,/**}' : pattern, {
-        dot: options.dot,
-      })
+      return minimatch(
+        p,
+        options.expandDirectories || isNegative ? pattern + '{,/**/*}' : pattern,
+        {
+          dot: options.dot || isNegative,
+        },
+      )
     })
     if (isNegative) {
       for (const match of matches) {
@@ -247,14 +258,14 @@ function both(paths: string[] | Dir, pattern: string[], options: MatchOptions) {
 }
 
 function doComparison({
-  pattern,
+  patterns,
   cwd,
   paths,
   expandDirectories,
   dot,
   types,
 }: {
-  pattern: string
+  patterns: string[]
   cwd: string
   paths: string[] | Dir
   expandDirectories: boolean
@@ -262,14 +273,15 @@ function doComparison({
   types: MatchTypes
 }) {
   makeFiles(paths)
-  return both(paths, [pattern], { dot, types, cwd, expandDirectories })
+  return both(paths, patterns, { dot, types, cwd, expandDirectories })
 }
 
 function runTest(seed: number) {
   const source = new Source(seed)
   const paths = source.getRandomTree()
 
-  const pattern = source.getRandomPattern()
+  const numPatterns = source.random(5) + 1
+  const patterns = new Array(numPatterns).fill(0).map(() => source.getRandomPattern())
   const cwd = source.randomPathFromDir(paths)
 
   const expandDirectories = source.random(2) === 0
@@ -278,11 +290,11 @@ function runTest(seed: number) {
   const types = source.useOneOf(['files', 'dirs', 'all'] as const)
 
   try {
-    doComparison({ pattern, cwd, paths, expandDirectories, dot, types })
+    doComparison({ patterns, cwd, paths, expandDirectories, dot, types })
   } catch (e) {
     console.error(
       'failed with seed ' + seed,
-      JSON.stringify({ pattern, cwd, paths, expandDirectories, dot, types }, null, 2),
+      JSON.stringify({ patterns, cwd, paths, expandDirectories, dot, types }, null, 2),
     )
     throw e
   }
@@ -298,7 +310,7 @@ test(`lazyglob generative tests`, () => {
 
 test(`regression`, () => {
   doComparison({
-    pattern: '/lib',
+    patterns: ['/lib'],
     cwd: '/node_modules/src_lib',
     paths: [
       '/bulb-stove',
@@ -314,7 +326,7 @@ test(`regression`, () => {
 
 test(`regression 2`, () => {
   doComparison({
-    pattern: '*',
+    patterns: ['*'],
     cwd: '/.src',
     paths: [
       '/src/stove-jeff',
@@ -331,7 +343,7 @@ test(`regression 2`, () => {
 
 test('regression 3', () => {
   doComparison({
-    pattern: '{**,*banana}',
+    patterns: ['{**,*banana}'],
     cwd: '/',
     paths: [
       '/lib_dist/dist/.lib_src/stove',
@@ -349,7 +361,7 @@ test('regression 3', () => {
 
 test('regression 4', () => {
   doComparison({
-    pattern: '/**/*/*/*',
+    patterns: ['/**/*/*/*'],
     cwd: '/.src/node_modules',
     paths: [
       '/dist-src/banana-banana.txt',
@@ -368,7 +380,7 @@ test('regression 4', () => {
 
 test('regression 5', () => {
   doComparison({
-    pattern: 'stick',
+    patterns: ['stick'],
     cwd: '/',
     paths: [
       '/src_src/src-lib/lib/bulb-banana',
@@ -387,7 +399,7 @@ test('regression 5', () => {
 
 test('regression 6', () => {
   doComparison({
-    pattern: '/*src',
+    patterns: ['/*src'],
     cwd: '/.src/node_modules-dist/node_modules_src',
     paths: ['/.src/dist/dist_lib/bulb.txt'],
     expandDirectories: true,
@@ -398,7 +410,7 @@ test('regression 6', () => {
 
 test('regression 7', () => {
   doComparison({
-    pattern: '**/{**,.dist*}',
+    patterns: ['**/{**,.dist*}'],
     cwd: '/',
     paths: ['/.dist-src'],
     expandDirectories: true,
@@ -409,7 +421,7 @@ test('regression 7', () => {
 
 test('regression 8', () => {
   doComparison({
-    pattern: '**/{**,.dist*}',
+    patterns: ['**/{**,.dist*}'],
     cwd: '/',
     paths: ['/lib/src/.dist-lib'],
     expandDirectories: true,
@@ -420,7 +432,7 @@ test('regression 8', () => {
 
 test('regression 9', () => {
   doComparison({
-    pattern: '/{dist*,**}',
+    patterns: ['/{dist*,**}'],
     cwd: '/node_modules_node_modules/dist',
     paths: ['/src-node_modules/banana.ts'],
     expandDirectories: false,
@@ -594,7 +606,7 @@ describe('the "types" option', () => {
 test('regression 10', () => {
   expect(
     doComparison({
-      pattern: '**',
+      patterns: ['**'],
       cwd: '/lib',
       paths: {
         lib: {
@@ -617,7 +629,7 @@ test('regression 10', () => {
 test('regression 11', () => {
   expect(
     doComparison({
-      pattern: '**',
+      patterns: ['**'],
       cwd: '/lib',
       paths: {
         lib: {
@@ -639,4 +651,268 @@ test('regression 11', () => {
       "/lib/node_modules/lib_dist/stove",
     ]
   `)
+})
+
+describe('negation layers', () => {
+  const dir: Dir = {
+    src: {
+      'banana.js': 'ok',
+      'bubbles.js': 'ok',
+      utils: {
+        'index.js': 'ok',
+      },
+      '.test': {
+        'index.test.js': 'ok',
+      },
+    },
+    lib: {
+      'index.js': 'ok',
+    },
+    'package.json': 'ok',
+    '.gitignore': 'ok',
+    '.lazy': {
+      manifest: 'ok',
+    },
+  }
+  beforeEach(() => {
+    create('/', dir)
+  })
+
+  it('if the first pattern is a negation, it implies that all files are included to start', () => {
+    const result = both(dir, ['!src'], {
+      cwd: '/',
+      expandDirectories: true,
+      dot: true,
+      types: 'files',
+    })
+
+    expect(result).toMatchInlineSnapshot(`
+      [
+        "/.gitignore",
+        "/.lazy/manifest",
+        "/lib/index.js",
+        "/package.json",
+      ]
+    `)
+  })
+
+  it('allows things to be included after they have been excluded', () => {
+    const result = both(dir, ['!src', 'src/utils'], {
+      cwd: '/',
+      expandDirectories: true,
+      dot: true,
+      types: 'files',
+    })
+
+    expect(result).toMatchInlineSnapshot(`
+      [
+        "/.gitignore",
+        "/.lazy/manifest",
+        "/lib/index.js",
+        "/package.json",
+        "/src/utils/index.js",
+      ]
+    `)
+  })
+
+  it('allows multiple levels of inclusion and exclusion', () => {
+    const result = both(dir, ['src', '!src/utils', '!.*', '.lazy'], {
+      cwd: '/',
+      expandDirectories: true,
+      dot: true,
+      types: 'all',
+    })
+
+    expect(result).toMatchInlineSnapshot(`
+      [
+        "/.lazy",
+        "/.lazy/manifest",
+        "/src",
+        "/src/.test",
+        "/src/.test/index.test.js",
+        "/src/banana.js",
+        "/src/bubbles.js",
+      ]
+    `)
+  })
+})
+
+test('regression 12', () => {
+  doComparison({
+    patterns: ['**/steve', '/**'],
+    cwd: '/',
+    paths: {
+      dist_lib: {
+        jeff: 'ok',
+      },
+    },
+    expandDirectories: false,
+    dot: true,
+    types: 'files',
+  })
+})
+
+test('regression 13', () => {
+  expect(
+    doComparison({
+      patterns: ['jeff', '!**'],
+      cwd: '/',
+      paths: {
+        node_modules: {},
+      },
+      expandDirectories: false,
+      dot: false,
+      types: 'dirs',
+    }),
+  ).toMatchInlineSnapshot(`[]`)
+})
+
+test('regression 14', () => {
+  expect(
+    doComparison({
+      patterns: ['/dist_dist', '**/chips'],
+      cwd: '/dist_dist/src-dist',
+      paths: {
+        dist_dist: {
+          'src-dist': {
+            'stove-stick.txt': 'ok',
+          },
+        },
+      },
+      expandDirectories: true,
+      dot: false,
+      types: 'files',
+    }),
+  ).toMatchInlineSnapshot(`
+    [
+      "/dist_dist/src-dist/stove-stick.txt",
+    ]
+  `)
+})
+
+test('regression 15', () => {
+  expect(
+    doComparison({
+      patterns: ['!src*'],
+      cwd: '/a',
+      paths: {
+        a: {
+          src: {
+            'jeff.md': 'ok',
+          },
+        },
+      },
+      expandDirectories: false,
+      dot: true,
+      types: 'files',
+    }),
+  ).toMatchInlineSnapshot(`[]`)
+})
+
+test('regression 16', () => {
+  expect(
+    doComparison({
+      patterns: ['*/*', '*'],
+      cwd: '/',
+      paths: {
+        src: {
+          dist_dist: {
+            node_modules: {
+              'stove-stick.ts': 'ok',
+            },
+          },
+        },
+      },
+      expandDirectories: false,
+      dot: true,
+      types: 'dirs',
+    }),
+  ).toMatchInlineSnapshot(`
+    [
+      "/src",
+      "/src/dist_dist",
+    ]
+  `)
+})
+
+test('regression 17', () => {
+  expect(
+    doComparison({
+      patterns: ['lib/lib', 'node_modules*', 'node_modules*/jeff'],
+      cwd: '/',
+      paths: {
+        'node_modules-lib': {},
+      },
+      expandDirectories: false,
+      dot: false,
+      types: 'dirs',
+    }),
+  ).toMatchInlineSnapshot(`
+    [
+      "/node_modules-lib",
+    ]
+  `)
+})
+
+test('regression 18', () => {
+  expect(
+    doComparison({
+      patterns: ['/dist', '{bulb,**}', '**/src_dist/**'],
+      cwd: '/',
+      paths: {
+        'stick-stove.ts': 'ok',
+        dist: {
+          'jeff.txt': 'ok',
+        },
+      },
+      expandDirectories: false,
+      dot: false,
+      types: 'files',
+    }),
+  ).toMatchInlineSnapshot(`
+    [
+      "/dist/jeff.txt",
+      "/stick-stove.ts",
+    ]
+  `)
+})
+
+test('regression 19', () => {
+  expect(
+    doComparison({
+      patterns: ['!stove*/*stove', '!/*'],
+      cwd: '/dist/.dist-src',
+      paths: {
+        dist: {
+          '.dist-src': {
+            'dist-src': {
+              'stick-bulb': 'ok',
+            },
+          },
+        },
+      },
+      expandDirectories: false,
+      dot: false,
+      types: 'all',
+    }),
+  ).toMatchInlineSnapshot(`[]`)
+})
+
+test('regression 20', () => {
+  expect(
+    doComparison({
+      patterns: ['!/*src'],
+      cwd: '/.src/dist',
+      paths: {
+        '.src': {
+          dist: {
+            'bulb.txt': 'ok',
+          },
+        },
+      },
+      expandDirectories: true,
+      dot: false,
+      types: 'all',
+    }),
+  ).toMatchInlineSnapshot(`[]`)
 })

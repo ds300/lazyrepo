@@ -104,15 +104,13 @@ class LazyDir {
 
   /** @type {null | {order: LazyEntry[], byName: Record<string, LazyEntry>}} */
   #_listing
-  #dirCache
 
   /**
    * @param {LogicalClock} clock
-   * @param {Map<string, LazyDir>} dirCache
    * @param {string} path
    * @param {number} mtime
    */
-  constructor(clock, dirCache, path, mtime) {
+  constructor(clock, path, mtime) {
     this.#clock = clock
     this.path = path
     this.name = basename(path)
@@ -121,9 +119,6 @@ class LazyDir {
     this.#_listing = null
     this.#lastListTime = clock.time - 1
     this.#lastStatTime = clock.time
-
-    dirCache.set(path, this)
-    this.#dirCache = dirCache
   }
 
   #updateStat() {
@@ -152,12 +147,7 @@ class LazyDir {
         let result = prevListingByName?.[entry.name]
         if (entry.isDirectory() && (!result || !(result instanceof LazyDir))) {
           const stat = statSync(join(this.path, entry.name))
-          result = new LazyDir(
-            this.#clock,
-            this.#dirCache,
-            join(this.path, entry.name),
-            stat.mtimeMs,
-          )
+          result = new LazyDir(this.#clock, join(this.path, entry.name), stat.mtimeMs)
         } else if (entry.isFile() && (!result || !(result instanceof LazyFile))) {
           result = new LazyFile(this.#clock, join(this.path, entry.name), 0, 0)
         }
@@ -174,6 +164,7 @@ class LazyDir {
   }
 }
 
+/** @implements {Matcher} */
 class RegExpMatcher {
   /**
    * @type {RegExp}
@@ -211,10 +202,9 @@ class RegExpMatcher {
    * @return {MatchResult}
    */
   match(entry, options) {
-    if (
-      this.#pattern.test(entry.name) &&
-      (this.source.startsWith('^\\.') || options.dot || !entry.name.startsWith('.'))
-    ) {
+    const ignore =
+      entry.name[0] === '.' && !options.dot && !this.negating && !this.source.startsWith('^\\.')
+    if (this.#pattern.test(entry.name) && !ignore) {
       return this.next.length === 0 ? 'terminal' : 'partial'
     } else {
       return 'none'
@@ -222,6 +212,7 @@ class RegExpMatcher {
   }
 }
 
+/** @implements {Matcher} */
 class ExactMatcher {
   /**
    * @type {string}
@@ -261,6 +252,7 @@ class ExactMatcher {
   }
 }
 
+/** @implements {Matcher} */
 class WildcardMatcher {
   /** @type {Matcher[]} */
   next = []
@@ -284,13 +276,14 @@ class WildcardMatcher {
    * @return {MatchResult}
    */
   match(entry, options) {
-    if (entry.name[0] === '.' && !options.dot) {
+    if (entry.name[0] === '.' && !options.dot && !this.negating) {
       return 'none'
     }
     return this.next.length === 0 ? 'terminal' : 'partial'
   }
 }
 
+/** @implements {Matcher} */
 class RecursiveWildcardMatcher {
   /**
    * @type {boolean}
@@ -314,6 +307,7 @@ class RecursiveWildcardMatcher {
   match(entry, options) {
     const ignore = entry.name[0] === '.' && !options.dot
     if (this.next.length === 0) {
+      if (this.negating) return 'terminal'
       return ignore
         ? 'none'
         : options.expandDirectories || entry instanceof LazyFile
@@ -325,6 +319,7 @@ class RecursiveWildcardMatcher {
   }
 }
 
+/** @implements {Matcher} */
 class RootMatcher {
   /**
    * @type {boolean}
@@ -348,10 +343,15 @@ class RootMatcher {
  *
  * @param {Matcher[]} next
  * @param {boolean} negating
+ * @param {boolean} terminal
  * @param {(m: Matcher) => boolean} pred
  */
-function findSimpaticoMatcher(next, negating, pred) {
-  for (let i = next.length - 1; i >= 0 && next[i].negating === negating; i--) {
+function findSimpaticoMatcher(next, negating, terminal, pred) {
+  for (
+    let i = next.length - 1;
+    i >= 0 && next[i].negating === negating && terminal === !next[i].next.length;
+    i--
+  ) {
     const matcher = next[i]
     if (pred(matcher)) {
       return matcher
@@ -365,13 +365,15 @@ function findSimpaticoMatcher(next, negating, pred) {
  * @param {Matcher} prev
  * @param {string} segment
  * @param {boolean} negating
+ * @param {boolean} terminal
  * @returns {Matcher}
  */
-function compilePathSegment(prev, segment, negating) {
+function compilePathSegment(prev, segment, negating, terminal) {
   if (segment === '**') {
     const existing = findSimpaticoMatcher(
       prev.next,
       negating,
+      terminal,
       (m) => m instanceof RecursiveWildcardMatcher,
     )
     if (existing) return existing
@@ -380,7 +382,12 @@ function compilePathSegment(prev, segment, negating) {
     return matcher
   }
   if (segment === '*') {
-    const existing = findSimpaticoMatcher(prev.next, negating, (m) => m instanceof WildcardMatcher)
+    const existing = findSimpaticoMatcher(
+      prev.next,
+      negating,
+      terminal,
+      (m) => m instanceof WildcardMatcher,
+    )
     if (existing) return existing
     const matcher = new WildcardMatcher(negating)
     prev.next.push(matcher)
@@ -390,6 +397,7 @@ function compilePathSegment(prev, segment, negating) {
     const existing = findSimpaticoMatcher(
       prev.next,
       negating,
+      terminal,
       (m) => m instanceof ExactMatcher && m.pattern === segment,
     )
     if (existing) return existing
@@ -420,6 +428,7 @@ function compilePathSegment(prev, segment, negating) {
   const existing = findSimpaticoMatcher(
     prev.next,
     negating,
+    terminal,
     (m) => m instanceof RegExpMatcher && m.source === regex,
   )
   if (existing) return existing
@@ -430,7 +439,6 @@ function compilePathSegment(prev, segment, negating) {
 }
 
 /**
- *
  * @param {string[]} patterns
  * @param {string} cwd
  */
@@ -443,15 +451,20 @@ function compileMatchers(patterns, cwd) {
    */
   function addSegments(segments, negating) {
     let prev = root
-    for (const segment of segments) {
-      prev = compilePathSegment(prev, segment, negating)
+    for (let i = 0; i < segments.length; i++) {
+      const segment = segments[i]
+      prev = compilePathSegment(prev, segment, negating, i === segments.length - 1)
     }
   }
 
   let wasFirst = true
-  for (let expansion of patterns.flatMap((pattern) =>
-    micromatch.braces(pattern, { expand: true }),
-  )) {
+  for (let expansion of patterns
+    .map(
+      (pattern) => micromatch.braces(pattern, { expand: true }),
+      // flatMap doesn't work here because if the string doesn't need expanding it returns a string
+      // and then the strings get concatenated for some reason.
+    )
+    .flat()) {
     const isFirst = wasFirst
     wasFirst = false
     let negating = false
@@ -478,31 +491,7 @@ function compileMatchers(patterns, cwd) {
     addSegments(segments, negating)
   }
 
-  let rootDir = '/'
-  let rootMatcher = root
-
-  while (
-    rootMatcher.next.length === 1 &&
-    rootMatcher.next[0] instanceof ExactMatcher &&
-    isDirThatExists(join(rootDir, rootMatcher.next[0].pattern))
-  ) {
-    const next = rootMatcher.next[0]
-    rootDir = join(rootDir, next.pattern)
-    rootMatcher = next
-  }
-
-  return { rootMatcher, rootDir }
-}
-
-/**
- * @param {string} path
- */
-function isDirThatExists(path) {
-  try {
-    return statSync(path).isDirectory()
-  } catch (_) {
-    return false
-  }
+  return root
 }
 
 /**
@@ -603,7 +592,7 @@ function matchDirEntry(entry, options, layers, result) {
     const layer = layers[i]
     const stopEarly = checkLayer(layer)
     if (stopEarly) {
-      return result
+      break
     }
   }
 
@@ -616,8 +605,7 @@ function matchDirEntry(entry, options, layers, result) {
 
 class LazyGlob {
   #clock = new LogicalClock()
-  /** @type {Map<string, LazyDir>} */
-  #dirCache = new Map()
+  #rootDir = new LazyDir(this.#clock, '/', 0)
 
   totalTimeElapsed = 0n
 
@@ -632,33 +620,17 @@ class LazyGlob {
     const cache = opts?.cache ?? 'normal'
 
     const start = process.hrtime.bigint()
-    const { rootMatcher, rootDir } = compileMatchers(
+    const rootMatcher = compileMatchers(
       patterns.concat(opts?.ignore?.map((p) => '!' + p) ?? []),
       cwd,
     )
 
-    try {
-      if (!statSync(rootDir).isDirectory()) {
-        return []
-      }
-    } catch (_) {
-      return []
-    }
-
-    let dir =
-      cache === 'none'
-        ? new LazyDir(this.#clock, new Map(), rootDir, 0)
-        : this.#dirCache.get(rootDir)
-
-    if (!dir) {
-      dir = new LazyDir(this.#clock, this.#dirCache, rootDir, 0)
-    }
     if (cache === 'normal') {
       this.#clock.time++
     }
 
     const result = matchDirEntry(
-      dir,
+      cache === 'none' ? new LazyDir(this.#clock, '/', 0) : this.#rootDir,
       {
         dot: opts?.dot ?? false,
         types: opts?.types ?? 'files',
