@@ -316,7 +316,11 @@ class RecursiveWildcardMatcher {
   match(entry, options) {
     const ignore = entry.name[0] === '.' && !options.dot
     if (this.next.length === 0) {
-      return ignore ? 'none' : 'terminal'
+      return ignore
+        ? 'none'
+        : options.expandDirectories || entry instanceof LazyFile
+        ? 'terminal'
+        : 'recursive'
     } else {
       return ignore ? 'try-next' : 'recursive'
     }
@@ -543,7 +547,6 @@ function matchDirEntry(entry, options, layers, result) {
         break
       case 'try-next':
       case 'recursive':
-        assert(matcher.next.length)
         for (let i = matcher.next.length - 1; i >= 0; i--) {
           const stopEarly = checkLayer(matcher.next[i], true)
           if (stopEarly) {
@@ -560,10 +563,12 @@ function matchDirEntry(entry, options, layers, result) {
           return true
         }
         if (entry instanceof LazyDir) {
-          if (recursive) {
-            nextLayers.unshift(new WildcardMatcher(false))
-          } else {
-            nextLayers.unshift(new RecursiveWildcardMatcher(false))
+          if (options.expandDirectories) {
+            if (recursive) {
+              nextLayers.unshift(new WildcardMatcher(false))
+            } else {
+              nextLayers.unshift(new RecursiveWildcardMatcher(false))
+            }
           }
         } else if (!didPush) {
           result.push(entry.path)
@@ -635,7 +640,12 @@ class LazyGlob {
 
     const result = matchDirEntry(
       dir,
-      { dot: opts?.dot ?? false, types: opts?.types ?? 'files', cwd },
+      {
+        dot: opts?.dot ?? false,
+        types: opts?.types ?? 'files',
+        cwd,
+        expandDirectories: opts?.expandDirectories ?? false,
+      },
       [rootMatcher],
       [],
     )

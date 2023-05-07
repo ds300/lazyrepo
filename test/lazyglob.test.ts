@@ -136,7 +136,7 @@ class Source extends Random {
   }
 }
 
-function referenceGlob(paths: string[], patterns: string[], cwd: string, _options: MatchOptions) {
+function referenceGlob(paths: string[], patterns: string[], options: MatchOptions) {
   // todo: if options.dirs then extract dirs from paths
   const result = new Set<string>()
   for (let pattern of patterns) {
@@ -145,10 +145,10 @@ function referenceGlob(paths: string[], patterns: string[], cwd: string, _option
       pattern = pattern.slice(1)
     }
     if (!isAbsolute(pattern)) {
-      pattern = join(cwd, pattern)
+      pattern = join(options.cwd, pattern)
     }
     const matches = paths.filter((p) => {
-      return minimatch(p, pattern + '{,/**}', { dot: false })
+      return minimatch(p, options.expandDirectories ? pattern + '{,/**}' : pattern, { dot: false })
     })
     if (isNegative) {
       for (const match of matches) {
@@ -163,7 +163,7 @@ function referenceGlob(paths: string[], patterns: string[], cwd: string, _option
   return [...result].sort()
 }
 
-function doComparison({ pattern, cwd, paths }: { pattern: string; cwd: string; paths: string[] }) {
+function makeFiles(paths: string[]) {
   for (const path of paths) {
     const dir = dirname(path)
     vol.mkdirSync(dir, { recursive: true })
@@ -171,8 +171,28 @@ function doComparison({ pattern, cwd, paths }: { pattern: string; cwd: string; p
     vol.statSync(dir)
     vol.statSync(path)
   }
-  const actual = glob.sync([pattern], { cwd, cache: 'none' }).sort()
-  expect(actual).toEqual(referenceGlob(paths, [pattern], cwd, { dot: false, types: 'files', cwd }))
+}
+
+function both(paths: string[], pattern: string[], options: MatchOptions) {
+  const actual = glob.sync(pattern, { ...options, cache: 'none' }).sort()
+  const expected = referenceGlob(paths, pattern, options).sort()
+  expect(actual).toEqual(expected)
+  return actual
+}
+
+function doComparison({
+  pattern,
+  cwd,
+  paths,
+  expandDirectories,
+}: {
+  pattern: string
+  cwd: string
+  paths: string[]
+  expandDirectories: boolean
+}) {
+  makeFiles(paths)
+  both(paths, [pattern], { dot: false, types: 'files', cwd, expandDirectories })
 }
 
 function runTest(seed: number) {
@@ -181,10 +201,15 @@ function runTest(seed: number) {
 
   const pattern = source.getRandomPattern()
   const cwd = source.randomDirFromPaths(paths)
+
+  const expandDirectories = source.random(2) === 0
   try {
-    doComparison({ pattern, cwd, paths })
+    doComparison({ pattern, cwd, paths, expandDirectories })
   } catch (e) {
-    console.error('failed with seed ' + seed, JSON.stringify({ pattern, cwd, paths }, null, 2))
+    console.error(
+      'failed with seed ' + seed,
+      JSON.stringify({ pattern, cwd, paths, expandDirectories }, null, 2),
+    )
     throw e
   }
 }
@@ -207,6 +232,7 @@ test(`regression`, () => {
       '/lib/banana.js',
       '/node_modules/src_lib/src-lib/banana-stove.js',
     ],
+    expandDirectories: true,
   })
 })
 
@@ -221,6 +247,7 @@ test(`regression 2`, () => {
       '/.src/src/jeff-stick',
       '/stick-bulb',
     ],
+    expandDirectories: true,
   })
 })
 
@@ -236,6 +263,7 @@ test('regression 3', () => {
       '/src/stick-jeff.txt',
       '/dist-node_modules/node_modules/bulb.json',
     ],
+    expandDirectories: true,
   })
 })
 
@@ -252,6 +280,7 @@ test('regression 4', () => {
       '/lib-node_modules/node_modules_node_modules/src/bulb.json',
       '/src-lib/node_modules_node_modules/stove',
     ],
+    expandDirectories: true,
   })
 })
 
@@ -268,6 +297,7 @@ test('regression 5', () => {
       '/node_modules_node_modules/node_modules-lib/node_modules/jeff',
       '/src/dist-dist/bulb-stick.js',
     ],
+    expandDirectories: true,
   })
 })
 
@@ -276,6 +306,7 @@ test('regression 6', () => {
     pattern: '/*src',
     cwd: '/.src/node_modules-dist/node_modules_src',
     paths: ['/.src/dist/dist_lib/bulb.txt'],
+    expandDirectories: true,
   })
 })
 
@@ -284,6 +315,7 @@ test('regression 7', () => {
     pattern: '**/{**,.dist*}',
     cwd: '/',
     paths: ['/.dist-src'],
+    expandDirectories: true,
   })
 })
 
@@ -292,5 +324,37 @@ test('regression 8', () => {
     pattern: '**/{**,.dist*}',
     cwd: '/',
     paths: ['/lib/src/.dist-lib'],
+    expandDirectories: true,
   })
+})
+
+test('regression 9', () => {
+  doComparison({
+    pattern: '/{dist*,**}',
+    cwd: '/node_modules_node_modules/dist',
+    paths: ['/src-node_modules/banana.ts'],
+    expandDirectories: false,
+  })
+})
+
+test('expandDirectories', () => {
+  const paths = ['/src/stick.txt', '/src/banana/stick.txt', '/sugar.log', '/berthold']
+  makeFiles(paths)
+  const expanded = both(paths, ['s*'], {
+    cwd: '/',
+    expandDirectories: true,
+    dot: false,
+    types: 'files',
+  }).sort()
+
+  expect(expanded).toEqual(['/src/banana/stick.txt', '/src/stick.txt', '/sugar.log'])
+
+  const notExpanded = both(paths, ['s*'], {
+    cwd: '/',
+    expandDirectories: false,
+    dot: false,
+    types: 'files',
+  })
+
+  expect(notExpanded).toEqual(['/sugar.log'])
 })

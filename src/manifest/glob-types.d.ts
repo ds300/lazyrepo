@@ -6,16 +6,20 @@ interface Matcher {
   match(entry: LazyEntry, options: MatchOptions): MatchResult
 }
 
+type MatchTypes = 'files' | 'dirs' | 'all'
+
 interface LazyGlobOptions {
   cwd?: string
   cache?: 'none' | 'normal' | 'reckless'
   dot?: boolean
   ignore?: string[]
-  types?: 'files' | 'dirs'
+  types?: MatchTypes
+  expandDirectories?: boolean
 }
 
 interface MatchOptions {
   dot: boolean
-  types: 'files' | 'dirs'
+  types: MatchTypes
   cwd: string
+  expandDirectories: boolean
 }

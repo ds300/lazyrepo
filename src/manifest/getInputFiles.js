@@ -20,6 +20,7 @@ function globCacheConfig({ includes, excludes, task, workspaceRoot }) {
   for (const file of glob.sync(includes, {
     cwd: task.workspace.dir,
     ignore: [join(workspaceRoot, '**/node_modules/**'), ...excludes],
+    expandDirectories: true,
   })) {
     if (statSync(file).isDirectory()) {
       visitAllFiles(file, (filePath) => files.add(filePath))
