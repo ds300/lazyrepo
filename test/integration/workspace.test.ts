@@ -80,9 +80,7 @@ test('loads package.json when it is valid', async () => {
         -------------------
         Loaded config file: lazy.config.js
 
-        build::packages/core finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-        build::packages/core finding files matching lazy.config.* took 1.00s
-        build::packages/core finding files matching packages/core/**/* took 1.00s
+        build::packages/core finding files took 1.00s
         build::packages/core hashed 4/4 files in 1.00s
         build::packages/core cache miss, no previous manifest found
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
@@ -114,9 +112,7 @@ test('loads pnpm-workspace.yaml when it is valid', async () => {
         -------------------
         Loaded config file: lazy.config.js
 
-        build::packages/core finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-        build::packages/core finding files matching lazy.config.* took 1.00s
-        build::packages/core finding files matching packages/core/**/* took 1.00s
+        build::packages/core finding files took 1.00s
         build::packages/core hashed 4/4 files in 1.00s
         build::packages/core cache miss, no previous manifest found
         build::packages/core RUN echo $RANDOM > .out.txt in packages/core
