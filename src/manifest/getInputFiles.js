@@ -87,7 +87,7 @@ export const ROOT_DIR_MACRO = '<rootDir>'
  * @typedef {Object} ExpandGlobsProps
  *
  * @property {string[]} patterns
- *  @property {string} rootDir
+ * @property {string} rootDir
  * @property {string} taskDir
  * @property {string[]} allWorkspaceDirs
  */
