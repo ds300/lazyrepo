@@ -7,19 +7,20 @@ import { RootMatcher } from './matchers/RootMatcher.js'
 import { WildcardMatcher } from './matchers/WildcardMatcher.js'
 
 /**
- *
- * @param {Matcher[]} next
+ * Finds a matcher in an existing list of children that does the same thing as a new matcher.
+ * If it is we can combine the two to build a more efficient tree structure.
+ * @param {Matcher[]} children
  * @param {boolean} negating
  * @param {boolean} terminal
  * @param {(m: Matcher) => boolean} pred
  */
-function findSimpaticoMatcher(next, negating, terminal, pred) {
+function findSimpaticoMatcher(children, negating, terminal, pred) {
   for (
-    let i = next.length - 1;
-    i >= 0 && next[i].negating === negating && terminal === !next[i].next.length;
+    let i = children.length - 1;
+    i >= 0 && children[i].negating === negating && terminal === !children[i].children.length;
     i--
   ) {
-    const matcher = next[i]
+    const matcher = children[i]
     if (pred(matcher)) {
       return matcher
     }
@@ -28,7 +29,6 @@ function findSimpaticoMatcher(next, negating, terminal, pred) {
 }
 
 /**
- *
  * @param {MatchOptions} opts
  * @param {Matcher} prev
  * @param {string} segment
@@ -37,55 +37,52 @@ function findSimpaticoMatcher(next, negating, terminal, pred) {
  * @returns {Matcher}
  */
 function compilePathSegment(opts, prev, segment, negating, terminal) {
+  /**
+   * Try to find a simpatico matcher in the existing children.
+   * If none is found, create a new one using the given constructor.
+   * @param {(m: Matcher) => boolean} simpaticoPred
+   * @param {() => Matcher} ctor
+   */
+  const make = (simpaticoPred, ctor) => {
+    const existing = findSimpaticoMatcher(prev.children, negating, terminal, simpaticoPred)
+    if (existing) return existing
+    const matcher = ctor()
+    prev.children.push(matcher)
+    return matcher
+  }
+
   if (segment === '**') {
-    const existing = findSimpaticoMatcher(
-      prev.next,
-      negating,
-      terminal,
+    return make(
       (m) => m instanceof RecursiveWildcardMatcher,
+      () => new RecursiveWildcardMatcher(negating),
     )
-    if (existing) return existing
-    const matcher = new RecursiveWildcardMatcher(negating)
-    prev.next.push(matcher)
-    return matcher
   }
+
   if (segment === '*') {
-    const existing = findSimpaticoMatcher(
-      prev.next,
-      negating,
-      terminal,
+    return make(
       (m) => m instanceof WildcardMatcher,
+      () => new WildcardMatcher(negating),
     )
-    if (existing) return existing
-    const matcher = new WildcardMatcher(negating)
-    prev.next.push(matcher)
-    return matcher
   }
+
+  // match a boring file/dir name that does not require any regex stuff
   if (/^[\w-.]+$/.test(segment)) {
-    const existing = findSimpaticoMatcher(
-      prev.next,
-      negating,
-      terminal,
+    return make(
       (m) => m instanceof ExactStringMatcher && m.pattern === segment,
+      () => new ExactStringMatcher(segment, negating),
     )
-    if (existing) return existing
-    const matcher = new ExactStringMatcher(segment, negating)
-    prev.next.push(matcher)
-    return matcher
   }
 
-  const existing = findSimpaticoMatcher(
-    prev.next,
-    negating,
-    terminal,
+  // Fall back to a regex matcher, compiled by micromatch
+  return make(
     (m) => m instanceof RegExpMatcher && m.source === segment,
+    () =>
+      new RegExpMatcher(
+        segment,
+        micromatch.makeRe(segment, { dot: opts.dot || negating }),
+        negating,
+      ),
   )
-  if (existing) return existing
-
-  const regex = micromatch.makeRe(segment, { dot: opts.dot || negating })
-  const matcher = new RegExpMatcher(segment, regex, negating)
-  prev.next.push(matcher)
-  return matcher
 }
 
 /**
@@ -127,9 +124,6 @@ export function compileMatcher(opts, patterns, cwd) {
         // negating the first matcher implies a "**/*" above it
         addSegments(opts, [...cwd.split('/').filter(Boolean), '**', '*'], false)
       }
-    }
-    if (expansion.includes('\\')) {
-      expansion = expansion.replace(/\\/g, '/')
     }
     if (!isAbsolute(expansion)) {
       expansion = join(cwd, expansion)

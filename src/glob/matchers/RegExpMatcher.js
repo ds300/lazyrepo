@@ -29,7 +29,7 @@ export class RegExpMatcher {
   }
 
   /** @type {Matcher[]} */
-  next = []
+  children = []
 
   /**
    * @param {import("../fs/LazyEntry.js").LazyEntry} entry
@@ -37,8 +37,9 @@ export class RegExpMatcher {
    * @return {MatchResult}
    */
   match(entry, _options) {
+    // the dot option is handled by micromatch
     if (this.#pattern.test(entry.name)) {
-      return this.next.length === 0 ? 'terminal' : 'partial'
+      return this.children.length === 0 ? 'terminal' : 'partial'
     } else {
       return 'none'
     }

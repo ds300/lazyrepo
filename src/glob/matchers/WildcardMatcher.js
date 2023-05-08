@@ -1,7 +1,7 @@
 /** @implements {Matcher} */
 export class WildcardMatcher {
   /** @type {Matcher[]} */
-  next = []
+  children = []
 
   /**
    * @type {boolean}
@@ -22,9 +22,12 @@ export class WildcardMatcher {
    * @return {MatchResult}
    */
   match(entry, options) {
-    if (entry.name[0] === '.' && !options.dot && !this.negating) {
+    // ignore the entry if it's a dotfile and we're not matching dotfiles
+    const ignore = entry.name[0] === '.' && !options.dot
+    // if we are negating we should always match dotfiles, so we add an exception here
+    if (ignore && !this.negating) {
       return 'none'
     }
-    return this.next.length === 0 ? 'terminal' : 'partial'
+    return this.children.length === 0 ? 'terminal' : 'partial'
   }
 }

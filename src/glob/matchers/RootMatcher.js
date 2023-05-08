@@ -7,7 +7,8 @@ export class RootMatcher {
   negating = false
 
   /** @type {Matcher[]} */
-  next = []
+  children = []
+
   /**
    * @param {import("../fs/LazyEntry.js").LazyEntry} _entry
    * @param {MatchOptions} _options

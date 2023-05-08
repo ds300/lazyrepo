@@ -56,7 +56,11 @@ describe('the "types" option', () => {
       })
       .sort()
 
-    expect(result).toMatchInlineSnapshot(`[]`)
+    expect(result).toMatchInlineSnapshot(`
+      [
+        "/src/not_a_link.txt",
+      ]
+    `)
   })
 
   it('will match symlinks but not traverse them if told to', () => {

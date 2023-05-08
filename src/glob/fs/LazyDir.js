@@ -60,7 +60,7 @@ export class LazyDir {
     return didChange
   }
 
-  get listing() {
+  getListing() {
     if (this.#_listing && this.#clock.time === this.#lastListTime) {
       return this.#_listing
     }
@@ -78,20 +78,14 @@ export class LazyDir {
           const stat = statSync(join(this.path, entry.name))
           result = new LazyDir(this.#clock, join(this.path, entry.name), stat.mtimeMs, false)
         } else if (entry.isFile() && (!result || !(result instanceof LazyFile))) {
-          result = new LazyFile(this.#clock, join(this.path, entry.name), 0, 0, false)
+          result = new LazyFile(join(this.path, entry.name), false)
         } else if (entry.isSymbolicLink()) {
           try {
             const stat = statSync(join(this.path, entry.name))
             if (stat.isDirectory()) {
               result = new LazyDir(this.#clock, join(this.path, entry.name), stat.mtimeMs, true)
             } else if (stat.isFile()) {
-              result = new LazyFile(
-                this.#clock,
-                join(this.path, entry.name),
-                stat.mtimeMs,
-                stat.size,
-                true,
-              )
+              result = new LazyFile(join(this.path, entry.name), true)
             }
           } catch (_e) {
             // ignore

@@ -22,7 +22,7 @@ export class ExactStringMatcher {
   }
 
   /** @type {Matcher[]} */
-  next = []
+  children = []
 
   /**
    * @param {import("../fs/LazyEntry.js").LazyEntry} entry
@@ -31,7 +31,7 @@ export class ExactStringMatcher {
    */
   match(entry, _options) {
     if (this.pattern === entry.name) {
-      return this.next.length === 0 ? 'terminal' : 'partial'
+      return this.children.length === 0 ? 'terminal' : 'partial'
     } else {
       return 'none'
     }

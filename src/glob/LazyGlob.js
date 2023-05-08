@@ -7,8 +7,6 @@ export class LazyGlob {
   #clock = { time: 0 }
   #rootDir = new LazyDir(this.#clock, '/', 0, false)
 
-  totalTimeElapsed = 0n
-
   /**
    * @param {string[]} patterns
    * @param {LazyGlobOptions} [opts]
@@ -28,7 +26,6 @@ export class LazyGlob {
       symbolicLinks: opts?.symbolicLinks ?? 'follow',
     }
 
-    const start = process.hrtime.bigint()
     const rootMatcher = compileMatcher(
       matchOpts,
       patterns.concat(opts?.ignore?.map((p) => '!' + p) ?? []),
@@ -42,10 +39,9 @@ export class LazyGlob {
     const result = matchInDir(
       cache === 'none' ? new LazyDir(this.#clock, '/', 0, false) : this.#rootDir,
       matchOpts,
-      rootMatcher.next,
+      rootMatcher.children,
       [],
     )
-    this.totalTimeElapsed += process.hrtime.bigint() - start
     return result
   }
 

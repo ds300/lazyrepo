@@ -1,7 +1,7 @@
 type MatchResult = 'terminal' | 'partial' | 'recursive' | 'none' | 'try-next'
 
 interface Matcher {
-  next: Matcher[]
+  children: Matcher[]
   negating: boolean
   match(entry: LazyEntry, options: MatchOptions): MatchResult
 }
