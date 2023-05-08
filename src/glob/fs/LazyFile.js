@@ -11,6 +11,11 @@ export class LazyFile {
    */
   path
   /**
+   * @type {boolean}
+   * @readonly
+   */
+  isSymbolicLink
+  /**
    * @type {string}
    * @readonly
    */
@@ -34,8 +39,9 @@ export class LazyFile {
    * @param {string} path
    * @param {number} mtime
    * @param {number} size
+   * @param {boolean} isSymbolicLink
    */
-  constructor(clock, path, mtime, size) {
+  constructor(clock, path, mtime, size, isSymbolicLink) {
     this.#clock = clock
     this.path = path
     this.name = basename(path)
@@ -45,6 +51,7 @@ export class LazyFile {
     this.#_hash = null
     this.#lastHashTime = clock.time - 1
     this.#lastStatTime = clock.time
+    this.isSymbolicLink = isSymbolicLink
   }
 
   #updateStat() {

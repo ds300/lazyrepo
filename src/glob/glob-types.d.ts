@@ -7,6 +7,7 @@ interface Matcher {
 }
 
 type MatchTypes = 'files' | 'dirs' | 'all'
+type SymbolicLinkStrategy = 'follow' | 'ignore' | 'match'
 
 interface LazyGlobOptions {
   cwd?: string
@@ -15,6 +16,7 @@ interface LazyGlobOptions {
   ignore?: string[]
   types?: MatchTypes
   expandDirectories?: boolean
+  symbolicLinks?: SymbolicLinkStrategy
 }
 
 interface MatchOptions {
@@ -22,9 +24,9 @@ interface MatchOptions {
   types: MatchTypes
   cwd: string
   expandDirectories: boolean
+  symbolicLinks: SymbolicLinkStrategy
 }
 
 interface LogicalClock {
   time: number
 }
-

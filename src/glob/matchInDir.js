@@ -14,7 +14,9 @@ import { WildcardMatcher } from './matchers/WildcardMatcher.js'
 export function matchInDir(dir, options, matchers, result = []) {
   for (const child of dir.listing.order) {
     if (options.types === 'dirs' && !(child instanceof LazyDir)) continue
-    matchDirEntry(child, options, matchers, result)
+    if (options.symbolicLinks !== 'ignore') {
+      matchDirEntry(child, options, matchers, result)
+    }
   }
   return result
 }
@@ -106,7 +108,14 @@ function matchDirEntry(entry, options, layers, result) {
     }
   }
 
-  if (nextLayers.length && entry instanceof LazyDir && !nextLayers.every((m) => m.negating)) {
+  const follow = !entry.isSymbolicLink || options.symbolicLinks === 'follow'
+
+  if (
+    follow &&
+    nextLayers.length &&
+    entry instanceof LazyDir &&
+    !nextLayers.every((m) => m.negating)
+  ) {
     matchInDir(entry, options, nextLayers, result)
   }
 

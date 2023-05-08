@@ -11,6 +11,11 @@ export class LazyDir {
    */
   path
   /**
+   * @type {boolean}
+   * @readonly
+   */
+  isSymbolicLink
+  /**
    * @type {string}
    * @readonly
    */
@@ -31,8 +36,9 @@ export class LazyDir {
    * @param {LogicalClock} clock
    * @param {string} path
    * @param {number} mtime
+   * @param {boolean} isSymbolicLink
    */
-  constructor(clock, path, mtime) {
+  constructor(clock, path, mtime, isSymbolicLink) {
     this.#clock = clock
     this.path = path
     this.name = basename(path)
@@ -41,6 +47,7 @@ export class LazyDir {
     this.#_listing = null
     this.#lastListTime = clock.time - 1
     this.#lastStatTime = clock.time
+    this.isSymbolicLink = isSymbolicLink
   }
 
   #updateStat() {
@@ -69,11 +76,27 @@ export class LazyDir {
         let result = prevListingByName?.[entry.name]
         if (entry.isDirectory() && (!result || !(result instanceof LazyDir))) {
           const stat = statSync(join(this.path, entry.name))
-          result = new LazyDir(this.#clock, join(this.path, entry.name), stat.mtimeMs)
+          result = new LazyDir(this.#clock, join(this.path, entry.name), stat.mtimeMs, false)
         } else if (entry.isFile() && (!result || !(result instanceof LazyFile))) {
-          result = new LazyFile(this.#clock, join(this.path, entry.name), 0, 0)
+          result = new LazyFile(this.#clock, join(this.path, entry.name), 0, 0, false)
+        } else if (entry.isSymbolicLink()) {
+          try {
+            const stat = statSync(join(this.path, entry.name))
+            if (stat.isDirectory()) {
+              result = new LazyDir(this.#clock, join(this.path, entry.name), stat.mtimeMs, true)
+            } else if (stat.isFile()) {
+              result = new LazyFile(
+                this.#clock,
+                join(this.path, entry.name),
+                stat.mtimeMs,
+                stat.size,
+                true,
+              )
+            }
+          } catch (_e) {
+            // ignore
+          }
         }
-        // TODO: handle symlinks
         if (result) {
           this.#_listing.order.push(result)
           this.#_listing.byName[entry.name] = result

@@ -5,7 +5,7 @@ import { matchInDir } from './matchInDir.js'
 export class LazyGlob {
   /** @type {LogicalClock} */
   #clock = { time: 0 }
-  #rootDir = new LazyDir(this.#clock, '/', 0)
+  #rootDir = new LazyDir(this.#clock, '/', 0, false)
 
   totalTimeElapsed = 0n
 
@@ -25,6 +25,7 @@ export class LazyGlob {
       types: opts?.types ?? 'files',
       cwd,
       expandDirectories: opts?.expandDirectories ?? false,
+      symbolicLinks: opts?.symbolicLinks ?? 'follow',
     }
 
     const start = process.hrtime.bigint()
@@ -39,13 +40,8 @@ export class LazyGlob {
     }
 
     const result = matchInDir(
-      cache === 'none' ? new LazyDir(this.#clock, '/', 0) : this.#rootDir,
-      {
-        dot: opts?.dot ?? false,
-        types: opts?.types ?? 'files',
-        cwd,
-        expandDirectories: opts?.expandDirectories ?? false,
-      },
+      cache === 'none' ? new LazyDir(this.#clock, '/', 0, false) : this.#rootDir,
+      matchOpts,
       rootMatcher.next,
       [],
     )
