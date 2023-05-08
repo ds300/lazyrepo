@@ -1,4 +1,4 @@
-import { expandGlobs } from '../src/manifest/getInputFiles.js'
+import { expandGlobPaths } from '../src/manifest/getInputFiles.js'
 
 const rootDir = '/__ROOT__'
 const allWorkspaceDirs = [
@@ -9,10 +9,10 @@ const allWorkspaceDirs = [
   '/__ROOT__/docs',
 ]
 
-describe('expandGlobs', () => {
+describe('expandGlobPaths', () => {
   test('it works', () => {
     expect(
-      expandGlobs({
+      expandGlobPaths({
         allWorkspaceDirs,
         patterns: [
           'src/**/*.js',
@@ -38,7 +38,7 @@ describe('expandGlobs', () => {
     `)
 
     expect(
-      expandGlobs({
+      expandGlobPaths({
         allWorkspaceDirs,
         patterns: ['src/**/*.js', '<rootDir>/src/**/*.js', '<allWorkspaceDirs>/src/**/*.js'],
         rootDir,

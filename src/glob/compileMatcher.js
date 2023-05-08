@@ -1,5 +1,6 @@
 import micromatch from 'micromatch'
 import { isAbsolute, join, normalize } from 'path'
+import { convertParens } from '../manifest/convertParens.js'
 import { ExactStringMatcher } from './matchers/ExactStringMatcher.js'
 import { RecursiveWildcardMatcher } from './matchers/RecursiveWildcardMatcher.js'
 import { RegExpMatcher } from './matchers/RegExpMatcher.js'
@@ -109,7 +110,7 @@ export function compileMatcher(opts, patterns, cwd) {
   let wasFirst = true
   for (let expansion of patterns
     .map(
-      (pattern) => micromatch.braces(pattern, { expand: true }),
+      (pattern) => micromatch.braces(convertParens(pattern), { expand: true }),
       // flatMap doesn't work here because if the string doesn't need expanding it returns a string
       // and then the strings get concatenated for some reason.
     )

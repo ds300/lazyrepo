@@ -30,3 +30,10 @@ interface MatchOptions {
 interface LogicalClock {
   time: number
 }
+
+type ExpansionAST =
+  | {
+      type: 'group'
+      choices: ExpansionAST[]
+    }
+  | string

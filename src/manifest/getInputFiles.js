@@ -1,5 +1,4 @@
 import assert from 'assert'
-import micromatch from 'micromatch'
 import path, { isAbsolute, join } from 'path'
 import pc from 'picocolors'
 import { readdirSync, statSync } from '../fs.js'
@@ -63,13 +62,13 @@ export function getInputFiles(tasks, task, extraFiles) {
   const localFiles = globCacheConfig({
     task,
     workspaceRoot: tasks.config.project.root.dir,
-    includes: expandGlobs({
+    includes: expandGlobPaths({
       patterns: includePatterns,
       rootDir,
       taskDir,
       allWorkspaceDirs,
     }),
-    excludes: expandGlobs({
+    excludes: expandGlobPaths({
       patterns: excludePatterns,
       rootDir,
       taskDir,
@@ -96,7 +95,7 @@ export const ROOT_DIR_MACRO = '<rootDir>'
  * @param {ExpandGlobsProps} props
  * @returns {string[]}
  */
-export const expandGlobs = ({ patterns, rootDir, taskDir, allWorkspaceDirs }) => {
+export const expandGlobPaths = ({ patterns, rootDir, taskDir, allWorkspaceDirs }) => {
   assert(isAbsolute(rootDir), 'rootDir must be absolute')
   assert(isAbsolute(taskDir), 'taskDir must be absolute')
   assert(allWorkspaceDirs.every(isAbsolute), 'allWorkspaceDirs must be absolute')
@@ -110,7 +109,6 @@ export const expandGlobs = ({ patterns, rootDir, taskDir, allWorkspaceDirs }) =>
         return [p]
       }
     })
-    .flatMap((p) => micromatch.braces(p, { expand: true }))
     .map((p) => {
       if (p.startsWith('/')) {
         return p
@@ -157,13 +155,13 @@ export function getOutputFiles(tasks, task) {
   const localFiles = globCacheConfig({
     task,
     workspaceRoot: tasks.config.project.root.dir,
-    includes: expandGlobs({
+    includes: expandGlobPaths({
       patterns: cacheConfig.outputs.include,
       taskDir,
       rootDir,
       allWorkspaceDirs,
     }),
-    excludes: expandGlobs({
+    excludes: expandGlobPaths({
       patterns: cacheConfig.outputs.exclude,
       taskDir,
       rootDir,

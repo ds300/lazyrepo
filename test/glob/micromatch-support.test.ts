@@ -9,6 +9,7 @@ jest.mock('../../src/fs.js', () => {
 beforeEach(() => {
   vol.reset()
 })
+
 test('advanced syntax provided by micromatch works', () => {
   makeFiles({
     src: {
