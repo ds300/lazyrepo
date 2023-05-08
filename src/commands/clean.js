@@ -1,5 +1,5 @@
+import { glob } from '../glob/glob.js'
 import { logger } from '../logger/logger.js'
-import { glob } from '../manifest/lazyglob.js'
 import { Project } from '../project/Project.js'
 import { rimraf } from '../utils/rimraf.js'
 

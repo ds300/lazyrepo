@@ -3,7 +3,7 @@ import assert from 'assert'
 import { vol } from 'memfs'
 import { minimatch } from 'minimatch'
 import { dirname, isAbsolute, join } from 'path'
-import { glob } from '../src/manifest/lazyglob.js'
+import { glob } from '../src/glob/glob.js'
 import { Dir, File } from './integration/runIntegrationTests.js'
 import { Random } from './test-utils.js'
 

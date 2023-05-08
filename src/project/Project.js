@@ -1,7 +1,7 @@
 import assert from 'assert'
 import micromatch from 'micromatch'
 import path, { isAbsolute, join } from 'path'
-import { glob } from '../manifest/lazyglob.js'
+import { glob } from '../glob/glob.js'
 import { findRootWorkspace } from './findRootWorkspace.js'
 import { getPackageManager } from './getPackageManager.js'
 import { loadWorkspace } from './loadWorkspace.js'

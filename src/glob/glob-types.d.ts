@@ -23,3 +23,8 @@ interface MatchOptions {
   cwd: string
   expandDirectories: boolean
 }
+
+interface LogicalClock {
+  time: number
+}
+

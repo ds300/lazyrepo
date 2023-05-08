@@ -3,9 +3,9 @@ import micromatch from 'micromatch'
 import path, { isAbsolute, join } from 'path'
 import pc from 'picocolors'
 import { readdirSync, statSync } from '../fs.js'
+import { glob } from '../glob/glob.js'
 import { createTimer } from '../utils/createTimer.js'
 import { uniq } from '../utils/uniq.js'
-import { glob } from './lazyglob.js'
 
 /**
  * @param {{task: import('../types.js').ScheduledTask, includes: string[], excludes: string[], workspaceRoot: string}} param

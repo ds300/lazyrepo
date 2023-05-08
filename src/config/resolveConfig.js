@@ -1,7 +1,7 @@
 import { join } from 'path'
 import { existsSync, mkdirSync, writeFileSync } from '../fs.js'
+import { glob } from '../glob/glob.js'
 import { logger } from '../logger/logger.js'
-import { glob } from '../manifest/lazyglob.js'
 import { isTest } from '../utils/isTest.js'
 import { validateConfig } from './validateConfig.js'
 
