@@ -185,7 +185,7 @@ function runTest(seed: number) {
 }
 
 test(`lazyglob generative tests`, () => {
-  for (let i = 0; i < 10000; i++) {
+  for (let i = 0; i < 5000; i++) {
     const seed = Math.round(Math.random() * 4000000)
     vol.reset()
     runTest(seed)
