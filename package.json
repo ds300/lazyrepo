@@ -12,12 +12,12 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "rm -rf .test && jest",
+    "test": "jest",
     "update-snapshots": "jest -u",
     "clean": "rm -rf node_modules && pnpm install",
     "format": "prettier --write .",
     "format:check": "prettier --list-different .",
-    "lint": "eslint -f compact '**/*.{js,ts}'",
+    "lint": "eslint -f compact \"**/*.{js,ts}\"",
     "pack-test-version": "node scripts/pack-test-version.js",
     "prepare": "husky install"
   },
