@@ -12,7 +12,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "rimraf .test && jest",
     "update-snapshots": "jest -u",
     "clean": "rm -rf node_modules && pnpm install",
     "format": "prettier --write .",
@@ -95,6 +95,7 @@
     "node-gyp": "^9.3.1",
     "prettier": "^2.8.7",
     "prettier-plugin-organize-imports": "^3.2.2",
+    "rimraf": "^5.0.0",
     "semver": "^7.4.0",
     "typescript": "^5.0.4",
     "wrangler": "2.17.0"

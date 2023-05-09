@@ -4,10 +4,19 @@
  */
 
 // eslint-disable-next-line no-restricted-imports
-import { posix } from 'path'
-export const resolve = posix.resolve
-export const relative = posix.relative
-export const join = posix.join
-export const isAbsolute = posix.isAbsolute
-export const dirname = posix.dirname
-export const basename = posix.basename
+import path from 'path'
+import slash from 'slash'
+export const isAbsolute = path.isAbsolute
+
+/** @type {typeof path.resolve} */
+export const resolve = (...args) => slash(path.resolve(...args))
+/** @type {typeof path.relative} */
+export const relative = (...args) => slash(path.relative(...args))
+/** @type {typeof path.join} */
+export const join = (...args) => slash(path.join(...args))
+/** @type {typeof path.dirname} */
+export const dirname = (...args) => slash(path.dirname(...args))
+/** @type {typeof path.basename} */
+export const basename = (...args) => slash(path.basename(...args))
+/** @type {typeof path.normalize} */
+export const normalize = (...args) => slash(path.normalize(...args))

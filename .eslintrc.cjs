@@ -16,7 +16,16 @@ module.exports = {
     {
       files: ['**/*'],
       rules: {
-        'no-restricted-imports': ['error', 'path'],
+        'no-restricted-imports': [
+          'error',
+          'path',
+
+          {
+            name: 'process',
+            importNames: ['cwd'],
+            message: "Please import 'cwd' from './src/cwd.js' instead.",
+          },
+        ],
         'no-restricted-properties': [
           2,
           {

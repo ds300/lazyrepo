@@ -1,7 +1,9 @@
-import { existsSync, mkdirSync, writeFileSync } from '../fs.js'
+import assert from 'assert'
+import { pathToFileURL } from 'url'
+import { mkdirSync, writeFileSync } from '../fs.js'
 import { glob } from '../glob/glob.js'
 import { logger } from '../logger/logger.js'
-import { join } from '../path.js'
+import { dirname, isAbsolute, join } from '../path.js'
 import { isTest } from '../utils/isTest.js'
 import { validateConfig } from './validateConfig.js'
 
@@ -36,7 +38,7 @@ export async function resolveConfig(dir) {
     return { filePath: null, config: {} }
   } else {
     const file = files[0]
-    const loadedConfig = await loadConfig(dir, file)
+    const loadedConfig = await loadConfig(file)
 
     try {
       const config = validateConfig(loadedConfig)
@@ -51,20 +53,21 @@ export async function resolveConfig(dir) {
 }
 
 /**
- * @param {string} dir
  * @param {string} file
  * @returns {Promise<LoadedConfig>}
  */
-async function loadConfig(dir, file) {
+async function loadConfig(file) {
+  assert(isAbsolute(file))
   if (file.endsWith('.js') || file.endsWith('.cjs') || file.endsWith('.mjs')) {
+    // windows prefers a file:/// url here
+    const url = pathToFileURL(file).toString()
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-    return (await import(file)).default
+    return (await import(url)).default
   }
 
-  const configDir = join(dir, '.lazy')
-  if (!existsSync(configDir)) {
-    mkdirSync(configDir)
-  }
+  const configDir = join(dirname(file), '.lazy')
+
+  mkdirSync(configDir, { recursive: true })
 
   const inFile = join(configDir, 'config.source.mjs')
   writeFileSync(inFile, `import config from '${file}'; export default config`)

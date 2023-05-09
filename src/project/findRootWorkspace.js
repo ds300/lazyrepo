@@ -16,7 +16,7 @@ function findContainingPackage(dir) {
     if (existsSync(join(currentDir, 'package.json'))) {
       return loadWorkspace(currentDir)
     }
-    if (currentDir === '/') {
+    if (currentDir === dirname(currentDir)) {
       break
     }
     currentDir = dirname(currentDir)
@@ -57,7 +57,7 @@ export function findRootWorkspace(dir) {
     }
     if (hasChildWorkspace(parent, rootWorkspace.dir)) {
       rootWorkspace = parent
-    } else if (parent.dir === '/') {
+    } else if (parent.dir === dirname(parent.dir)) {
       return rootWorkspace
     } else {
       childDir = parent.dir

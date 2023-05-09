@@ -1,5 +1,5 @@
-import { basename, join } from 'path'
 import { readdirSync, statSync } from '../../fs.js'
+import { basename, join } from '../../path.js'
 import { LazyFile } from './LazyFile.js'
 
 export class LazyDir {
@@ -74,22 +74,22 @@ export class LazyDir {
 
       for (const entry of readdirSync(this.path, { withFileTypes: true })) {
         let result = prevListingByName?.[entry.name]
-        if (entry.isDirectory() && (!result || !(result instanceof LazyDir))) {
-          const stat = statSync(join(this.path, entry.name))
-          result = new LazyDir(this.#clock, join(this.path, entry.name), stat.mtimeMs, false)
-        } else if (entry.isFile() && (!result || !(result instanceof LazyFile))) {
-          result = new LazyFile(join(this.path, entry.name), false)
-        } else if (entry.isSymbolicLink()) {
-          try {
+        try {
+          if (entry.isDirectory() && (!result || !(result instanceof LazyDir))) {
+            const stat = statSync(join(this.path, entry.name))
+            result = new LazyDir(this.#clock, join(this.path, entry.name), stat.mtimeMs, false)
+          } else if (entry.isFile() && (!result || !(result instanceof LazyFile))) {
+            result = new LazyFile(join(this.path, entry.name), false)
+          } else if (entry.isSymbolicLink()) {
             const stat = statSync(join(this.path, entry.name))
             if (stat.isDirectory()) {
               result = new LazyDir(this.#clock, join(this.path, entry.name), stat.mtimeMs, true)
             } else if (stat.isFile()) {
               result = new LazyFile(join(this.path, entry.name), true)
             }
-          } catch (_e) {
-            // ignore
           }
+        } catch (_e) {
+          // ignore
         }
         if (result) {
           this.#_listing.order.push(result)

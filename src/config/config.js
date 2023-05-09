@@ -1,7 +1,7 @@
 import slugify from '@sindresorhus/slugify'
 import micromatch from 'micromatch'
 import pc from 'picocolors'
-import { cwd } from 'process'
+import { cwd } from '../cwd.js'
 import { logger } from '../logger/logger.js'
 import { isAbsolute, join, relative } from '../path.js'
 import { Project } from '../project/Project.js'

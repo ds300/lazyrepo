@@ -1,6 +1,6 @@
 import micromatch from 'micromatch'
-import { isAbsolute, join, normalize } from 'path'
 import { convertParens } from '../manifest/convertParens.js'
+import { isAbsolute, join, normalize } from '../path.js'
 import { ExactStringMatcher } from './matchers/ExactStringMatcher.js'
 import { RecursiveWildcardMatcher } from './matchers/RecursiveWildcardMatcher.js'
 import { RegExpMatcher } from './matchers/RegExpMatcher.js'

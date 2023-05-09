@@ -102,7 +102,7 @@ export const expandGlobPaths = ({ patterns, rootDir, taskDir, allWorkspaceDirs }
       }
     })
     .map((p) => {
-      if (p.startsWith('/')) {
+      if (isAbsolute(p)) {
         return p
       } else {
         return join(taskDir, p)

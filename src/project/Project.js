@@ -1,7 +1,7 @@
 import assert from 'assert'
 import micromatch from 'micromatch'
 import { glob } from '../glob/glob.js'
-import { dirname, isAbsolute, join } from '../path.js'
+import { isAbsolute, join } from '../path.js'
 import { findRootWorkspace } from './findRootWorkspace.js'
 import { getPackageManager } from './getPackageManager.js'
 import { loadWorkspace } from './loadWorkspace.js'
@@ -10,28 +10,9 @@ import { loadWorkspace } from './loadWorkspace.js'
 function findDirectChildWorkspaces(workspace) {
   if (workspace.childWorkspaceGlobs.length === 0) return []
 
-  const directChildWorkspaces = []
-
-  for (const workspaceGlob of workspace.childWorkspaceGlobs) {
-    for (const foundWorkspacePackageJsonPath of glob.sync([
-      join(workspace.dir, workspaceGlob, 'package.json'),
-    ])) {
-      const foundWorkspaceDir = dirname(foundWorkspacePackageJsonPath)
-      const foundWorkspace = loadWorkspace(foundWorkspaceDir)
-
-      // do we care about this? seems like if they have nested pnpm-workspace.yaml files, they're doing something wrong anyway
-      // and our stuff should work either way?
-      // if (foundWorkspace.pnpmWorkspaceYaml) {
-      //   throw new Error(
-      //     `pnpm-workspace.yaml is not allowed in child workspaces. Found in ${foundWorkspace.dir}`,
-      //   )
-      // }
-
-      directChildWorkspaces.push(foundWorkspace)
-    }
-  }
-
-  return directChildWorkspaces
+  return glob
+    .sync(workspace.childWorkspaceGlobs, { types: 'dirs', cwd: workspace.dir })
+    .map(loadWorkspace)
 }
 
 /**
