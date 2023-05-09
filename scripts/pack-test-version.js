@@ -1,7 +1,8 @@
 import { readFileSync, writeFileSync } from 'fs'
-import { join } from 'path'
 import pc from 'picocolors'
 import { dedent } from 'ts-dedent'
+import { cwd } from '../src/cwd.js'
+import { join } from '../src/path.js'
 import { exec } from './lib/exec.js'
 import { getCurrentVersion } from './lib/getCurrentVersion.js'
 
@@ -13,12 +14,12 @@ const bin = readFileSync('./bin.js')
 const cli = readFileSync('./src/cli.js')
 const types = readFileSync('./index.d.ts')
 
-writeFileSync('./bin.js', `#!/usr/bin/env node\n import "${process.cwd()}/src/cli.js"`, {
+writeFileSync('./bin.js', `#!/usr/bin/env node\n import "${cwd}/src/cli.js"`, {
   // make executable
   mode: 0o755,
 })
-writeFileSync('./src/cli.js', `import "${process.cwd()}/src/cli.js"`)
-writeFileSync('./index.d.ts', `export * from "${process.cwd()}/src/config/config-types.js"`)
+writeFileSync('./src/cli.js', `import "${cwd}/src/cli.js"`)
+writeFileSync('./index.d.ts', `export * from "${cwd}/src/config/config-types.js"`)
 
 let outPath
 try {
@@ -34,7 +35,7 @@ try {
 
 exec(`npm version ${currentVersion} --no-git-tag-version`)
 
-const fullPath = join(process.cwd(), outPath)
+const fullPath = join(cwd, outPath)
 console.log(dedent`
   Wrote tarball:
 

@@ -1,6 +1,7 @@
 import slugify from '@sindresorhus/slugify'
 import micromatch from 'micromatch'
 import pc from 'picocolors'
+import { cwd } from 'process'
 import { logger } from '../logger/logger.js'
 import { isAbsolute, join, relative } from '../path.js'
 import { Project } from '../project/Project.js'
@@ -101,7 +102,7 @@ export class TaskConfig {
    */
   formatMultimatchError(patterns) {
     return `Workspace '${relative(
-      process.cwd(),
+      cwd,
       this.workspace.dir,
     )}' matched multiple overrides for script "${this.name}": [${patterns
       .sort()
@@ -300,7 +301,7 @@ export class Config {
     if (!rootConfig.filePath) {
       logger.log('No config files found, using default configuration.\n')
     } else {
-      logger.log(pc.gray(`Loaded config file: ${relative(process.cwd(), rootConfig.filePath)}\n`))
+      logger.log(pc.gray(`Loaded config file: ${relative(cwd, rootConfig.filePath)}\n`))
     }
 
     return new Config({

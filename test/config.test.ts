@@ -1,5 +1,5 @@
-import { join } from 'path'
 import { Config } from '../src/config/config.js'
+import { join } from '../src/path.js'
 import { createConfig, makeConfig, makeProject, makeScripts, makeWorkspace } from './test-utils.js'
 
 const getTaskConfig = (config: Config, relativeDir: string, taskName: string) => {

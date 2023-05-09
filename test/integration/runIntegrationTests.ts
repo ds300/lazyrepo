@@ -1,10 +1,10 @@
 import spawn from 'cross-spawn'
 import { existsSync, mkdirSync, readFileSync, statSync, utimesSync, writeFileSync } from 'fs'
 import { nanoid } from 'nanoid'
-import { join } from 'path'
 import stripAnsi from 'strip-ansi'
 import { LazyConfig } from '../../index.js'
-import { execCli } from '../../src/execCli.js'
+import { cwd } from '../../src/cwd.js'
+import { join } from '../../src/path.js'
 import { PackageJson } from '../../src/types.js'
 import { rimraf } from '../../src/utils/rimraf.js'
 
@@ -71,49 +71,50 @@ class TestHarness {
       inspect?: boolean
     },
   ) {
-    return this.config.spawn
-      ? this.execInSpawnedProc(args, options)
-      : this.execInBand(args, options)
+    // return this.config.spawn
+    //   ? this.execInSpawnedProc(args, options)
+    //   : this.execInBand(args, options)
+    return this.execInSpawnedProc(args, options)
   }
 
-  private async execInBand(
-    args: string[],
-    options?: { packageDir?: string; env?: NodeJS.ProcessEnv; expectError?: boolean },
-  ) {
-    const expectError = options?.expectError ?? false
-    const cwd = jest.spyOn(process, 'cwd').mockImplementation(() => this.config.dir)
-    let output = ''
-    const outWrite = jest.spyOn(process.stdout, 'write').mockImplementation((data) => {
-      output += data
-      return true
-    })
+  // private async execInBand(
+  //   args: string[],
+  //   options?: { packageDir?: string; env?: NodeJS.ProcessEnv; expectError?: boolean },
+  // ) {
+  //   const expectError = options?.expectError ?? false
+  //   const cwd = jest.spyOn(process, 'cwd').mockImplementation(() => this.config.dir)
+  //   let output = ''
+  //   const outWrite = jest.spyOn(process.stdout, 'write').mockImplementation((data) => {
+  //     output += data
+  //     return true
+  //   })
 
-    const errWrite = jest.spyOn(process.stderr, 'write').mockImplementation((data) => {
-      output += data
-      return true
-    })
-    let status = 0
-    const exit = jest.spyOn(process, 'exit').mockImplementation((code) => {
-      status = code ?? 0
-      return undefined as never
-    })
-    try {
-      await execCli(['node', join(process.cwd(), 'bin.js'), ...args])
-      const didError = status === 1
-      if ((expectError && didError) || (!expectError && !didError)) {
-        return { output: cleanup({ text: output, rootDir: this.config.dir }), status }
-      }
-      console.error(cleanup({ text: output, rootDir: this.config.dir }))
-      throw new Error(
-        `Exited with code ${status} ${cleanup({ text: output, rootDir: this.config.dir })}`,
-      )
-    } finally {
-      cwd.mockRestore()
-      outWrite.mockRestore()
-      errWrite.mockRestore()
-      exit.mockRestore()
-    }
-  }
+  //   const errWrite = jest.spyOn(process.stderr, 'write').mockImplementation((data) => {
+  //     output += data
+  //     return true
+  //   })
+  //   let status = 0
+  //   const exit = jest.spyOn(process, 'exit').mockImplementation((code) => {
+  //     status = code ?? 0
+  //     return undefined as never
+  //   })
+  //   try {
+  //     await execCli(['node', join(cwd, 'bin.js'), ...args])
+  //     const didError = status === 1
+  //     if ((expectError && didError) || (!expectError && !didError)) {
+  //       return { output: cleanup({ text: output, rootDir: this.config.dir }), status }
+  //     }
+  //     console.error(cleanup({ text: output, rootDir: this.config.dir }))
+  //     throw new Error(
+  //       `Exited with code ${status} ${cleanup({ text: output, rootDir: this.config.dir })}`,
+  //     )
+  //   } finally {
+  //     cwd.mockRestore()
+  //     outWrite.mockRestore()
+  //     errWrite.mockRestore()
+  //     exit.mockRestore()
+  //   }
+  // }
 
   private execInSpawnedProc(
     args: string[],
@@ -128,7 +129,7 @@ class TestHarness {
     return new Promise((resolve, reject) => {
       const proc = spawn(
         'node',
-        [...(options?.inspect ? ['--inspect'] : []), join(process.cwd(), 'bin.js'), ...args],
+        [...(options?.inspect ? ['--inspect'] : []), join(cwd, 'bin.js'), ...args],
         {
           cwd: options?.packageDir ? join(this.config.dir, options.packageDir) : this.config.dir,
           env: {
@@ -205,7 +206,7 @@ export async function runIntegrationTest(
   },
   fn: (t: TestHarness) => Promise<void>,
 ) {
-  const dir = join(process.cwd(), '.test', nanoid())
+  const dir = join(cwd, '.test', nanoid())
   const packageJson =
     config.workspaceConfig?.packageJson ??
     makePackageJson({

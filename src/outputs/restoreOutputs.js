@@ -1,4 +1,5 @@
 import assert from 'assert'
+import { cwd } from '../cwd.js'
 import { readFileSync, statSync } from '../fs.js'
 import { getOutputFiles } from '../manifest/getInputFiles.js'
 import { join, relative } from '../path.js'
@@ -80,7 +81,7 @@ export function restoreOutputs(tasks, task) {
 
   const n = manifest.length
   if (n) {
-    task.logger.log('output manifest:', relative(process.cwd(), outManifestPath))
+    task.logger.log('output manifest:', relative(cwd, outManifestPath))
     if (task.logger.isVerbose) {
       task.logger.log(`restored ${n} output file${n === 1 ? '' : 's'}`)
     }

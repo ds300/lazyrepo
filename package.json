@@ -54,6 +54,7 @@
     "fast-json-stable-stringify": "^2.1.0",
     "micromatch": "^4.0.5",
     "picocolors": "^1.0.0",
+    "slash": "^5.0.1",
     "slice-ansi": "^6.0.0",
     "source-map-support": "^0.5.21",
     "strip-ansi": "^7.0.1",

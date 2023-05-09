@@ -1,5 +1,6 @@
 import pc from 'picocolors'
 import stripAnsi from 'strip-ansi'
+import { cwd } from '../cwd.js'
 import {
   existsSync,
   mkdirSync,
@@ -76,7 +77,7 @@ export async function runTaskIfNeeded(task, tasks) {
   }
 
   if (!didRunTask || didSucceed) {
-    task.logger.note('input manifest: ' + relative(process.cwd(), previousManifestPath))
+    task.logger.note('input manifest: ' + relative(cwd, previousManifestPath))
     if (isCi) {
       task.logger.group(
         'input manifest',
@@ -93,7 +94,7 @@ export async function runTaskIfNeeded(task, tasks) {
         renameSync(nextManifestPath, previousManifestPath)
       }
       if (taskConfig.logMode === 'errors-only' || taskConfig.logMode === 'none') {
-        task.logger.log('output log: ' + relative(process.cwd(), taskConfig.getLogPath()))
+        task.logger.log('output log: ' + relative(cwd, taskConfig.getLogPath()))
       }
       await cacheOutputs(tasks, task)
       task.logger.success('done')
@@ -102,7 +103,7 @@ export async function runTaskIfNeeded(task, tasks) {
         unlinkSync(previousManifestPath)
       }
       if (taskConfig.logMode === 'none') {
-        task.logger.log('output log: ' + relative(process.cwd(), taskConfig.getLogPath()))
+        task.logger.log('output log: ' + relative(cwd, taskConfig.getLogPath()))
       } else {
         task.logger.log(pc.bgRed(pc.bold(' ERROR OUTPUT ')))
         // log from root to avoid prefix
@@ -113,7 +114,7 @@ export async function runTaskIfNeeded(task, tasks) {
     }
   } else {
     if (taskConfig.logMode !== 'full') {
-      task.logger.log('output log: ' + relative(process.cwd(), taskConfig.getLogPath()))
+      task.logger.log('output log: ' + relative(cwd, taskConfig.getLogPath()))
     } else {
       task.logger.log(pc.bgCyan(pc.bold(' CACHED OUTPUT ')))
       // log from root to avoid prefix

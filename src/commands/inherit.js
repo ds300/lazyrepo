@@ -1,6 +1,7 @@
 import { spawnSync } from 'child_process'
 import process from 'process'
 import { Config } from '../config/config.js'
+import { cwd } from '../cwd.js'
 import { logger } from '../logger/logger.js'
 import { run } from './run.js'
 
@@ -14,11 +15,9 @@ export async function inherit(options) {
       'No npm_lifecycle_event found. Did you run `lazy inherit` directly instead of via "scripts"?',
     )
   }
-  const config = await Config.fromCwd(process.cwd(), options.verbose)
+  const config = await Config.fromCwd(cwd, options.verbose)
   const workspace =
-    process.cwd() === config.project.root.dir
-      ? config.project.root
-      : config.project.getWorkspaceByDir(process.cwd())
+    cwd === config.project.root.dir ? config.project.root : config.project.getWorkspaceByDir(cwd)
 
   const task = config.getTaskConfig(workspace, scriptName)
   if (!task.baseCommand) {
@@ -34,9 +33,6 @@ export async function inherit(options) {
     })
     return result.status ?? 1
   } else {
-    return await run(
-      { scriptName: scriptName, options: { ...options, filter: [process.cwd()] } },
-      config,
-    )
+    return await run({ scriptName: scriptName, options: { ...options, filter: [cwd] } }, config)
   }
 }

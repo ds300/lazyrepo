@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
-import { join } from 'path'
+import { join } from '../src/path.js'
 import { findRootWorkspace } from '../src/project/findRootWorkspace.js'
 import { loadWorkspace } from '../src/project/loadWorkspace.js'
 import { Workspace } from '../src/project/project-types.js'

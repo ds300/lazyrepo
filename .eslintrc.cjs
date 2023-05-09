@@ -14,6 +14,19 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   overrides: [
     {
+      files: ['**/*'],
+      rules: {
+        'no-restricted-imports': ['error', 'path'],
+        'no-restricted-properties': [
+          2,
+          {
+            object: 'process',
+            property: 'cwd',
+          },
+        ],
+      },
+    },
+    {
       files: ['src/**', 'bin.js', 'index.js', 'index.d.ts'],
       rules: {
         'no-restricted-imports': [
@@ -39,7 +52,7 @@ module.exports = {
       plugins: ['jest'],
       extends: ['plugin:jest/recommended'],
       rules: {
-        'no-restricted-imports': 'off',
+        'no-restricted-imports': ['error', 'path'],
         '@typescript-eslint/no-unsafe-call': 'off',
         '@typescript-eslint/no-extra-semi': 'off',
         '@typescript-eslint/no-non-null-assertion': 'off',

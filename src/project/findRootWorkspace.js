@@ -1,7 +1,7 @@
 import assert from 'assert'
 import micromatch from 'micromatch'
 import { existsSync } from '../fs.js'
-import { dirname, isAbsolute, join, sep } from '../path.js'
+import { dirname, isAbsolute, join } from '../path.js'
 import { loadWorkspace } from './loadWorkspace.js'
 
 /**
@@ -16,7 +16,7 @@ function findContainingPackage(dir) {
     if (existsSync(join(currentDir, 'package.json'))) {
       return loadWorkspace(currentDir)
     }
-    if (currentDir === sep) {
+    if (currentDir === '/') {
       break
     }
     currentDir = dirname(currentDir)
@@ -57,7 +57,7 @@ export function findRootWorkspace(dir) {
     }
     if (hasChildWorkspace(parent, rootWorkspace.dir)) {
       rootWorkspace = parent
-    } else if (parent.dir === sep) {
+    } else if (parent.dir === '/') {
       return rootWorkspace
     } else {
       childDir = parent.dir
