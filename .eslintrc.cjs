@@ -16,7 +16,14 @@ module.exports = {
     {
       files: ['src/**', 'bin.js', 'index.js', 'index.d.ts'],
       rules: {
-        'no-restricted-imports': ['error', 'fs', 'fs/promises', 'node:fs', 'node:fs/promises'],
+        'no-restricted-imports': [
+          'error',
+          'fs',
+          'path',
+          'fs/promises',
+          'node:fs',
+          'node:fs/promises',
+        ],
         'no-console': 'error',
         '@typescript-eslint/no-empty-function': ['error', { allow: ['arrowFunctions'] }],
         '@typescript-eslint/ban-ts-comment': 'off',

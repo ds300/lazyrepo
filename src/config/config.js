@@ -1,8 +1,8 @@
 import slugify from '@sindresorhus/slugify'
 import micromatch from 'micromatch'
-import { isAbsolute, join, relative } from 'path'
 import pc from 'picocolors'
 import { logger } from '../logger/logger.js'
+import { isAbsolute, join, relative } from '../path.js'
 import { Project } from '../project/Project.js'
 import { resolveConfig } from './resolveConfig.js'
 

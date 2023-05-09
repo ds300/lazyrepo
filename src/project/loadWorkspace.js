@@ -1,9 +1,9 @@
-import path from 'path'
 import yaml from 'yaml'
 import { z } from 'zod'
 import { formatZodError } from '../formatZodError.js'
 import { readFileSync } from '../fs.js'
 import { logger } from '../logger/logger.js'
+import { join } from '../path.js'
 import { uniq } from '../utils/uniq.js'
 
 const packageJsonSchema = z.object({
@@ -28,7 +28,7 @@ const pnpmWorkspaceYamlSchema = z.object({
  * @param {string} dir
  */
 function readPackageJsonIfExists(dir) {
-  const packageJsonPath = path.join(dir, 'package.json')
+  const packageJsonPath = join(dir, 'package.json')
   let packageJsonString
   try {
     packageJsonString = readFileSync(packageJsonPath, 'utf8')
@@ -51,7 +51,7 @@ function readPackageJsonIfExists(dir) {
  * @param {string} dir
  */
 function readPnpmWorkspaceYamlIfExists(dir) {
-  const pnpmWorkspaceYamlPath = path.join(dir, 'pnpm-workspace.yaml')
+  const pnpmWorkspaceYamlPath = join(dir, 'pnpm-workspace.yaml')
   let pnpmWorkspaceYamlString
   try {
     pnpmWorkspaceYamlString = readFileSync(pnpmWorkspaceYamlPath, 'utf8')

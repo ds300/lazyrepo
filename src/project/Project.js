@@ -1,7 +1,7 @@
 import assert from 'assert'
 import micromatch from 'micromatch'
-import path, { isAbsolute, join } from 'path'
 import { glob } from '../glob/glob.js'
+import { dirname, isAbsolute, join } from '../path.js'
 import { findRootWorkspace } from './findRootWorkspace.js'
 import { getPackageManager } from './getPackageManager.js'
 import { loadWorkspace } from './loadWorkspace.js'
@@ -14,9 +14,9 @@ function findDirectChildWorkspaces(workspace) {
 
   for (const workspaceGlob of workspace.childWorkspaceGlobs) {
     for (const foundWorkspacePackageJsonPath of glob.sync([
-      path.join(workspace.dir, workspaceGlob, 'package.json'),
+      join(workspace.dir, workspaceGlob, 'package.json'),
     ])) {
-      const foundWorkspaceDir = path.dirname(foundWorkspacePackageJsonPath)
+      const foundWorkspaceDir = dirname(foundWorkspacePackageJsonPath)
       const foundWorkspace = loadWorkspace(foundWorkspaceDir)
 
       // do we care about this? seems like if they have nested pnpm-workspace.yaml files, they're doing something wrong anyway

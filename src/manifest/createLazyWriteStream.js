@@ -1,5 +1,5 @@
-import { dirname } from 'path'
 import { createWriteStream, mkdirSync } from '../fs.js'
+import { dirname } from '../path.js'
 
 // A little wrapper around createWriteStream that returns a Promise when the stream is closed.
 class LazyWriteStream {

@@ -1,9 +1,9 @@
 import { spawn } from 'cross-spawn'
 
-import { join, relative } from 'path'
 import pc from 'picocolors'
 import stripAnsi from 'strip-ansi'
 import { createLazyWriteStream } from '../manifest/createLazyWriteStream.js'
+import { join, relative } from '../path.js'
 
 /**
  * @param {import('../types.js').ScheduledTask} task

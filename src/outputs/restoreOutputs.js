@@ -1,7 +1,7 @@
 import assert from 'assert'
-import { join, relative } from 'path'
 import { readFileSync, statSync } from '../fs.js'
 import { getOutputFiles } from '../manifest/getInputFiles.js'
+import { join, relative } from '../path.js'
 import { rimraf } from '../utils/rimraf.js'
 import { copyFileWithMtime } from './copyFileWithMtime.js'
 

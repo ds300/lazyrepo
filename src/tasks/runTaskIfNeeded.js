@@ -1,4 +1,3 @@
-import { dirname, relative } from 'path'
 import pc from 'picocolors'
 import stripAnsi from 'strip-ansi'
 import {
@@ -13,6 +12,7 @@ import { logger } from '../logger/logger.js'
 import { computeManifest } from '../manifest/computeManifest.js'
 import { cacheOutputs } from '../outputs/cacheOutputs.js'
 import { restoreOutputs } from '../outputs/restoreOutputs.js'
+import { dirname, relative } from '../path.js'
 import { isCi } from '../utils/isCi.js'
 import { runTask } from './runTask.js'
 

@@ -1,7 +1,7 @@
 import assert from 'assert'
 import micromatch from 'micromatch'
-import { dirname, isAbsolute, join, sep } from 'path'
 import { existsSync } from '../fs.js'
+import { dirname, isAbsolute, join, sep } from '../path.js'
 import { loadWorkspace } from './loadWorkspace.js'
 
 /**

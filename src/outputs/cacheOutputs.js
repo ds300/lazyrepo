@@ -1,8 +1,8 @@
-import { dirname, join, relative } from 'path'
 import { mkdirSync, statSync } from '../fs.js'
 import { logger } from '../logger/logger.js'
 import { createLazyWriteStream } from '../manifest/createLazyWriteStream.js'
 import { getOutputFiles } from '../manifest/getInputFiles.js'
+import { dirname, join, relative } from '../path.js'
 import { rimraf } from '../utils/rimraf.js'
 import { copyFileWithMtime } from './copyFileWithMtime.js'
 

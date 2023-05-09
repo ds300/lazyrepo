@@ -1,8 +1,7 @@
 import assert from 'assert'
-import path, { isAbsolute, join } from 'path'
 import pc from 'picocolors'
-import { readdirSync, statSync } from '../fs.js'
 import { glob } from '../glob/glob.js'
+import { isAbsolute, join } from '../path.js'
 import { createTimer } from '../utils/createTimer.js'
 import { uniq } from '../utils/uniq.js'
 
@@ -10,23 +9,16 @@ import { uniq } from '../utils/uniq.js'
  * @param {{task: import('../types.js').ScheduledTask, includes: string[], excludes: string[], workspaceRoot: string}} param
  */
 function globCacheConfig({ includes, excludes, task, workspaceRoot }) {
-  /**
-   * @type {Set<string>}
-   */
-  const files = new Set()
-
   const timer = createTimer()
-  for (const file of glob.sync(includes, {
-    cwd: task.workspace.dir,
-    ignore: [join(workspaceRoot, '**/node_modules/**'), ...excludes],
-    expandDirectories: true,
-  })) {
-    if (statSync(file).isDirectory()) {
-      visitAllFiles(file, (filePath) => files.add(filePath))
-    } else {
-      files.add(path.relative(workspaceRoot, file))
-    }
-  }
+
+  const files = new Set(
+    glob.sync(includes, {
+      cwd: task.workspace.dir,
+      ignore: [join(workspaceRoot, '**/node_modules/**'), ...excludes],
+      expandDirectories: true,
+    }),
+  )
+
   // todo: always log this if verbose
   if (timer.getElapsedMs() > 100) {
     task.logger.note(`finding files took ${pc.cyan(timer.formatElapsedTime())}`)
@@ -113,25 +105,9 @@ export const expandGlobPaths = ({ patterns, rootDir, taskDir, allWorkspaceDirs }
       if (p.startsWith('/')) {
         return p
       } else {
-        return path.join(taskDir, p)
+        return join(taskDir, p)
       }
     })
-}
-
-/**
- *
- * @param {string} dir
- * @param {(filePath: string) => void} visit
- */
-function visitAllFiles(dir, visit) {
-  for (const fileName of readdirSync(dir)) {
-    const fullPath = path.join(dir, fileName)
-    if (statSync(fullPath).isDirectory()) {
-      visitAllFiles(fullPath, visit)
-    } else {
-      visit(fullPath)
-    }
-  }
 }
 
 /**
