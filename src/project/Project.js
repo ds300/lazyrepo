@@ -1,7 +1,7 @@
 import assert from 'assert'
-import glob from 'fast-glob'
 import micromatch from 'micromatch'
 import path, { isAbsolute, join } from 'path'
+import { glob } from '../glob/glob.js'
 import { findRootWorkspace } from './findRootWorkspace.js'
 import { getPackageManager } from './getPackageManager.js'
 import { loadWorkspace } from './loadWorkspace.js'
@@ -13,9 +13,9 @@ function findDirectChildWorkspaces(workspace) {
   const directChildWorkspaces = []
 
   for (const workspaceGlob of workspace.childWorkspaceGlobs) {
-    for (const foundWorkspacePackageJsonPath of glob.sync(
+    for (const foundWorkspacePackageJsonPath of glob.sync([
       path.join(workspace.dir, workspaceGlob, 'package.json'),
-    )) {
+    ])) {
       const foundWorkspaceDir = path.dirname(foundWorkspacePackageJsonPath)
       const foundWorkspace = loadWorkspace(foundWorkspaceDir)
 

@@ -1,9 +1,8 @@
-import glob from 'fast-glob'
+import assert from 'assert'
 import path, { isAbsolute, join } from 'path'
 import pc from 'picocolors'
-import { Config } from '../config/config.js'
 import { readdirSync, statSync } from '../fs.js'
-import { logger } from '../logger/logger.js'
+import { glob } from '../glob/glob.js'
 import { createTimer } from '../utils/createTimer.js'
 import { uniq } from '../utils/uniq.js'
 
@@ -16,28 +15,21 @@ function globCacheConfig({ includes, excludes, task, workspaceRoot }) {
    */
   const files = new Set()
 
-  for (const pattern of includes) {
-    const timer = createTimer()
-    for (const file of glob.sync(pattern, {
-      cwd: task.workspace.dir,
-      ignore: [join(workspaceRoot, '**/node_modules/**'), ...excludes],
-      absolute: true,
-    })) {
-      if (statSync(file).isDirectory()) {
-        visitAllFiles(file, (filePath) => files.add(filePath))
-      } else {
-        files.add(path.relative(workspaceRoot, file))
-      }
+  const timer = createTimer()
+  for (const file of glob.sync(includes, {
+    cwd: task.workspace.dir,
+    ignore: [join(workspaceRoot, '**/node_modules/**'), ...excludes],
+    expandDirectories: true,
+  })) {
+    if (statSync(file).isDirectory()) {
+      visitAllFiles(file, (filePath) => files.add(filePath))
+    } else {
+      files.add(path.relative(workspaceRoot, file))
     }
-    // todo: always log this if verbose
-    if (timer.getElapsedMs() > 100) {
-      task.logger.note(
-        `finding files matching ${path.relative(
-          process.cwd(),
-          isAbsolute(pattern) ? pattern : join(task.workspace.dir, pattern),
-        )} took ${pc.cyan(timer.formatElapsedTime())}`,
-      )
-    }
+  }
+  // todo: always log this if verbose
+  if (timer.getElapsedMs() > 100) {
+    task.logger.note(`finding files took ${pc.cyan(timer.formatElapsedTime())}`)
   }
 
   return files
@@ -60,19 +52,28 @@ export function getInputFiles(tasks, task, extraFiles) {
 
   const baseCacheConfig = tasks.config.getBaseCacheConfig()
 
+  const includePatterns = uniq([...baseCacheConfig.include, ...cacheConfig.inputs.include])
+  const excludePatterns = uniq([...baseCacheConfig.exclude, ...cacheConfig.inputs.exclude])
+
+  const rootDir = tasks.config.project.root.dir
+  const taskDir = task.workspace.dir
+  const allWorkspaceDirs = [...tasks.config.project.workspacesByDir.keys()]
+
   const localFiles = globCacheConfig({
     task,
     workspaceRoot: tasks.config.project.root.dir,
-    includes: makeGlobsAbsolute(
-      uniq([...baseCacheConfig.include, ...cacheConfig.inputs.include]),
-      tasks.config,
-      task.workspace.dir,
-    ),
-    excludes: makeGlobsAbsolute(
-      uniq([...baseCacheConfig.exclude, ...cacheConfig.inputs.exclude]),
-      tasks.config,
-      task.workspace.dir,
-    ),
+    includes: expandGlobPaths({
+      patterns: includePatterns,
+      rootDir,
+      taskDir,
+      allWorkspaceDirs,
+    }),
+    excludes: expandGlobPaths({
+      patterns: excludePatterns,
+      rootDir,
+      taskDir,
+      allWorkspaceDirs,
+    }),
   })
 
   return [...new Set([...localFiles, ...extraFiles])].sort()
@@ -82,42 +83,39 @@ export const ALL_WORKSPACES_MACRO = '<allWorkspaceDirs>'
 export const ROOT_DIR_MACRO = '<rootDir>'
 
 /**
- * @param {string[]} arr
- * @param {Config} config
- * @param {string} taskDir
- * @returns
+ * @typedef {Object} ExpandGlobsProps
+ *
+ * @property {string[]} patterns
+ * @property {string} rootDir
+ * @property {string} taskDir
+ * @property {string[]} allWorkspaceDirs
  */
-export const makeGlobsAbsolute = (arr, config, taskDir) => {
-  const workspaceRoot = config.project.root.dir
-  const allWorkspaceDirs = [...config.project.workspacesByDir.keys()].map((dir) =>
-    path.relative(workspaceRoot, dir),
-  )
-  const allWorkspaceDirsGlob = workspaceRoot + `/{${allWorkspaceDirs.join(',')}}`
-  return arr.map((str) => {
-    const allWorkspaceIdx = str.indexOf(ALL_WORKSPACES_MACRO)
-    if (allWorkspaceIdx > 0) {
-      throw logger.fail(
-        `Invalid glob: '${str}'. ${ALL_WORKSPACES_MACRO} must be at the start of the string.`,
-      )
-    }
 
-    const rootDirIdx = str.indexOf(ROOT_DIR_MACRO)
-    if (rootDirIdx > 0) {
-      throw logger.fail(
-        `Invalid glob: '${str}'. ${ROOT_DIR_MACRO} must be at the start of the string.`,
-      )
-    }
+/**
+ * @param {ExpandGlobsProps} props
+ * @returns {string[]}
+ */
+export const expandGlobPaths = ({ patterns, rootDir, taskDir, allWorkspaceDirs }) => {
+  assert(isAbsolute(rootDir), 'rootDir must be absolute')
+  assert(isAbsolute(taskDir), 'taskDir must be absolute')
+  assert(allWorkspaceDirs.every(isAbsolute), 'allWorkspaceDirs must be absolute')
 
-    if (allWorkspaceIdx === 0) {
-      return str.replace(ALL_WORKSPACES_MACRO, allWorkspaceDirsGlob)
-    } else if (rootDirIdx === 0) {
-      return str.replace(ROOT_DIR_MACRO, workspaceRoot)
-    } else if (str.startsWith('/')) {
-      return str
-    } else {
-      return path.join(taskDir, str)
-    }
-  })
+  return patterns
+    .map((p) => p.replaceAll(ROOT_DIR_MACRO, rootDir))
+    .flatMap((p) => {
+      if (p.includes(ALL_WORKSPACES_MACRO)) {
+        return allWorkspaceDirs.map((dir) => p.replaceAll(ALL_WORKSPACES_MACRO, dir))
+      } else {
+        return [p]
+      }
+    })
+    .map((p) => {
+      if (p.startsWith('/')) {
+        return p
+      } else {
+        return path.join(taskDir, p)
+      }
+    })
 }
 
 /**
@@ -150,11 +148,25 @@ export function getOutputFiles(tasks, task) {
     return null
   }
 
+  const rootDir = tasks.config.project.root.dir
+  const taskDir = task.workspace.dir
+  const allWorkspaceDirs = [...tasks.config.project.workspacesByDir.keys()]
+
   const localFiles = globCacheConfig({
     task,
     workspaceRoot: tasks.config.project.root.dir,
-    includes: makeGlobsAbsolute(cacheConfig.outputs.include, tasks.config, task.workspace.dir),
-    excludes: makeGlobsAbsolute(cacheConfig.outputs.exclude, tasks.config, task.workspace.dir),
+    includes: expandGlobPaths({
+      patterns: cacheConfig.outputs.include,
+      taskDir,
+      rootDir,
+      allWorkspaceDirs,
+    }),
+    excludes: expandGlobPaths({
+      patterns: cacheConfig.outputs.exclude,
+      taskDir,
+      rootDir,
+      allWorkspaceDirs,
+    }),
   })
 
   return [...localFiles].sort()

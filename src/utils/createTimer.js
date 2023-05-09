@@ -1,16 +1,18 @@
 import { duration } from '../logger/formatting.js'
 import { isTest } from './isTest.js'
 
-const TEST_DURATION = 1000
+const TEST_DURATION_NS = 1000n * 1000000n
 
 export function createTimer() {
-  let start = new Date().getTime()
-  const getElapsedMs = () => (isTest ? TEST_DURATION : new Date().getTime() - start)
+  let start = process.hrtime.bigint()
+  const getElapsedNs = () => (isTest ? TEST_DURATION_NS : process.hrtime.bigint() - start)
+  const getElapsedMs = () => Number(getElapsedNs() / 1000000n)
   return {
     getElapsedMs,
+    getElapsedNs,
     formatElapsedTime: () => duration(getElapsedMs()),
     reset: () => {
-      start = new Date().getTime()
+      start = process.hrtime.bigint()
     },
     getStartTime: () => start,
   }

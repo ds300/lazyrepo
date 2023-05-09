@@ -1,6 +1,6 @@
-import glob from 'fast-glob'
 import { join } from 'path'
 import { existsSync, mkdirSync, writeFileSync } from '../fs.js'
+import { glob } from '../glob/glob.js'
 import { logger } from '../logger/logger.js'
 import { isTest } from '../utils/isTest.js'
 import { validateConfig } from './validateConfig.js'
@@ -22,8 +22,7 @@ import { validateConfig } from './validateConfig.js'
  * @param {string} dir
  */
 export async function resolveConfig(dir) {
-  const files = glob.sync('lazy.config.{js,cjs,mjs,ts,cts,mts}', {
-    absolute: true,
+  const files = glob.sync(['lazy.config.{js,cjs,mjs,ts,cts,mts}'], {
     cwd: dir,
   })
 

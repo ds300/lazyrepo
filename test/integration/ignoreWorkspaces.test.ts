@@ -62,9 +62,7 @@ test('a workspace can be ignored and things will not run in it', async () => {
         -------------------
         Loaded config file: lazy.config.js
 
-        build::packages/core finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-        build::packages/core finding files matching lazy.config.* took 1.00s
-        build::packages/core finding files matching packages/core/**/* took 1.00s
+        build::packages/core finding files took 1.00s
         build::packages/core hashed 4/4 files in 1.00s
         build::packages/core cache miss, no previous manifest found
         build::packages/core RUN echo $RANDOM > out.txt in packages/core
@@ -101,9 +99,7 @@ test('a workspace can be ignored with a glob pattern', async () => {
         -------------------
         Loaded config file: lazy.config.js
 
-        build::packages/utils finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-        build::packages/utils finding files matching lazy.config.* took 1.00s
-        build::packages/utils finding files matching packages/utils/**/* took 1.00s
+        build::packages/utils finding files took 1.00s
         build::packages/utils hashed 4/4 files in 1.00s
         build::packages/utils cache miss, no previous manifest found
         build::packages/utils RUN echo $RANDOM > out.txt in packages/utils

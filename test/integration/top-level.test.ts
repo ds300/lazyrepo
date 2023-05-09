@@ -59,9 +59,7 @@ test('running a top-level tasks works', async () => {
         -------------------
         Loaded config file: lazy.config.js
 
-        build::<rootDir> finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-        build::<rootDir> finding files matching lazy.config.* took 1.00s
-        build::<rootDir> finding files matching **/* took 1.00s
+        build::<rootDir> finding files took 1.00s
         build::<rootDir> hashed 8/8 files in 1.00s
         build::<rootDir> cache miss, no previous manifest found
         build::<rootDir> RUN echo hello > out.txt in 
@@ -83,9 +81,7 @@ test('running a top-level tasks works', async () => {
         -------------------
         Loaded config file: lazy.config.js
 
-        build::<rootDir> finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-        build::<rootDir> finding files matching lazy.config.* took 1.00s
-        build::<rootDir> finding files matching **/* took 1.00s
+        build::<rootDir> finding files took 1.00s
         build::<rootDir> hashed 0/8 files in 1.00s
         build::<rootDir> input manifest: .lazy/build/manifest.tsv
         build::<rootDir> output log: .lazy/build/output.log
@@ -125,25 +121,19 @@ test('top-level tasks can depend on other tasks', async () => {
         -------------------
         Loaded config file: lazy.config.js
 
-        compile::packages/utils finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-        compile::packages/utils finding files matching lazy.config.* took 1.00s
-        compile::packages/utils finding files matching packages/utils/**/* took 1.00s
+        compile::packages/utils finding files took 1.00s
         compile::packages/utils hashed 4/4 files in 1.00s
         compile::packages/utils cache miss, no previous manifest found
         compile::packages/utils RUN echo hello > out.txt in packages/utils
         compile::packages/utils input manifest: packages/utils/.lazy/compile/manifest.tsv
         compile::packages/utils ✔ done in 1.00s
-        compile::packages/core finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-        compile::packages/core finding files matching lazy.config.* took 1.00s
-        compile::packages/core finding files matching packages/core/**/* took 1.00s
+        compile::packages/core finding files took 1.00s
         compile::packages/core hashed 4/4 files in 1.00s
         compile::packages/core cache miss, no previous manifest found
         compile::packages/core RUN echo hello > out.txt in packages/core
         compile::packages/core input manifest: packages/core/.lazy/compile/manifest.tsv
         compile::packages/core ✔ done in 1.00s
-        build::<rootDir> finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-        build::<rootDir> finding files matching lazy.config.* took 1.00s
-        build::<rootDir> finding files matching **/* took 1.00s
+        build::<rootDir> finding files took 1.00s
         build::<rootDir> hashed 10/10 files in 1.00s
         build::<rootDir> cache miss, no previous manifest found
         build::<rootDir> RUN echo hello > out.txt in 
@@ -165,9 +155,7 @@ test('top-level tasks can depend on other tasks', async () => {
         -------------------
         Loaded config file: lazy.config.js
 
-        compile::packages/utils finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-        compile::packages/utils finding files matching lazy.config.* took 1.00s
-        compile::packages/utils finding files matching packages/utils/**/* took 1.00s
+        compile::packages/utils finding files took 1.00s
         compile::packages/utils hashed 1/5 files in 1.00s
         compile::packages/utils cache miss, changes since last run:
         compile::packages/utils + added file packages/utils/out.txt
@@ -175,9 +163,7 @@ test('top-level tasks can depend on other tasks', async () => {
         compile::packages/utils RUN echo hello > out.txt in packages/utils
         compile::packages/utils input manifest: packages/utils/.lazy/compile/manifest.tsv
         compile::packages/utils ✔ done in 1.00s
-        compile::packages/core finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-        compile::packages/core finding files matching lazy.config.* took 1.00s
-        compile::packages/core finding files matching packages/core/**/* took 1.00s
+        compile::packages/core finding files took 1.00s
         compile::packages/core hashed 1/5 files in 1.00s
         compile::packages/core cache miss, changes since last run:
         compile::packages/core ± changed upstream package inputs compile::packages/utils
@@ -186,9 +172,7 @@ test('top-level tasks can depend on other tasks', async () => {
         compile::packages/core RUN echo hello > out.txt in packages/core
         compile::packages/core input manifest: packages/core/.lazy/compile/manifest.tsv
         compile::packages/core ✔ done in 1.00s
-        build::<rootDir> finding files matching {yarn.lock,pnpm-lock.yaml,package-lock.json} took 1.00s
-        build::<rootDir> finding files matching lazy.config.* took 1.00s
-        build::<rootDir> finding files matching **/* took 1.00s
+        build::<rootDir> finding files took 1.00s
         build::<rootDir> hashed 2/10 files in 1.00s
         build::<rootDir> input manifest: .lazy/build/manifest.tsv
         build::<rootDir> output log: .lazy/build/output.log

@@ -23,6 +23,7 @@ export function restoreOutputs(tasks, task) {
     .toString()
     .trim()
     .split('\n')
+    .filter(Boolean)
     .map((line) => line.split('\t'))
 
   task.outputFiles = manifest.map(([file]) => file)

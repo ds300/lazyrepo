@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from '../src/fs.js
 import { ManifestConstructor } from '../src/manifest/ManifestConstructor.js'
 import { compareManifestTypes, types } from '../src/manifest/computeManifest.js'
 import { LazyWriter } from '../src/manifest/manifest-types.js'
+import { Random } from './test-utils.js'
 
 jest.mock('../src/fs.js', () => {
   return { ...require('memfs') }
@@ -519,36 +520,9 @@ it('should not complain if types are added in alphabetical order', async () => {
 type ManifestLineType = (typeof types)[keyof typeof types]
 type Line = [ManifestLineType, string, string, string | undefined]
 
-class Random {
-  constructor(private _seed: number) {}
-
-  random(n: number = Number.MAX_SAFE_INTEGER) {
-    this._seed = (this._seed * 9301 + 49297) % 233280
-    // float is a number between 0 and 1
-    const float = this._seed / 233280
-    return Math.floor(float * n)
-  }
-
-  choice<Result>(choices: Array<(() => any) | { weight: number; do: () => any }>): Result {
-    type Choice = (typeof choices)[number]
-    const getWeightFromChoice = (choice: Choice) => ('weight' in choice ? choice.weight : 1)
-    const totalWeight = Object.values(choices).reduce(
-      (total, choice) => total + getWeightFromChoice(choice),
-      0,
-    )
-    const randomWeight = this.random(totalWeight)
-    let weight = 0
-    for (const choice of Object.values(choices)) {
-      weight += getWeightFromChoice(choice)
-      if (randomWeight < weight) {
-        return 'do' in choice ? choice.do() : choice()
-      }
-    }
-    throw new Error('unreachable')
-  }
-
+class Source extends Random {
   randomType(): ManifestLineType {
-    return this.choice(Object.values(types).map((type) => () => type))
+    return this.execOneOf(Object.values(types).map((type) => () => type))
   }
 
   randomId() {
@@ -635,7 +609,7 @@ const lineComparator = (a: Line, b: Line) => {
 }
 
 async function runCreationTest(seed: number) {
-  const random = new Random(seed)
+  const random = new Source(seed)
   const numLines = random.random(20)
   const lines = random.randomLines(numLines)
 
@@ -701,7 +675,7 @@ function getDiff(linesA: Line[], linesB: Line[]) {
 }
 
 async function runUpdateTest(seed: number) {
-  const random = new Random(seed)
+  const random = new Source(seed)
   const numLines = random.random(20)
   const lines = random.randomLines(numLines)
 
