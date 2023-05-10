@@ -1,7 +1,7 @@
 import assert from 'assert'
 import pc from 'picocolors'
 import { glob } from '../glob/glob.js'
-import { isAbsolute, join } from '../path.js'
+import { isAbsolute, join, relative } from '../path.js'
 import { createTimer } from '../utils/createTimer.js'
 import { uniq } from '../utils/uniq.js'
 
@@ -11,20 +11,19 @@ import { uniq } from '../utils/uniq.js'
 function globCacheConfig({ includes, excludes, task, workspaceRoot }) {
   const timer = createTimer()
 
-  const files = new Set(
-    glob.sync(includes, {
-      cwd: task.workspace.dir,
-      ignore: [join(workspaceRoot, '**/node_modules/**'), ...excludes],
-      expandDirectories: true,
-    }),
-  )
+  const files = glob.sync(includes, {
+    cwd: task.workspace.dir,
+    ignore: [join(workspaceRoot, '**/node_modules/**'), ...excludes],
+    expandDirectories: true,
+    absolute: true,
+  })
 
   // todo: always log this if verbose
   if (timer.getElapsedMs() > 100) {
     task.logger.note(`finding files took ${pc.cyan(timer.formatElapsedTime())}`)
   }
 
-  return files
+  return files.map((f) => relative(workspaceRoot, f))
 }
 
 /**

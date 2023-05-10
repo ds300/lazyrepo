@@ -17,6 +17,7 @@ interface LazyGlobOptions {
   types?: MatchTypes
   expandDirectories?: boolean
   symbolicLinks?: SymbolicLinkStrategy
+  absolute?: boolean
 }
 
 interface MatchOptions {

@@ -42,7 +42,8 @@ export class LazyGlob {
     const rootMatcher = compileMatcher(
       matchOpts,
       patterns.concat(opts?.ignore?.map((p) => '!' + p) ?? []),
-      resolve('./', cwd).replace(rootDir, '/'),
+      cwd,
+      rootDir,
     )
 
     if (cache === 'normal') {
@@ -55,6 +56,7 @@ export class LazyGlob {
       rootMatcher.children,
       [],
     )
+
     return result
   }
 
