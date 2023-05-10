@@ -1,7 +1,6 @@
 import { vol } from 'memfs'
-import { glob } from '../../src/glob/glob.js'
 import { convertParens } from '../../src/manifest/convertParens.js'
-import { makeFiles } from './glob-test-utils.js'
+import { makeFiles, testGlob } from './glob-test-utils.js'
 
 jest.mock('../../src/fs.js', () => {
   return require('memfs')
@@ -85,7 +84,7 @@ test('multi-segment parens work in glob.sync', () => {
     },
   })
   expect(
-    glob.sync(['src/(dist/bulb*|lib/bulb.txt)'], {
+    testGlob(['src/(dist/bulb*|lib/bulb.txt)'], {
       cwd: '/',
     }),
   ).toMatchInlineSnapshot(`
@@ -95,7 +94,7 @@ test('multi-segment parens work in glob.sync', () => {
     ]
   `)
 
-  expect(glob.sync(['(src/lib|src/2*)/*.txt'], { cwd: '/' })).toMatchInlineSnapshot(`
+  expect(testGlob(['(src/lib|src/2*)/*.txt'], { cwd: '/' })).toMatchInlineSnapshot(`
     [
       "/src/234/tree.txt",
       "/src/lib/bulb.txt",

@@ -1,5 +1,5 @@
-import { dirname } from 'path'
 import { constants, copyFileSync, mkdirSync, utimesSync } from '../fs.js'
+import { dirname } from '../path.js'
 
 /**
  * @param {string} src

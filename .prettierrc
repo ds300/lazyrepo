@@ -6,5 +6,6 @@
   "tabWidth": 2,
   "useTabs": false,
   "proseWrap": "never",
-  "plugins": ["prettier-plugin-organize-imports"]
+  "plugins": ["prettier-plugin-organize-imports"],
+  "endOfLine": "lf"
 }

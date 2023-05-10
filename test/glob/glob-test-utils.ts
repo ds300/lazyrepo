@@ -1,8 +1,9 @@
 import assert from 'assert'
 import { vol } from 'memfs'
 import { minimatch } from 'minimatch'
-import { dirname, isAbsolute, join } from 'path'
+import { platform } from 'os'
 import { glob } from '../../src/glob/glob.js'
+import { dirname, isAbsolute, join } from '../../src/path.js'
 import { Dir, File } from '../integration/runIntegrationTests.js'
 
 export function extractDirs(dir: Dir) {
@@ -126,8 +127,16 @@ export function globCheckingAgainstReference(
   pattern: string[],
   options: MatchOptions,
 ) {
-  const actual = glob.sync(pattern, { ...options, cache: 'none' }).sort()
+  const actual = testGlob(pattern, options)
   const expected = referenceGlob(paths, pattern, options).sort()
   expect(actual).toEqual(expected)
+  return actual
+}
+
+export const testGlob: typeof glob.sync = (patterns, options) => {
+  let actual = glob.sync(patterns, { ...options, cache: 'none' }).sort()
+  if (platform() === 'win32') {
+    actual = actual.map((a) => a.slice(2))
+  }
   return actual
 }

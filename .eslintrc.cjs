@@ -14,13 +14,43 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   overrides: [
     {
+      files: ['**/*'],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          'path',
+
+          {
+            name: 'process',
+            importNames: ['cwd'],
+            message: "Please import 'cwd' from './src/cwd.js' instead.",
+          },
+        ],
+        'no-restricted-properties': [
+          2,
+          {
+            object: 'process',
+            property: 'cwd',
+          },
+        ],
+      },
+    },
+    {
       files: ['src/**', 'bin.js', 'index.js', 'index.d.ts'],
       rules: {
-        'no-restricted-imports': ['error', 'fs', 'fs/promises', 'node:fs', 'node:fs/promises'],
+        'no-restricted-imports': [
+          'error',
+          'fs',
+          'path',
+          'fs/promises',
+          'node:fs',
+          'node:fs/promises',
+        ],
         'no-console': 'error',
         '@typescript-eslint/no-empty-function': ['error', { allow: ['arrowFunctions'] }],
         '@typescript-eslint/ban-ts-comment': 'off',
         '@typescript-eslint/no-unused-vars': 'off',
+        'n/shebang': 'off',
       },
     },
     {
@@ -31,7 +61,7 @@ module.exports = {
       plugins: ['jest'],
       extends: ['plugin:jest/recommended'],
       rules: {
-        'no-restricted-imports': 'off',
+        'no-restricted-imports': ['error', 'path'],
         '@typescript-eslint/no-unsafe-call': 'off',
         '@typescript-eslint/no-extra-semi': 'off',
         '@typescript-eslint/no-non-null-assertion': 'off',

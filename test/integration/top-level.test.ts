@@ -62,7 +62,7 @@ test('running a top-level tasks works', async () => {
         build::<rootDir> finding files took 1.00s
         build::<rootDir> hashed 8/8 files in 1.00s
         build::<rootDir> cache miss, no previous manifest found
-        build::<rootDir> RUN echo hello > out.txt in 
+        build::<rootDir> RUN echo hello > out.txt in ./
         build::<rootDir> input manifest: .lazy/build/manifest.tsv
         build::<rootDir> ✔ done in 1.00s
 
@@ -136,7 +136,7 @@ test('top-level tasks can depend on other tasks', async () => {
         build::<rootDir> finding files took 1.00s
         build::<rootDir> hashed 10/10 files in 1.00s
         build::<rootDir> cache miss, no previous manifest found
-        build::<rootDir> RUN echo hello > out.txt in 
+        build::<rootDir> RUN echo hello > out.txt in ./
         build::<rootDir> input manifest: .lazy/build/manifest.tsv
         build::<rootDir> ✔ done in 1.00s
 

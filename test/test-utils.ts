@@ -1,10 +1,9 @@
-import { basename, join } from 'path'
 import { LazyConfig } from '../index.js'
 import { Config } from '../src/config/config.js'
+import { cwd } from '../src/cwd.js'
+import { basename, join } from '../src/path.js'
 import { Project } from '../src/project/Project.js'
 import { Workspace } from '../src/project/project-types.js'
-
-const cwd = process.cwd()
 
 export function makeScripts(names: string[], command = 'echo whatever'): Record<string, string> {
   return Object.fromEntries(names.map((name) => [name, command]))

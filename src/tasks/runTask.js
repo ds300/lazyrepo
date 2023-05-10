@@ -1,9 +1,9 @@
-import { spawn } from 'cross-spawn'
-
-import { join, relative } from 'path'
 import pc from 'picocolors'
 import stripAnsi from 'strip-ansi'
+import { cwd } from '../cwd.js'
 import { createLazyWriteStream } from '../manifest/createLazyWriteStream.js'
+import { join, relative } from '../path.js'
+import { spawn } from './spawn.js'
 
 /**
  * @param {import('../types.js').ScheduledTask} task
@@ -24,13 +24,13 @@ export async function runTask(task, tasks) {
       pc.bold('RUN ') +
         pc.green(pc.bold(command)) +
         (task.extraArgs.length ? pc.cyan(pc.bold(' ' + task.extraArgs.join(' '))) : '') +
-        pc.gray(' in ' + relative(process.cwd(), task.workspace.dir) ?? './'),
+        pc.gray(' in ' + (relative(cwd, task.workspace.dir) || './')),
     )
 
     const proc = spawn(command, task.extraArgs, {
       cwd: task.workspace.dir,
       shell: true,
-      stdio: ['ignore'],
+      stdio: [null],
       env: {
         ...process.env,
         PATH: `./node_modules/.bin:${join(tasks.config.project.root.dir, 'node_modules/.bin')}:${

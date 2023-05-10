@@ -1,7 +1,7 @@
 import assert from 'assert'
-import path, { join } from 'path'
 import pc from 'picocolors'
 import { existsSync, mkdirSync, statSync } from '../fs.js'
+import { dirname, join } from '../path.js'
 import { createTimer } from '../utils/createTimer.js'
 import { isTest } from '../utils/isTest.js'
 import { uniq } from '../utils/uniq.js'
@@ -45,14 +45,14 @@ export async function computeManifest({ tasks, task }) {
   const nextManifestPath = task.taskConfig.getNextManifestPath()
   const diffPath = task.taskConfig.getDiffPath()
 
-  if (!existsSync(path.dirname(manifestPath))) {
-    mkdirSync(path.dirname(manifestPath), { recursive: true })
+  if (!existsSync(dirname(manifestPath))) {
+    mkdirSync(dirname(manifestPath), { recursive: true })
   }
-  if (!existsSync(path.dirname(nextManifestPath))) {
-    mkdirSync(path.dirname(nextManifestPath), { recursive: true })
+  if (!existsSync(dirname(nextManifestPath))) {
+    mkdirSync(dirname(nextManifestPath), { recursive: true })
   }
-  if (diffPath && !existsSync(path.dirname(diffPath))) {
-    mkdirSync(path.dirname(diffPath), { recursive: true })
+  if (diffPath && !existsSync(dirname(diffPath))) {
+    mkdirSync(dirname(diffPath), { recursive: true })
   }
 
   const manifestConstructor = new ManifestConstructor({

@@ -1,8 +1,9 @@
-import { dirname, join, relative } from 'path'
+import { cwd } from '../cwd.js'
 import { mkdirSync, statSync } from '../fs.js'
 import { logger } from '../logger/logger.js'
 import { createLazyWriteStream } from '../manifest/createLazyWriteStream.js'
 import { getOutputFiles } from '../manifest/getInputFiles.js'
+import { dirname, join, relative } from '../path.js'
 import { rimraf } from '../utils/rimraf.js'
 import { copyFileWithMtime } from './copyFileWithMtime.js'
 
@@ -52,6 +53,6 @@ export async function cacheOutputs(tasks, task) {
 
   await manifest.close()
   if (numFiles) {
-    task.logger.log('output manifest:', relative(process.cwd(), outManifestPath))
+    task.logger.log('output manifest:', relative(cwd, outManifestPath))
   }
 }

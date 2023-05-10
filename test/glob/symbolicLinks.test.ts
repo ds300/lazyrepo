@@ -1,7 +1,6 @@
 import { vol } from 'memfs'
-import { glob } from '../../src/glob/glob.js'
 import { Dir } from '../integration/runIntegrationTests.js'
-import { writeDir } from './glob-test-utils.js'
+import { testGlob, writeDir } from './glob-test-utils.js'
 
 jest.mock('../../src/fs.js', () => {
   return require('memfs')
@@ -33,11 +32,9 @@ describe('the "types" option', () => {
   })
 
   it('should follow symlinks by default', () => {
-    const result = glob
-      .sync(['**'], {
-        cwd: '/src',
-      })
-      .sort()
+    const result = testGlob(['**'], {
+      cwd: '/src',
+    }).sort()
 
     expect(result).toMatchInlineSnapshot(`
       [
@@ -49,12 +46,10 @@ describe('the "types" option', () => {
   })
 
   it('will ignore symlinks if told to', () => {
-    const result = glob
-      .sync(['**'], {
-        cwd: '/src',
-        symbolicLinks: 'ignore',
-      })
-      .sort()
+    const result = testGlob(['**'], {
+      cwd: '/src',
+      symbolicLinks: 'ignore',
+    }).sort()
 
     expect(result).toMatchInlineSnapshot(`
       [
@@ -64,12 +59,10 @@ describe('the "types" option', () => {
   })
 
   it('will match symlinks but not traverse them if told to', () => {
-    const filesResult = glob
-      .sync(['**'], {
-        cwd: '/src',
-        symbolicLinks: 'match',
-      })
-      .sort()
+    const filesResult = testGlob(['**'], {
+      cwd: '/src',
+      symbolicLinks: 'match',
+    }).sort()
 
     expect(filesResult).toMatchInlineSnapshot(`
       [
@@ -78,13 +71,11 @@ describe('the "types" option', () => {
       ]
     `)
 
-    const dirsResult = glob
-      .sync(['**'], {
-        cwd: '/src',
-        symbolicLinks: 'match',
-        types: 'dirs',
-      })
-      .sort()
+    const dirsResult = testGlob(['**'], {
+      cwd: '/src',
+      symbolicLinks: 'match',
+      types: 'dirs',
+    }).sort()
 
     expect(dirsResult).toMatchInlineSnapshot(`
       [

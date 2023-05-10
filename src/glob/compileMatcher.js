@@ -1,6 +1,7 @@
+import assert from 'assert'
 import micromatch from 'micromatch'
-import { isAbsolute, join, normalize } from 'path'
 import { convertParens } from '../manifest/convertParens.js'
+import { isAbsolute, join, normalize } from '../path.js'
 import { ExactStringMatcher } from './matchers/ExactStringMatcher.js'
 import { RecursiveWildcardMatcher } from './matchers/RecursiveWildcardMatcher.js'
 import { RegExpMatcher } from './matchers/RegExpMatcher.js'
@@ -90,8 +91,17 @@ function compilePathSegment(opts, prev, segment, negating, terminal) {
  * @param {MatchOptions} opts
  * @param {string[]} patterns
  * @param {string} cwd
+ * @param {string} rootDir
  */
-export function compileMatcher(opts, patterns, cwd) {
+export function compileMatcher(opts, patterns, cwd, rootDir) {
+  assert(isAbsolute(cwd))
+  assert(isAbsolute(rootDir))
+
+  // replace `c:/` on windows with just `/`
+  if (cwd !== '/' && cwd.startsWith(rootDir)) {
+    cwd = cwd.replace(rootDir, '/')
+  }
+
   const root = new RootMatcher()
 
   /**
@@ -128,6 +138,8 @@ export function compileMatcher(opts, patterns, cwd) {
     }
     if (!isAbsolute(expansion)) {
       expansion = join(cwd, expansion)
+    } else if (expansion[0] !== '/') {
+      expansion = expansion.replace(rootDir, '/')
     }
     expansion = normalize(expansion)
     const segments = expansion.split('/').filter(Boolean)

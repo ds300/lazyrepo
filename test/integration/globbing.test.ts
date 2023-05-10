@@ -40,7 +40,7 @@ test('excludes take precedence', async () => {
         build::<rootDir> finding files took 1.00s
         build::<rootDir> hashed 1/1 files in 1.00s
         build::<rootDir> cache miss, no previous manifest found
-        build::<rootDir> RUN node scripts/build.js > .out.txt in 
+        build::<rootDir> RUN node scripts/build.js > .out.txt in ./
         build::<rootDir> input manifest: .lazy/build/manifest.tsv
         build::<rootDir> ✔ done in 1.00s
 

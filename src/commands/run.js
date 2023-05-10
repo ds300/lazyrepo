@@ -1,6 +1,7 @@
 import pc from 'picocolors'
 import { dedent } from 'ts-dedent'
 import { Config } from '../config/config.js'
+import { cwd } from '../cwd.js'
 import { InteractiveLogger } from '../logger/InteractiveLogger.js'
 import { getColorForString, pipe } from '../logger/formatting.js'
 import { logger } from '../logger/logger.js'
@@ -14,14 +15,14 @@ import { createTimer } from '../utils/createTimer.js'
  */
 export async function run({ scriptName, options }, _config) {
   const timer = createTimer()
-  const config = _config ?? (await Config.fromCwd(process.cwd(), options.verbose))
+  const config = _config ?? (await Config.fromCwd(cwd, options.verbose))
 
   const filterPaths = options.filter
     ? Array.isArray(options.filter)
       ? options.filter
       : [options.filter]
     : // match the directory or any of its descendants
-      [process.cwd() + `{,**/*}`]
+      [cwd + `{,**/*}`]
 
   /** @type {import('../types.js').RequestedTask[]} */
   const requestedTasks = [

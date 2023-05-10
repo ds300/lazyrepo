@@ -1,9 +1,9 @@
 import { vol } from 'memfs'
-import { dirname, join } from 'path'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from '../src/fs.js'
 import { ManifestConstructor } from '../src/manifest/ManifestConstructor.js'
 import { compareManifestTypes, types } from '../src/manifest/computeManifest.js'
 import { LazyWriter } from '../src/manifest/manifest-types.js'
+import { dirname, join } from '../src/path.js'
 import { Random } from './test-utils.js'
 
 jest.mock('../src/fs.js', () => {

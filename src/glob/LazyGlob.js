@@ -1,3 +1,5 @@
+import { getRootDir, cwd as procCwd } from '../cwd.js'
+import { resolve } from '../path.js'
 import { compileMatcher } from './compileMatcher.js'
 import { LazyDir } from './fs/LazyDir.js'
 import { matchInDir } from './matchInDir.js'
@@ -5,15 +7,26 @@ import { matchInDir } from './matchInDir.js'
 export class LazyGlob {
   /** @type {LogicalClock} */
   #clock = { time: 0 }
-  #rootDir = new LazyDir(this.#clock, '/', 0, false)
+  /** @type {Map<string, LazyDir>} */
+  #rootDirs = new Map()
+
+  /** @param {string} rootDir */
+  #getRootDir(rootDir) {
+    const existing = this.#rootDirs.get(rootDir)
+    if (existing) return existing
+    const dir = new LazyDir(this.#clock, rootDir, 0, false)
+    this.#rootDirs.set(rootDir, dir)
+    return dir
+  }
 
   /**
-   * @param {string[]} patterns
+   * @param {readonly string[]} patterns
    * @param {LazyGlobOptions} [opts]
    */
   sync(patterns, opts) {
     /** @type {LazyGlobOptions['cwd']} */
-    const cwd = opts?.cwd || process.cwd()
+    const cwd = resolve('./', opts?.cwd ?? procCwd)
+    const rootDir = getRootDir(cwd)
     /** @type {LazyGlobOptions['cache']} */
     const cache = opts?.cache ?? 'normal'
 
@@ -30,6 +43,7 @@ export class LazyGlob {
       matchOpts,
       patterns.concat(opts?.ignore?.map((p) => '!' + p) ?? []),
       cwd,
+      rootDir,
     )
 
     if (cache === 'normal') {
@@ -37,11 +51,12 @@ export class LazyGlob {
     }
 
     const result = matchInDir(
-      cache === 'none' ? new LazyDir(this.#clock, '/', 0, false) : this.#rootDir,
+      cache === 'none' ? new LazyDir(this.#clock, rootDir, 0, false) : this.#getRootDir(rootDir),
       matchOpts,
       rootMatcher.children,
       [],
     )
+
     return result
   }
 

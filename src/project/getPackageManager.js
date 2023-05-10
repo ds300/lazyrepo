@@ -1,5 +1,5 @@
-import { join } from 'path'
 import { existsSync } from '../fs.js'
+import { join } from '../path.js'
 
 /**
  * @param {string} rootWorkspaceDir
