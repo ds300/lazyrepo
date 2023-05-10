@@ -32,7 +32,7 @@ test('run passes args after -- to the script', async () => {
         build::<rootDir> finding files took 1.00s
         build::<rootDir> hashed 5/5 files in 1.00s
         build::<rootDir> cache miss, no previous manifest found
-        build::<rootDir> RUN node index.js foo bar in 
+        build::<rootDir> RUN node index.js foo bar in ./
         build::<rootDir> ["foo","bar"]
         build::<rootDir> input manifest: .lazy/build/manifest.tsv
         build::<rootDir> ✔ done in 1.00s

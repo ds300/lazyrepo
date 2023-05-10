@@ -463,7 +463,7 @@ test('it caches data in top-level tasks', async () => {
         compile::<rootDir> finding files took 1.00s
         compile::<rootDir> hashed 3/3 files in 1.00s
         compile::<rootDir> cache miss, no previous manifest found
-        compile::<rootDir> RUN node build.js in 
+        compile::<rootDir> RUN node build.js in ./
         compile::<rootDir> input manifest: .lazy/compile/manifest.tsv
         compile::<rootDir> finding files took 1.00s
         compile::<rootDir> output manifest: .lazy/compile/output-manifest.tsv
@@ -610,7 +610,7 @@ test('it feeds cached outputs into downstream task manifests by default', async 
         compile::<rootDir> finding files took 1.00s
         compile::<rootDir> hashed 3/3 files in 1.00s
         compile::<rootDir> cache miss, no previous manifest found
-        compile::<rootDir> RUN node build.js in 
+        compile::<rootDir> RUN node build.js in ./
         compile::<rootDir> input manifest: .lazy/compile/manifest.tsv
         compile::<rootDir> finding files took 1.00s
         compile::<rootDir> output manifest: .lazy/compile/output-manifest.tsv
