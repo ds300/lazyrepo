@@ -19,8 +19,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -36,6 +34,7 @@ jobs:
         shell: bash
 
       - name: Lint
+        if: ${{ matrix.os != 'windows-latest' }} 
         run: pnpm lint
 
       - name: format
@@ -43,6 +42,7 @@ jobs:
         run: pnpm format:check
 
       - name: Typecheck
+        if: ${{ matrix.os != 'windows-latest' }} 
         run: pnpm tsc
 
       - name: Test
