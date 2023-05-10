@@ -10,14 +10,28 @@ jobs:
   build:
     name: 'Lint and Test'
     timeout-minutes: 15
-    runs-on: ubuntu-latest # TODO: this should probably run on multiple OSes
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
 
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
-      - uses: ./.github/actions/setup
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        shell: bash
 
       - name: Lint
         run: pnpm lint
