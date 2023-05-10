@@ -305,7 +305,7 @@ it('warns you if you are using the old .tasks key but it still works', async () 
     {
       packageManager: 'npm',
       structure: makeRepo({
-        configFileContent: `export default { tasks: { build: { execution: 'top-level', baseCommand: 'echo BUILD_SUCCESS' } } }`,
+        configFileContent: `export default { tasks: { build: { execution: 'top-level', baseCommand: 'node -e "console.log(1)"' } } }`,
       }),
       workspaceGlobs: ['packages/*'],
     },
@@ -322,8 +322,8 @@ it('warns you if you are using the old .tasks key but it still works', async () 
         build::<rootDir> finding files took 1.00s
         build::<rootDir> hashed 7/7 files in 1.00s
         build::<rootDir> cache miss, no previous manifest found
-        build::<rootDir> RUN echo BUILD_SUCCESS in 
-        build::<rootDir> BUILD_SUCCESS
+        build::<rootDir> RUN node -e "console.log(1)" in ./
+        build::<rootDir> 1
         build::<rootDir> input manifest: .lazy/build/manifest.tsv
         build::<rootDir> ✔ done in 1.00s
 

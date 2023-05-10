@@ -90,5 +90,5 @@ async function loadConfig(file) {
     await import('source-map-support/register.js')
   }
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-  return (await import(outFile)).default
+  return (await import(pathToFileURL(outFile).toString())).default
 }

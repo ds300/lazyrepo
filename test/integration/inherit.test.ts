@@ -1,3 +1,4 @@
+import { platform } from 'os'
 import { Dir, makeConfigFile, makePackageJson, runIntegrationTest } from './runIntegrationTests.js'
 
 const makeDir = ({
@@ -111,22 +112,23 @@ test('lazy inherit looks up the command in the config file', async () => {
     },
   )
 })
-test('lazy inherit supports setting env vars', async () => {
-  await runIntegrationTest(
-    {
-      packageManager: 'pnpm',
-      structure: makeDir({
-        baseCommand: 'node <rootDir>/build.js > out.txt',
-        coreBuildCommand: 'SECRET_VAR=sup lazy inherit',
-        utilsBuildCommand: 'SECRET_VAR=howdy lazy inherit',
-      }),
-      workspaceGlobs: ['packages/*'],
-    },
-    async (t) => {
-      expect(t.exists('packages/core/out.txt')).toBe(false)
-      expect(t.exists('packages/utils/out.txt')).toBe(false)
-      const run = await t.exec(['build'])
-      expect(run.output).toMatchInlineSnapshot(`
+if (platform() !== 'win32')
+  test('lazy inherit supports setting env vars', async () => {
+    await runIntegrationTest(
+      {
+        packageManager: 'pnpm',
+        structure: makeDir({
+          baseCommand: 'node <rootDir>/build.js > out.txt',
+          coreBuildCommand: 'SECRET_VAR=sup lazy inherit',
+          utilsBuildCommand: 'SECRET_VAR=howdy lazy inherit',
+        }),
+        workspaceGlobs: ['packages/*'],
+      },
+      async (t) => {
+        expect(t.exists('packages/core/out.txt')).toBe(false)
+        expect(t.exists('packages/utils/out.txt')).toBe(false)
+        const run = await t.exec(['build'])
+        expect(run.output).toMatchInlineSnapshot(`
         "lazyrepo 0.0.0-test
         -------------------
         Loaded config file: lazy.config.js
@@ -150,19 +152,19 @@ test('lazy inherit supports setting env vars', async () => {
 
         "
       `)
-      expect(t.read('packages/core/out.txt')).toMatchInlineSnapshot(`
+        expect(t.read('packages/core/out.txt')).toMatchInlineSnapshot(`
         "secret sup
         args []
         "
       `)
-      expect(t.read('packages/utils/out.txt')).toMatchInlineSnapshot(`
+        expect(t.read('packages/utils/out.txt')).toMatchInlineSnapshot(`
         "secret howdy
         args []
         "
       `)
-    },
-  )
-})
+      },
+    )
+  })
 
 test('lazy inherit supports passing args', async () => {
   await runIntegrationTest(
@@ -193,80 +195,83 @@ test('lazy inherit supports passing args', async () => {
   )
 })
 
-test('lazy inherit supports passing args and rootDir and env vars', async () => {
-  await runIntegrationTest(
-    {
-      packageManager: 'pnpm',
-      structure: makeDir({
-        baseCommand: `node <rootDir>/build.js > out.txt`,
-        coreBuildCommand: 'SECRET_VAR=shhh lazy inherit --foo --bar=<rootDir>',
-        utilsBuildCommand: 'SECRET_VAR=hunter2 yarn run -T lazy inherit --howdy --sup',
-      }),
-      workspaceGlobs: ['packages/*'],
-    },
-    async (t) => {
-      expect(t.exists('packages/core/out.txt')).toBe(false)
-      expect(t.exists('packages/utils/out.txt')).toBe(false)
-      await t.exec(['build'])
-      expect(t.read('packages/core/out.txt').includes('--bar=' + t.config.dir)).toBe(true)
-      expect(t.read('packages/utils/out.txt')).toMatchInlineSnapshot(`
+if (platform() !== 'win32')
+  test('lazy inherit supports passing args and rootDir and env vars', async () => {
+    await runIntegrationTest(
+      {
+        packageManager: 'pnpm',
+        structure: makeDir({
+          baseCommand: `node <rootDir>/build.js > out.txt`,
+          coreBuildCommand: 'SECRET_VAR=shhh lazy inherit --foo --bar=<rootDir>',
+          utilsBuildCommand: 'SECRET_VAR=hunter2 yarn run -T lazy inherit --howdy --sup',
+        }),
+        workspaceGlobs: ['packages/*'],
+      },
+      async (t) => {
+        expect(t.exists('packages/core/out.txt')).toBe(false)
+        expect(t.exists('packages/utils/out.txt')).toBe(false)
+        await t.exec(['build'])
+        expect(t.read('packages/core/out.txt').includes('--bar=' + t.config.dir)).toBe(true)
+        expect(t.read('packages/utils/out.txt')).toMatchInlineSnapshot(`
         "secret hunter2
         args [ '--howdy', '--sup' ]
         "
       `)
-    },
-  )
-})
+      },
+    )
+  })
 
-test('calling lazy inherit in the core dir runs the full task graph', async () => {
-  await runIntegrationTest(
-    {
-      packageManager: 'pnpm',
-      structure: makeDir({
-        baseCommand: `node <rootDir>/build.js > out.txt`,
-        coreBuildCommand: 'SECRET_VAR=shhh lazy inherit --foo --bar=<rootDir>',
-        utilsBuildCommand: 'SECRET_VAR=hunter2 yarn run -T lazy inherit --howdy --sup',
-      }),
-      workspaceGlobs: ['packages/*'],
-    },
-    async (t) => {
-      expect(t.exists('packages/core/out.txt')).toBe(false)
-      expect(t.exists('packages/utils/out.txt')).toBe(false)
-      await t.exec(['build'], { packageDir: 'packages/core' })
-      expect(t.read('packages/core/out.txt').includes('--bar=' + t.config.dir)).toBe(true)
-      expect(t.read('packages/utils/out.txt')).toMatchInlineSnapshot(`
+if (platform() !== 'win32')
+  test('calling lazy inherit in the core dir runs the full task graph', async () => {
+    await runIntegrationTest(
+      {
+        packageManager: 'pnpm',
+        structure: makeDir({
+          baseCommand: `node <rootDir>/build.js > out.txt`,
+          coreBuildCommand: 'SECRET_VAR=shhh lazy inherit --foo --bar=<rootDir>',
+          utilsBuildCommand: 'SECRET_VAR=hunter2 yarn run -T lazy inherit --howdy --sup',
+        }),
+        workspaceGlobs: ['packages/*'],
+      },
+      async (t) => {
+        expect(t.exists('packages/core/out.txt')).toBe(false)
+        expect(t.exists('packages/utils/out.txt')).toBe(false)
+        await t.exec(['build'], { packageDir: 'packages/core' })
+        expect(t.read('packages/core/out.txt').includes('--bar=' + t.config.dir)).toBe(true)
+        expect(t.read('packages/utils/out.txt')).toMatchInlineSnapshot(`
           "secret hunter2
           args [ '--howdy', '--sup' ]
           "
         `)
-    },
-  )
-})
+      },
+    )
+  })
 
-test('calling lazy inherit in the utils dir runs only the utils build', async () => {
-  await runIntegrationTest(
-    {
-      packageManager: 'pnpm',
-      structure: makeDir({
-        baseCommand: `node <rootDir>/build.js > out.txt`,
-        coreBuildCommand: 'SECRET_VAR=shhh lazy inherit --foo --bar=<rootDir>',
-        utilsBuildCommand: 'SECRET_VAR=hunter2 yarn run -T lazy inherit --howdy --sup',
-      }),
-      workspaceGlobs: ['packages/*'],
-    },
-    async (t) => {
-      expect(t.exists('packages/core/out.txt')).toBe(false)
-      expect(t.exists('packages/utils/out.txt')).toBe(false)
-      await t.exec(['build'], { packageDir: 'packages/utils' })
-      expect(t.exists('packages/core/out.txt')).toBe(false)
-      expect(t.read('packages/utils/out.txt')).toMatchInlineSnapshot(`
+if (platform() !== 'win32')
+  test('calling lazy inherit in the utils dir runs only the utils build', async () => {
+    await runIntegrationTest(
+      {
+        packageManager: 'pnpm',
+        structure: makeDir({
+          baseCommand: `node <rootDir>/build.js > out.txt`,
+          coreBuildCommand: 'SECRET_VAR=shhh lazy inherit --foo --bar=<rootDir>',
+          utilsBuildCommand: 'SECRET_VAR=hunter2 yarn run -T lazy inherit --howdy --sup',
+        }),
+        workspaceGlobs: ['packages/*'],
+      },
+      async (t) => {
+        expect(t.exists('packages/core/out.txt')).toBe(false)
+        expect(t.exists('packages/utils/out.txt')).toBe(false)
+        await t.exec(['build'], { packageDir: 'packages/utils' })
+        expect(t.exists('packages/core/out.txt')).toBe(false)
+        expect(t.read('packages/utils/out.txt')).toMatchInlineSnapshot(`
           "secret hunter2
           args [ '--howdy', '--sup' ]
           "
         `)
-    },
-  )
-})
+      },
+    )
+  })
 
 test('lazy inherit works works with top-level tasks', async () => {
   await runIntegrationTest(

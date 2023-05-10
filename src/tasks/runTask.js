@@ -24,7 +24,7 @@ export async function runTask(task, tasks) {
       pc.bold('RUN ') +
         pc.green(pc.bold(command)) +
         (task.extraArgs.length ? pc.cyan(pc.bold(' ' + task.extraArgs.join(' '))) : '') +
-        pc.gray(' in ' + relative(cwd, task.workspace.dir) ?? './'),
+        pc.gray(' in ' + (relative(cwd, task.workspace.dir) || './')),
     )
 
     const proc = spawn(command, task.extraArgs, {
