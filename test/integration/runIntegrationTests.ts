@@ -141,11 +141,11 @@ class TestHarness {
       )
 
       let output = ''
-      proc.stdout?.on('data', (data) => {
-        output += data
+      proc.stdout?.on('data', (data: string) => {
+        output += data.toString().replaceAll('\r\n', '\n')
       })
-      proc.stderr?.on('data', (data) => {
-        output += data
+      proc.stderr?.on('data', (data: string) => {
+        output += data.toString().replaceAll('\r\n', '\n')
       })
       proc.on('exit', (code) => {
         const didError = code === 1
