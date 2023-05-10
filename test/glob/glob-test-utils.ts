@@ -136,7 +136,7 @@ export function globCheckingAgainstReference(
 export const testGlob: typeof glob.sync = (patterns, options) => {
   let actual = glob.sync(patterns, { ...options, cache: 'none' }).sort()
   if (platform() === 'win32') {
-    actual = actual.map((a) => a.replace('C:', ''))
+    actual = actual.map((a) => a.slice(2))
   }
   return actual
 }
