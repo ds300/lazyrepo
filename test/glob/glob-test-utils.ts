@@ -127,12 +127,16 @@ export function globCheckingAgainstReference(
   pattern: string[],
   options: MatchOptions,
 ) {
-  let actual = glob.sync(pattern, { ...options, cache: 'none' }).sort()
+  const actual = testGlob(pattern, options)
+  const expected = referenceGlob(paths, pattern, options).sort()
+  expect(actual).toEqual(expected)
+  return actual
+}
+
+export const testGlob: typeof glob.sync = (patterns, options) => {
+  let actual = glob.sync(patterns, { ...options, cache: 'none' }).sort()
   if (platform() === 'win32') {
     actual = actual.map((a) => a.replace('C:', ''))
   }
-
-  const expected = referenceGlob(paths, pattern, options).sort()
-  expect(actual).toEqual(expected)
   return actual
 }

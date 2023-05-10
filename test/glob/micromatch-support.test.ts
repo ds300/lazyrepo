@@ -1,6 +1,5 @@
 import { vol } from 'memfs'
-import { glob } from '../../src/glob/glob.js'
-import { makeFiles } from './glob-test-utils.js'
+import { makeFiles, testGlob } from './glob-test-utils.js'
 
 jest.mock('../../src/fs.js', () => {
   return require('memfs')
@@ -25,7 +24,7 @@ test('advanced syntax provided by micromatch works', () => {
     },
   })
   expect(
-    glob.sync(['src/!dist/*'], {
+    testGlob(['src/!dist/*'], {
       cwd: '/',
     }),
   ).toMatchInlineSnapshot(`
@@ -35,7 +34,7 @@ test('advanced syntax provided by micromatch works', () => {
     ]
   `)
 
-  expect(glob.sync(['src/[[:digit:]][[:digit:]][[:digit:]]/*'], { cwd: '/' }))
+  expect(testGlob(['src/[[:digit:]][[:digit:]][[:digit:]]/*'], { cwd: '/' }))
     .toMatchInlineSnapshot(`
     [
       "/src/234/bulb.txt",
