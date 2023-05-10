@@ -39,6 +39,7 @@ jobs:
         run: pnpm lint
 
       - name: format
+        if: ${{ matrix.os != 'windows-latest' }} 
         run: pnpm format:check
 
       - name: Typecheck
