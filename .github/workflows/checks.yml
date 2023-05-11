@@ -46,5 +46,11 @@ jobs:
         run: pnpm tsc
 
       - name: Test
+        if: ${{ matrix.os != 'windows-latest' }} 
         run: pnpm test
+
+      - name: Test (windows)
+        if: ${{ matrix.os == 'windows-latest' }} 
+        run: pnpm test -- --runInBand
+
 
