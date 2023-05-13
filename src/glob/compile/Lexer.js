@@ -112,11 +112,7 @@ export class Lexer {
       this.#index += 2
       return DOT_DOT
     }
-    const symbol = stringToSymbol[/** @type {keyof typeof stringToSymbol} **/ (char)]
-    if (symbol) {
-      this.#index++
-      return symbol
-    }
+
     if (char === '\\') {
       this.#index++
       const nextChar = this.pattern[this.#index]
@@ -128,6 +124,11 @@ export class Lexer {
         return nextChar
       }
       return BACK_SLASH
+    }
+    const symbol = stringToSymbol[/** @type {keyof typeof stringToSymbol} **/ (char)]
+    if (symbol) {
+      this.#index++
+      return symbol
     }
 
     if (!greedyStrings) {
