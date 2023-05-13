@@ -249,7 +249,7 @@ test('allPaths', () => {
   `)
   expect(testExpandBraces('src/{steve}/dope')).toMatchInlineSnapshot(`
     [
-      "src · / · steve · / · dope",
+      "src · / · { · steve · } · / · dope",
     ]
   `)
 
@@ -468,7 +468,7 @@ test('compileMatcher', () => {
                             RegExpMatcher {
                               "children": [],
                               "negating": false,
-                              "source": "^(?!\\.)dope[\\w]$",
+                              "source": "^dope[\\w]$",
                             },
                           ],
                           "negating": false,
