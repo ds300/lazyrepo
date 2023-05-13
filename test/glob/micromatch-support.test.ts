@@ -24,7 +24,7 @@ test('advanced syntax provided by micromatch works', () => {
     },
   })
   expect(
-    testGlob(['src/!dist/*'], {
+    testGlob(['src/!(dist)/*'], {
       cwd: '/',
     }),
   ).toMatchInlineSnapshot(`

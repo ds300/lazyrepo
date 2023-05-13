@@ -1,6 +1,6 @@
 import { getRootDir, cwd as procCwd } from '../cwd.js'
 import { resolve } from '../path.js'
-import { compileMatcher } from './compileMatcher.js'
+import { compileMatcher } from './compile/compileMatcher.js'
 import { LazyDir } from './fs/LazyDir.js'
 import { matchInDir } from './matchInDir.js'
 
@@ -42,7 +42,6 @@ export class LazyGlob {
     const rootMatcher = compileMatcher(
       matchOpts,
       patterns.concat(opts?.ignore?.map((p) => '!' + p) ?? []),
-      cwd,
       rootDir,
     )
 

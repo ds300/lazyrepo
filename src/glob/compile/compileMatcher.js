@@ -171,13 +171,9 @@ export function compileMatcher(opts, patterns, rootDir) {
  */
 function compileRegexSourceFromSegment(segment, opts, negating) {
   let source = '^'
-  if (!(opts.dot || negating)) {
-    source += '(?!\\.)'
-  }
   for (const expr of segment) {
     source += compileRegexSourceFromExpression(expr, opts, negating)
   }
-
   return source + '$'
 }
 
@@ -205,7 +201,7 @@ function compileRegexSourceFromExpression(expr, opts, negating) {
     }
     case 'recursive_wildcard':
     case 'wildcard':
-      return '.*'
+      return opts.dot || negating ? '.*' : '(?:(?!^\\.).*)'
     case 'string':
       // replace all non-word characters with escaped versions
       return expr.value.replaceAll(/[^\w-]/g, (c) =>
@@ -218,7 +214,7 @@ function compileRegexSourceFromExpression(expr, opts, negating) {
         .join('|')
       switch (expr.extGlobPrefix) {
         case '!':
-          return `(?!${options})`
+          return `(?!${options}).*`
         case '*':
           return `(${options})*`
         case '+':

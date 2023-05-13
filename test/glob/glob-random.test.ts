@@ -622,3 +622,18 @@ test('regression 20', () => {
     }),
   ).toMatchInlineSnapshot(`[]`)
 })
+
+test('regression 21', () => {
+  expect(
+    doComparison({
+      patterns: ['/{src-node_modules}'],
+      cwd: '/node_modules-dist',
+      paths: {
+        'src-node_modules': {},
+      },
+      expandDirectories: false,
+      dot: false,
+      types: 'dirs',
+    }),
+  ).toMatchInlineSnapshot(`[]`)
+})

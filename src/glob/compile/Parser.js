@@ -305,7 +305,7 @@ export class Parser {
   }
 
   /**
-   * @returns {Braces | RangeExpansion}
+   * @returns {Braces | RangeExpansion | Sequence}
    */
   parseBraces() {
     const start = this.lex.index
@@ -330,6 +330,21 @@ export class Parser {
       throw this.err('Unterminated brace expression', start)
     }
     this.lex.nextToken()
+
+    if (options.length === 1 && options[0].type !== 'range_expansion') {
+      // bash compat, braces do not expand if there is only one option,
+      // instead the braces are treated as a literal
+      return {
+        type: 'sequence',
+        start,
+        end: this.lex.index,
+        expressions: [
+          string('{', start, start + 1),
+          options[0],
+          string('}', this.lex.index - 1, this.lex.index),
+        ],
+      }
+    }
 
     return {
       type: 'braces',
