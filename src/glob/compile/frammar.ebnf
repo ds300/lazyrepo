@@ -1,0 +1,14 @@
+S = { EXPR }
+EXPR = BRACE_SWITCH | PAREN_SWITCH | REC_WILDCARD | EXT_GLOB_SWITCH | WILDCARD | CHARACTER | NEGATOR | SLASH | REGEX_CHARACTER_CLASS | POSIX_CHARACTER_CLASS
+WILDCARD = "*" | "?"
+REC_WILDCARD = "**"
+EG_EXPR = WILDCARD | CHARACTER | EXT_GLOB_SWITCH
+EXT_GLOB_SWITCH = ('@' | '*' | '?' | '+' | '!') , "(" , EG_EXPR , { "|" , EG_EXPR } , ")"
+BRACE_SWITCH = "{" , EXPR , { "," , EXPR } , "}"
+PAREN_SWITCH = "(" , EXPR , { "|" , EXPR } , ")"
+NEGATOR = "!"
+SLASH = "/"
+REGEX_CHARACTER_CLASS = "[" , { REGEX_CHARACTER_CLASS_ELEMENT } , "]"
+REGEX_CHARACTER_CLASS_ELEMENT = REGEX_CHARACTER_CLASS_RANGE | REGEX_CHARACTER_CLASS_CHARACTER | POSIX_CHARACTER_CLASS
+REGEX_CHARACTER_CLASS_RANGE = REGEX_CHARACTER_CLASS_CHARACTER , "-" , REGEX_CHARACTER_CLASS_CHARACTER
+POSIX_CHARACTER_CLASS = "[:alnum:]" | "[:alpha:]" | "[:blank:]" | "[:cntrl:]" | "[:digit:]" | "[:graph:]" | "[:lower:]" | "[:print:]" | "[:punct:]" | "[:space:]" | "[:upper:]" | "[:xdigit:]" | "[:word:]" | "[:ascii:]" 
