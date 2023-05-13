@@ -13,12 +13,11 @@ type Expression =
   | Braces
   | Parens
   | RecursiveWildcard
-  | ExtGlobSwitch
   | Wildcard
   | CharacterClass
   | Separator
   | RangeExpansion
-  | NegatedExpression
+  | NumberRange
 
 interface Sequence extends ASTNode {
   type: 'sequence'
@@ -31,12 +30,6 @@ interface Wildcard extends ASTNode {
 }
 interface RecursiveWildcard extends ASTNode {
   type: 'recursive_wildcard'
-}
-type ExtGlobExpression = Array<ExtGlobSwitch | Wildcard | StringNode>
-type ExtGlobSwitch = {
-  type: 'ext_glob_switch'
-  prefix: '!' | '+' | '*' | '@' | '?'
-  options: ExtGlobExpression[]
 }
 
 interface RangeExpansion extends ASTNode {
@@ -70,11 +63,6 @@ interface NumberRange extends ASTNode {
 interface ParenSwitch extends ASTNode {
   type: 'paren_switch'
   expressions: Expression[]
-}
-
-interface NegatedExpression extends ASTNode {
-  type: 'negated_expression'
-  expression: Expression
 }
 
 interface Separator extends ASTNode {

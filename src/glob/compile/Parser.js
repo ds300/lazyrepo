@@ -40,52 +40,60 @@ export class Parser {
   }
 
   /**
-   * @returns {Sequence}
+   * @returns {Expression}
    * @param {symbol[]} [stoppingTokens]
+   * @param {boolean} [isExtGlobMode]
    */
-  parseSequence(stoppingTokens) {
+  parseSequence(stoppingTokens, isExtGlobMode) {
     /** @type {Expression[]} */
     const expressions = []
+    const start = this.lex.index
     while (this.lex.hasMoreTokens()) {
       if (stoppingTokens?.includes(/** @type {any} */ (this.lex.peek()))) {
         break
       }
-      expressions.push(this.parseExpression())
+      const nextExpression = this.parseExpression(isExtGlobMode)
+      const lastExpression = expressions.at(-1)
+      if (nextExpression.type === 'string' && lastExpression?.type === 'string') {
+        lastExpression.value += nextExpression.value
+        lastExpression.end = nextExpression.end
+      } else {
+        expressions.push(nextExpression)
+      }
+    }
+    if (expressions.length === 0) {
+      return string('', start, this.lex.index)
+    }
+    if (expressions.length === 1) {
+      return expressions[0]
     }
     return {
       type: 'sequence',
-      start: 0,
+      start,
       end: this.lex.index,
       expressions: expressions,
     }
   }
 
-  /** @returns {Expression} */
-  parseExpression() {
+  /**
+   * @returns {Expression}
+   * @param {boolean} [isExtGlobMode]
+   */
+  parseExpression(isExtGlobMode) {
     const start = this.lex.index
     const peek = this.lex.peek()
     if (typeof peek === 'string') {
       this.lex.nextToken()
-      return {
-        type: 'string',
-        value: peek,
-        end: this.lex.index,
-        start: start,
-      }
+      return string(peek, start, this.lex.index)
     } else if (peek === EXCLAMATION) {
       this.lex.nextToken()
       if (!this.lex.hasMoreTokens()) {
         throw this.err('Invalid negation', start)
       }
-      if (this.lex.peek() === OPEN_PAREN) {
-        return this.parseParens('!')
+      if (this.lex.peek() !== OPEN_PAREN) {
+        throw this.err('"!" must be followed by "(" e.g. "src/!(foo)/bar"', start)
       }
-      return {
-        type: 'negated_expression',
-        expression: this.parseExpression(),
-        start,
-        end: this.lex.index,
-      }
+      return this.parseParens('!')
     } else if (peek === STAR) {
       this.lex.nextToken()
       if (this.lex.peek() === STAR) {
@@ -118,6 +126,9 @@ export class Parser {
       }
     } else if (peek === SLASH) {
       this.lex.nextToken()
+      if (isExtGlobMode) {
+        this.err('"/" is not allowed in extglob expressions', start)
+      }
       return {
         type: 'separator',
         end: this.lex.index,
@@ -128,35 +139,23 @@ export class Parser {
       if (this.lex.peek() === OPEN_PAREN) {
         return this.parseParens('+')
       }
-      return {
-        type: 'string',
-        value: '+',
-        start: start,
-        end: this.lex.index,
-      }
+      return string('+', start, this.lex.index)
     } else if (peek === AT) {
       this.lex.nextToken()
       if (this.lex.peek() === OPEN_PAREN) {
         return this.parseParens('@')
       }
-      return {
-        type: 'string',
-        value: '@',
-        start: start,
-        end: this.lex.index,
-      }
+      return string('@', start, this.lex.index)
     } else if (peek === OPEN_BRACE) {
+      if (isExtGlobMode) {
+        this.err('"{" is not allowed in extglob expressions', start)
+      }
       return this.parseBraces()
     } else if (peek === OPEN_PAREN) {
-      return this.parseParens(null)
+      return this.parseParens(isExtGlobMode ? '+' : null)
     } else {
       this.lex.nextToken()
-      return {
-        type: 'string',
-        value: peek.description ?? '',
-        end: this.lex.index,
-        start: start,
-      }
+      return string(peek.description ?? '', start, this.lex.index)
     }
   }
 
@@ -185,6 +184,9 @@ export class Parser {
       options.push(this.parseBraceExpression())
       if (this.lex.peek() === COMMA) {
         this.lex.nextToken()
+        if (this.lex.peek() === CLOSE_BRACE) {
+          options.push(string('', this.lex.index, this.lex.index))
+        }
       }
     }
 
@@ -206,7 +208,7 @@ export class Parser {
    * @returns {Parens}
    */
   parseParens(extGlobPrefix) {
-    const start = this.lex.index
+    const start = extGlobPrefix ? this.lex.index - 1 : this.lex.index
     assert(this.lex.nextToken() === OPEN_PAREN)
 
     /**
@@ -215,9 +217,12 @@ export class Parser {
     const options = []
 
     while (this.lex.hasMoreTokens() && this.lex.peek() !== CLOSE_PAREN) {
-      options.push(this.parseSequence([PIPE, CLOSE_PAREN]))
+      options.push(this.parseSequence([PIPE, CLOSE_PAREN], !!extGlobPrefix))
       if (this.lex.peek() === PIPE) {
         this.lex.nextToken()
+        if (this.lex.peek() === CLOSE_PAREN) {
+          options.push(string('', this.lex.index, this.lex.index))
+        }
       }
     }
 
@@ -284,4 +289,19 @@ function numLeadingZeroes(str) {
 /** @param {string} str */
 function stripLeadingZeroes(str) {
   return str.replace(/^0*/, '')
+}
+
+/**
+ * @param {string} value
+ * @param {number} start
+ * @param {number} end
+ * @returns {StringNode}
+ */
+function string(value, start, end) {
+  return {
+    type: 'string',
+    value,
+    start,
+    end,
+  }
 }

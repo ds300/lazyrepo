@@ -1,5 +1,5 @@
 import { vol } from 'memfs'
-import { convertParens } from '../../src/manifest/convertParens.js'
+import { convertParens } from '../../src/glob/convertParens.js'
 import { makeFiles, testGlob } from './glob-test-utils.js'
 
 jest.mock('../../src/fs.js', () => {
