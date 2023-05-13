@@ -52,16 +52,19 @@ function _expandBraces(node) {
  */
 export function expandBraces(node) {
   const result = _expandBraces(node)
-  return result
-    .map((path) => {
-      for (let i = path.length - 1; i > 0; i--) {
-        const node = path[i]
-        const prevNode = path[i - 1]
-        if (node.type === 'separator' && prevNode.type === 'separator') {
-          path.splice(i, 1)
-        }
+  for (let i = result.length - 1; i >= 0; i--) {
+    const path = result[i]
+    if (path.length === 0) {
+      result.splice(i, 1)
+      continue
+    }
+    for (let j = path.length - 1; j > 0; j--) {
+      const node = path[j]
+      const prevNode = path[j - 1]
+      if (node.type === 'separator' && prevNode.type === 'separator') {
+        path.splice(j, 1)
       }
-      return path
-    })
-    .filter((p) => !!p.length)
+    }
+  }
+  return result
 }
