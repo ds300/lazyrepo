@@ -8,7 +8,8 @@ export const QUESTION = Symbol('?')
 export const PLUS = Symbol('+')
 export const DOT = Symbol('.')
 export const DOT_DOT = Symbol('..')
-export const SLASH = Symbol('/')
+export const FORWARD_SLASH = Symbol('/')
+export const BACK_SLASH = Symbol('\\')
 export const OPEN_BRACKET = Symbol('[')
 export const CLOSE_BRACKET = Symbol(']')
 export const EXCLAMATION = Symbol('!')
@@ -16,6 +17,9 @@ export const OPEN_BRACE = Symbol('{')
 export const CLOSE_BRACE = Symbol('}')
 export const COMMA = Symbol(',')
 export const AT = Symbol('@')
+export const CARET = Symbol('^')
+
+const escapableSymbolsRegex = /[()|*?+@[\]!{}\\,]/
 
 const stringToSymbol = {
   '(': OPEN_PAREN,
@@ -26,7 +30,8 @@ const stringToSymbol = {
   '+': PLUS,
   '.': DOT,
   '..': DOT_DOT,
-  '/': SLASH,
+  '\\': BACK_SLASH,
+  '/': FORWARD_SLASH,
   '[': OPEN_BRACKET,
   ']': CLOSE_BRACKET,
   '!': EXCLAMATION,
@@ -34,6 +39,7 @@ const stringToSymbol = {
   '}': CLOSE_BRACE,
   ',': COMMA,
   '@': AT,
+  '^': CARET,
 }
 
 export class Lexer {
@@ -79,18 +85,18 @@ export class Lexer {
     this.#stashedTokenIndex = index
   }
 
-  peek() {
+  peek(greedyStrings = true) {
     if (this.#stashedToken !== null) {
       return this.#stashedToken
     }
     if (this.#peekingToken === null) {
       this.#nonPeekingTokenIndex = this.#index
-      this.#peekingToken = this.nextToken()
+      this.#peekingToken = this.nextToken(greedyStrings)
     }
     return this.#peekingToken
   }
 
-  nextToken() {
+  nextToken(greedyStrings = true) {
     if (this.#stashedToken !== null) {
       const result = this.#stashedToken
       this.#stashedToken = null
@@ -113,8 +119,22 @@ export class Lexer {
     }
     if (char === '\\') {
       this.#index++
-      return this.pattern[this.#index++]
+      const nextChar = this.pattern[this.#index]
+      if (!nextChar) {
+        return BACK_SLASH
+      }
+      if (escapableSymbolsRegex.test(nextChar)) {
+        this.#index++
+        return nextChar
+      }
+      return BACK_SLASH
     }
+
+    if (!greedyStrings) {
+      this.#index++
+      return char
+    }
+
     let string = this.pattern[this.#index++] ?? ''
     while (this.#index < this.pattern.length) {
       const char = this.pattern[this.#index]

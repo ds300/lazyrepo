@@ -231,8 +231,80 @@ function compileRegexSourceFromExpression(expr, opts, negating) {
           throw new Error(`Unexpected extglob prefix: ${expr.extGlobPrefix}`)
       }
     }
+    case 'character_class': {
+      let out = '['
+      if (expr.negating) {
+        out += '^'
+      }
+      for (const inclusion of expr.inclusions) {
+        if (inclusion.type === 'character_class_builtin') {
+          out += getBuiltinClass(inclusion.class)
+        } else if (inclusion.type === 'character_class_range') {
+          out += `${printCharForCharacterClass(inclusion.startChar)}-${printCharForCharacterClass(
+            inclusion.endChar,
+          )}`
+        } else {
+          out += printCharForCharacterClass(inclusion.char)
+        }
+      }
+      return out + ']'
+    }
+
     default: {
       throw new Error(`Unexpected expression type: ${expr.type}`)
     }
+  }
+}
+
+/**
+ * @param {string} char
+ */
+function printCharForCharacterClass(char) {
+  if (/[\w.?,'"$£@!%&*()]/.test(char)) {
+    return char
+  } else {
+    return `\\u${char.charCodeAt(0).toString(16).padStart(4, '0')}`
+  }
+}
+
+/** @param {CharacterClassBuiltinClass['class']} name */
+function getBuiltinClass(name) {
+  switch (name) {
+    case 'alnum':
+      return '0-9A-Za-z'
+    case 'alpha':
+      return 'A-Za-z'
+    case 'ascii':
+      return '\\x00-\\x7F'
+    case 'blank':
+      return ' \\t'
+    case 'cntrl':
+      return '\\x00-\\x1F\\x7F'
+    case 'digit':
+      return '0-9'
+    case 'graph':
+      return '\\x21-\\x7E'
+    case 'lower':
+      return 'a-z'
+    case 'print':
+      return '\\x20-\\x7E'
+    case 'punct':
+      return `!"#$%&'()*+,\\-./:;<=>?@[\\\\\\]^_\`{|}~`
+    case 'space':
+      return '\\S'
+    case 'upper':
+      return 'A-Z'
+    case 'word':
+      return '\\w'
+    case 'xdigit':
+      return '0-9A-Fa-f'
+    case 'not_word':
+      return '\\W'
+    case 'not_digit':
+      return '\\D'
+    case 'not_space':
+      return '\\S'
+    default:
+      throw new Error(`Unexpected builtin class: ${name}`)
   }
 }

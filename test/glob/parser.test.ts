@@ -51,6 +51,21 @@ const parseToString = (input: string) => {
       }
       print(')')
       depth--
+    } else if (node.type === 'character_class') {
+      depth++
+      print('negating: ' + node.negating)
+      for (const elem of node.inclusions) {
+        print('type: ' + elem.type)
+        if (elem.type === 'character_class_range') {
+          print('startChar: ' + elem.startChar)
+          print('endChar: ' + elem.endChar)
+        } else if (elem.type === 'character_class_element_literal') {
+          print('char: ' + elem.char)
+        } else {
+          print('class: ' + elem.class)
+        }
+      }
+      depth--
     } else {
       const { type, start, end, ...others } = node
       print(jsonify(others))
@@ -313,6 +328,117 @@ test('leading and trailing separators', () => {
   `)
 })
 
+test('character classes', () => {
+  expect(parseToString('abc/[xyz]/def')).toMatchInlineSnapshot(`
+    "sequence: "abc/[xyz]/def"
+      [
+        string: "abc"
+        separator: "/"
+        character_class: "[xyz]"
+          negating: false
+          type: character_class_element_literal
+          char: x
+          type: character_class_element_literal
+          char: y
+          type: character_class_element_literal
+          char: z
+        separator: "/"
+        string: "def"
+      ]
+    "
+  `)
+
+  expect(parseToString('abc/[\\w\\dx]/def')).toMatchInlineSnapshot(`
+    "sequence: "abc/[\\\\w\\\\dx]/def"
+      [
+        string: "abc"
+        separator: "/"
+        character_class: "[\\\\w\\\\dx]"
+          negating: false
+          type: character_class_builtin
+          class: word
+          type: character_class_builtin
+          class: digit
+          type: character_class_element_literal
+          char: x
+        separator: "/"
+        string: "def"
+      ]
+    "
+  `)
+
+  expect(parseToString('abc/[^0-9]/def')).toMatchInlineSnapshot(`
+    "sequence: "abc/[^0-9]/def"
+      [
+        string: "abc"
+        separator: "/"
+        character_class: "[^0-9]"
+          negating: true
+          type: character_class_range
+          startChar: 0
+          endChar: 9
+        separator: "/"
+        string: "def"
+      ]
+    "
+  `)
+
+  expect(parseToString('abc/[^a-zA-Z0-9]/def')).toMatchInlineSnapshot(`
+    "sequence: "abc/[^a-zA-Z0-9]/def"
+      [
+        string: "abc"
+        separator: "/"
+        character_class: "[^a-zA-Z0-9]"
+          negating: true
+          type: character_class_range
+          startChar: a
+          endChar: z
+          type: character_class_range
+          startChar: A
+          endChar: Z
+          type: character_class_range
+          startChar: 0
+          endChar: 9
+        separator: "/"
+        string: "def"
+      ]
+    "
+  `)
+})
+
+test('posix character classes', () => {
+  expect(parseToString('abc/[[:alpha:]]/def')).toMatchInlineSnapshot(`
+    "sequence: "abc/[[:alpha:]]/def"
+      [
+        string: "abc"
+        separator: "/"
+        character_class: "[[:alpha:]]"
+          negating: false
+          type: character_class_builtin
+          class: alpha
+        separator: "/"
+        string: "def"
+      ]
+    "
+  `)
+  expect(parseToString('abc/[[:alpha:][:digit:]]/def')).toMatchInlineSnapshot(`
+    "sequence: "abc/[[:alpha:][:digit:]]/def"
+      [
+        string: "abc"
+        separator: "/"
+        character_class: "[[:alpha:][:digit:]]"
+          negating: false
+          type: character_class_builtin
+          class: alpha
+          type: character_class_builtin
+          class: digit
+        separator: "/"
+        string: "def"
+      ]
+    "
+  `)
+})
+
 test('compileMatcher', () => {
   expect(
     compileMatcher(
@@ -323,7 +449,7 @@ test('compileMatcher', () => {
         symbolicLinks: 'follow',
         types: 'all',
       },
-      ['src/**/dope'],
+      ['src/**/dope[\\w]'],
       '/',
     ),
   ).toMatchInlineSnapshot(`
@@ -339,10 +465,10 @@ test('compileMatcher', () => {
                       "children": [
                         RecursiveWildcardMatcher {
                           "children": [
-                            ExactStringMatcher {
+                            RegExpMatcher {
                               "children": [],
                               "negating": false,
-                              "pattern": "dope",
+                              "source": "^(?!\\.)dope[\\w]$",
                             },
                           ],
                           "negating": false,

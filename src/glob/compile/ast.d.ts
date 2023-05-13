@@ -63,5 +63,44 @@ interface Separator extends ASTNode {
 
 interface CharacterClass extends ASTNode {
   type: 'character_class'
-  source: string
+  negating: boolean
+  inclusions: CharacterClassElement[]
+}
+
+type CharacterClassElement =
+  | CharacterClassRange
+  | CharacterClassElementLiteral
+  | CharacterClassBuiltinClass
+
+interface CharacterClassRange extends ASTNode {
+  type: 'character_class_range'
+  startChar: string
+  endChar: string
+}
+
+interface CharacterClassElementLiteral extends ASTNode {
+  type: 'character_class_element_literal'
+  char: string
+}
+
+interface CharacterClassBuiltinClass extends ASTNode {
+  type: 'character_class_builtin'
+  class:
+    | 'alnum'
+    | 'alpha'
+    | 'ascii'
+    | 'blank'
+    | 'cntrl'
+    | 'digit'
+    | 'graph'
+    | 'lower'
+    | 'print'
+    | 'punct'
+    | 'space'
+    | 'upper'
+    | 'word'
+    | 'xdigit'
+    | 'not_word'
+    | 'not_digit'
+    | 'not_space'
 }

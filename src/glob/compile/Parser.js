@@ -1,20 +1,43 @@
 import assert from 'assert'
 import {
   AT,
+  BACK_SLASH,
+  CARET,
   CLOSE_BRACE,
+  CLOSE_BRACKET,
   CLOSE_PAREN,
   COMMA,
   DOT_DOT,
   EXCLAMATION,
+  FORWARD_SLASH,
   Lexer,
   OPEN_BRACE,
+  OPEN_BRACKET,
   OPEN_PAREN,
   PIPE,
   PLUS,
   QUESTION,
-  SLASH,
   STAR,
 } from './Lexer.js'
+
+const DIGITS = /^\d+$/
+
+const posixClasses = /** @type {const} */ ({
+  ':alnum:': 'alnum',
+  ':alpha:': 'alpha',
+  ':ascii:': 'ascii',
+  ':blank:': 'blank',
+  ':cntrl:': 'cntrl',
+  ':digit:': 'digit',
+  ':graph:': 'graph',
+  ':lower:': 'lower',
+  ':print:': 'print',
+  ':punct:': 'punct',
+  ':space:': 'space',
+  ':upper:': 'upper',
+  ':word:': 'word',
+  ':xdigit:': 'xdigit',
+})
 
 export class ParserError extends Error {
   /**
@@ -124,7 +147,7 @@ export class Parser {
         start: start,
         end: this.lex.index,
       }
-    } else if (peek === SLASH) {
+    } else if (peek === FORWARD_SLASH) {
       this.lex.nextToken()
       if (isExtGlobMode) {
         this.err('"/" is not allowed in extglob expressions', start)
@@ -153,6 +176,8 @@ export class Parser {
       return this.parseBraces()
     } else if (peek === OPEN_PAREN) {
       return this.parseParens(isExtGlobMode ? '+' : null)
+    } else if (peek === OPEN_BRACKET) {
+      return this.parseCharacterClass()
     } else {
       this.lex.nextToken()
       return string(peek.description ?? '', start, this.lex.index)
@@ -166,6 +191,117 @@ export class Parser {
    */
   err(msg, start, end = this.lex.index) {
     throw new ParserError(msg, start, end, this.lex.pattern)
+  }
+
+  /**
+   * @returns {CharacterClass}
+   */
+  parseCharacterClass() {
+    const start = this.lex.index
+    assert(this.lex.nextToken(false) === OPEN_BRACKET)
+    const negating = this.lex.peek(false) === CARET
+    if (negating) {
+      this.lex.nextToken(false)
+    }
+    /** @type {CharacterClassElement[]} */
+    const inclusions = []
+    while (this.lex.hasMoreTokens() && this.lex.peek(false) !== CLOSE_BRACKET) {
+      inclusions.push(this.parseCharacterClassElement())
+    }
+    if (this.lex.peek(false) !== CLOSE_BRACKET) {
+      throw this.err('Unterminated character class', start)
+    }
+    this.lex.nextToken(false)
+    return {
+      type: 'character_class',
+      start: start,
+      end: this.lex.index,
+      negating,
+      inclusions,
+    }
+  }
+
+  /** @returns {CharacterClassElement} */
+  parseCharacterClassElement() {
+    const start = this.lex.index
+    const next = this.parseCharacterClassChar()
+    if (typeof next === 'object') {
+      return next
+    }
+    if (this.lex.peek(false) !== '-') {
+      return characterLiteral(next, start, this.lex.index)
+    }
+    this.lex.nextToken(false)
+    if (!this.lex.hasMoreTokens()) {
+      throw this.err('Unterminated character class', start)
+    }
+    if (this.lex.peek(false) === ']') {
+      return characterLiteral('-', start, this.lex.index)
+    }
+    const end = this.parseCharacterClassChar()
+    if (typeof end === 'object') {
+      return characterLiteral('-', start, this.lex.index)
+    }
+    return {
+      type: 'character_class_range',
+      start: start,
+      end: this.lex.index,
+      startChar: next,
+      endChar: end,
+    }
+  }
+
+  /**
+   * @returns {CharacterClassElement | string}
+   */
+  parseCharacterClassChar() {
+    const start = this.lex.index
+    const char = this.lex.nextToken(false)
+    if (!this.lex.hasMoreTokens()) {
+      throw this.err('Unterminated character class', start)
+    }
+
+    if (char === OPEN_BRACKET) {
+      const className = this.lex.nextToken(true)
+      if (
+        typeof className !== 'string' ||
+        !posixClasses[/** @type {keyof typeof posixClasses} */ (className)]
+      ) {
+        throw this.err('Invalid character class', start)
+      }
+      assert(this.lex.nextToken(false) === CLOSE_BRACKET)
+      return {
+        type: 'character_class_builtin',
+        class: posixClasses[/** @type {keyof typeof posixClasses} */ (className)],
+        start,
+        end: this.lex.index,
+      }
+    }
+
+    if (char !== BACK_SLASH) {
+      return asString(char)
+    }
+
+    if (!this.lex.hasMoreTokens()) {
+      throw this.err('Unterminated character class', start)
+    }
+    const next = this.lex.nextToken(false)
+    if (typeof next === 'string') {
+      if (next === 'w') {
+        return builtinClass('word', start, this.lex.index)
+      } else if (next === 'W') {
+        return builtinClass('not_word', start, this.lex.index)
+      } else if (next === 'd') {
+        return builtinClass('digit', start, this.lex.index)
+      } else if (next === 'D') {
+        return builtinClass('not_digit', start, this.lex.index)
+      } else if (next === 's') {
+        return builtinClass('space', start, this.lex.index)
+      } else if (next === 'S') {
+        return builtinClass('not_space', start, this.lex.index)
+      }
+    }
+    return asString(next)
   }
 
   /**
@@ -247,11 +383,11 @@ export class Parser {
     const start = this.lex.index
     const next = this.lex.nextToken()
 
-    if (typeof next === 'string' && next.match(/^\d+$/) && this.lex.peek() === DOT_DOT) {
+    if (typeof next === 'string' && DIGITS.test(next) && this.lex.peek() === DOT_DOT) {
       // this is a range
       this.lex.nextToken()
       const midOrEnd = this.lex.nextToken()
-      if (typeof midOrEnd !== 'string' || !midOrEnd.match(/^\d+$/)) {
+      if (typeof midOrEnd !== 'string' || !DIGITS.test(midOrEnd)) {
         throw this.err('Invalid range', start)
       }
       let end = Number(midOrEnd.replace(/^0*/, ''))
@@ -259,7 +395,7 @@ export class Parser {
       if (this.lex.peek() === DOT_DOT) {
         this.lex.nextToken()
         const endToken = this.lex.nextToken()
-        if (typeof endToken !== 'string' || !endToken.match(/^\d+$/)) {
+        if (typeof endToken !== 'string' || !DIGITS.test(endToken)) {
           throw this.err('Invalid range', start)
         }
         step = end
@@ -285,7 +421,12 @@ export class Parser {
 
 /** @param {string} str */
 function numLeadingZeroes(str) {
-  return str.match(/^0*/)?.[0].length ?? 0
+  for (let i = 0; i < str.length; i++) {
+    if (str[i] !== '0') {
+      return i
+    }
+  }
+  return str.length
 }
 
 /** @param {string} str */
@@ -306,4 +447,41 @@ function string(value, start, end) {
     start,
     end,
   }
+}
+
+/**
+ * @param {CharacterClassBuiltinClass['class']} name
+ * @param {number} start
+ * @param {number} end
+ * @returns {CharacterClassBuiltinClass}
+ */
+function builtinClass(name, start, end) {
+  return {
+    type: 'character_class_builtin',
+    class: name,
+    start,
+    end,
+  }
+}
+
+/**
+ * @param {string} char
+ * @param {number} start
+ * @param {number} end
+ * @returns {CharacterClassElementLiteral}
+ */
+function characterLiteral(char, start, end) {
+  return {
+    type: 'character_class_element_literal',
+    char,
+    start,
+    end,
+  }
+}
+
+/**
+ * @param {string | symbol} value
+ */
+function asString(value) {
+  return typeof value === 'string' ? value : value.description ?? ''
 }
