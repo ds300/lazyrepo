@@ -17,7 +17,6 @@ type Expression =
   | CharacterClass
   | Separator
   | RangeExpansion
-  | NumberRange
 
 interface Sequence extends ASTNode {
   type: 'sequence'
@@ -42,7 +41,7 @@ interface RangeExpansion extends ASTNode {
 
 interface Braces extends ASTNode {
   type: 'braces'
-  options: BraceExpression[]
+  options: Expression[]
 }
 
 interface Parens extends ASTNode {
@@ -51,14 +50,7 @@ interface Parens extends ASTNode {
   options: Expression[]
 }
 
-type BraceExpression = Expression | NumberRange
-
-interface NumberRange extends ASTNode {
-  type: 'number_range'
-  start: number
-  end: number
-  stepSize: number
-}
+type BraceExpression = Expression | RangeExpansion
 
 interface ParenSwitch extends ASTNode {
   type: 'paren_switch'

@@ -1,4 +1,5 @@
 import { Parser } from '../../src/glob/compile/Parser.js'
+import { compileMatcher } from '../../src/glob/compile/compileMatcher.js'
 import { expandBraces } from '../../src/glob/compile/expandBraces.js'
 
 const tabs = (n: number) => ' '.repeat(n * 2)
@@ -38,10 +39,6 @@ const parseToString = (input: string) => {
       depth++
       print('{')
       for (const expression of node.options) {
-        if (expression.type === 'number_range') {
-          print(`number_range: ${jsonify(expression)}`)
-          continue
-        }
         printAst(expression)
       }
       print('}')
@@ -275,5 +272,99 @@ test('empty parens', () => {
     [
       "abc · def",
     ]
+  `)
+})
+
+test('leading and trailing separators', () => {
+  expect(testExpandBraces('/')).toMatchInlineSnapshot(`
+    [
+      "/",
+    ]
+  `)
+  expect(testExpandBraces('abc/')).toMatchInlineSnapshot(`
+    [
+      "abc",
+    ]
+  `)
+  expect(testExpandBraces('/abc')).toMatchInlineSnapshot(`
+    [
+      "/ · abc",
+    ]
+  `)
+  expect(testExpandBraces('/abc/')).toMatchInlineSnapshot(`
+    [
+      "/ · abc",
+    ]
+  `)
+  expect(testExpandBraces('abc//')).toMatchInlineSnapshot(`
+    [
+      "abc",
+    ]
+  `)
+  expect(testExpandBraces('abc///')).toMatchInlineSnapshot(`
+    [
+      "abc",
+    ]
+  `)
+  expect(testExpandBraces('///abc/def////')).toMatchInlineSnapshot(`
+    [
+      "/ · abc · / · def",
+    ]
+  `)
+})
+
+test('compileMatcher', () => {
+  expect(
+    compileMatcher(
+      {
+        cwd: '/home/users/dgb',
+        dot: false,
+        expandDirectories: false,
+        symbolicLinks: 'follow',
+        types: 'all',
+      },
+      ['src/**/dope'],
+      '/',
+    ),
+  ).toMatchInlineSnapshot(`
+    RootMatcher {
+      "children": [
+        ExactStringMatcher {
+          "children": [
+            ExactStringMatcher {
+              "children": [
+                ExactStringMatcher {
+                  "children": [
+                    ExactStringMatcher {
+                      "children": [
+                        RecursiveWildcardMatcher {
+                          "children": [
+                            ExactStringMatcher {
+                              "children": [],
+                              "negating": false,
+                              "pattern": "dope",
+                            },
+                          ],
+                          "negating": false,
+                        },
+                      ],
+                      "negating": false,
+                      "pattern": "src",
+                    },
+                  ],
+                  "negating": false,
+                  "pattern": "dgb",
+                },
+              ],
+              "negating": false,
+              "pattern": "users",
+            },
+          ],
+          "negating": false,
+          "pattern": "home",
+        },
+      ],
+      "negating": false,
+    }
   `)
 })

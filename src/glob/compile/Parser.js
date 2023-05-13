@@ -265,13 +265,15 @@ export class Parser {
         step = end
         end = Number(stripLeadingZeroes(endToken))
       }
+      const numZeros = numLeadingZeroes(next)
+      const pad = numZeros > 0 ? numZeros + next.length : 0
       return {
         type: 'range_expansion',
         start: start,
         end: this.lex.index,
         startNumber: Number(next.replace(/^0*/, '')),
         endNumber: end,
-        pad: numLeadingZeroes(next),
+        pad,
         step,
       }
     }

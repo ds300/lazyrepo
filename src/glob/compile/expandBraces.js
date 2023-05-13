@@ -10,7 +10,6 @@ function _expandBraces(node) {
     case 'range_expansion':
     case 'wildcard':
     case 'recursive_wildcard':
-    case 'number_range':
       if (node.type === 'string' && node.value === '') {
         return [[]]
       }
@@ -58,6 +57,12 @@ export function expandBraces(node) {
       result.splice(i, 1)
       continue
     }
+
+    // remove trailing slashes and double slashes
+    while (path.length > 1 && path.at(-1)?.type === 'separator') {
+      path.pop()
+    }
+
     for (let j = path.length - 1; j > 0; j--) {
       const node = path[j]
       const prevNode = path[j - 1]
