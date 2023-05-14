@@ -73,3 +73,56 @@ export function expandBraces(node) {
   }
   return result
 }
+
+/**
+ * This strips out the separators and returns the segments of the path as nested arrays
+ * @param {Expression[]} path
+ * @param {Expression[][]} cwd
+ * @returns {{isAbsolute: boolean, path: Expression[][]}}
+ */
+export function segmentize(path, cwd) {
+  if (path.length === 0) {
+    return { isAbsolute: false, path: [] }
+  }
+  const isAbsolute = path[0]?.type === 'separator'
+  /** @type {Expression[][]} */
+  const result = isAbsolute ? [] : [...cwd]
+  /** @type {Expression[]} */
+  let nextSegment = []
+  for (let i = 0; i < path.length; i++) {
+    const expr = path[i]
+    if (expr.type === 'separator') {
+      if (nextSegment.length > 0) {
+        result.push(nextSegment)
+        nextSegment = []
+      }
+    } else {
+      nextSegment.push(expr)
+    }
+  }
+  // we would always expect the nextSegment to be nonempty unless the path is empty or ends in a forward slash
+  // (which should never happen because we check for that above)
+  if (nextSegment.length !== 0) {
+    result.push(nextSegment)
+  }
+
+  // normalize path, removing `.` and `..` segments
+  for (let i = result.length - 1; i >= 0; i--) {
+    const segment = result[i]
+    if (segment.length === 1 && segment[0].type === 'string') {
+      const value = segment[0].value
+      if (value === '.') {
+        result.splice(i, 1)
+      } else if (value === '..') {
+        if (i === 0) {
+          continue
+        } else {
+          result.splice(i - 1, 2)
+          i--
+        }
+      }
+    }
+  }
+
+  return { isAbsolute, path: result }
+}

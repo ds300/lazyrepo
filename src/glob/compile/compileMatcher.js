@@ -6,7 +6,7 @@ import { RegExpMatcher } from '../matchers/RegExpMatcher.js'
 import { RootMatcher } from '../matchers/RootMatcher.js'
 import { WildcardMatcher } from '../matchers/WildcardMatcher.js'
 import { Parser } from './Parser.js'
-import { expandBraces } from './expandBraces.js'
+import { expandBraces, segmentize } from './expandBraces.js'
 
 /**
  * Finds a matcher in an existing list of children that does the same thing as a new matcher.
@@ -93,7 +93,7 @@ function compilePathSegment(opts, prev, segment, negating, terminal) {
  * @returns {Expression[][]}
  */
 function parsePattern(pattern) {
-  return expandBraces(new Parser(pattern).parseSequence())
+  return expandBraces(new Parser(pattern.replaceAll(/(\*\*\/)+/g, '**/')).parseSequence())
 }
 
 /**
@@ -117,30 +117,23 @@ export function compileMatcher(opts, patterns, rootDir) {
    * @param {MatchOptions} opts
    * @param {Expression[]} path
    * @param {boolean} negating
+   * @param {Expression[][]} cwdPath
    */
-  function addSegments(opts, path, negating) {
+  function addSegments(opts, path, negating, cwdPath) {
     assert(path.length !== 0)
-    /** @type {Expression[]} */
-    let nextSegment = []
     let prev = root
-    for (let i = 0; i < path.length; i++) {
-      const expr = path[i]
-      if (expr.type === 'separator') {
-        if (nextSegment.length > 0) {
-          prev = compilePathSegment(opts, prev, nextSegment, negating, false)
-          nextSegment = []
-        }
-      } else {
-        nextSegment.push(expr)
-      }
+    const segments = segmentize(path, cwdPath)
+    for (let i = 0; i < segments.path.length; i++) {
+      const segment = segments.path[i]
+      prev = compilePathSegment(opts, prev, segment, negating, i === segments.path.length - 1)
     }
-    // we would always expect the nextSegment to be nonempty unless the path is empty or ends in a forward slash
-    // (which should never happen because we check for that above)
-    assert(nextSegment.length > 0)
-    prev = compilePathSegment(opts, prev, nextSegment, negating, true)
   }
 
-  const cwdPath = parsePattern(cwd)[0]
+  /** @type {Expression[][]} */
+  const cwdPath = cwd
+    .split('/')
+    .filter(Boolean)
+    .map((s) => [{ type: 'string', value: s, start: 0, end: 0 }])
 
   const firstIsNegating = patterns[0]?.startsWith('!')
   if (firstIsNegating) {
@@ -153,10 +146,7 @@ export function compileMatcher(opts, patterns, rootDir) {
     }
     for (let path of parsePattern(pattern)) {
       // make sure the pattern is absolute
-      if (path[0].type !== 'separator') {
-        path = [...cwdPath, { type: 'separator', start: 0, end: 0 }, ...path]
-      }
-      addSegments(opts, path, negating)
+      addSegments(opts, path, negating, cwdPath)
     }
   }
 
