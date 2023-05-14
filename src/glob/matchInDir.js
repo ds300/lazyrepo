@@ -3,6 +3,34 @@ import { LazyDir } from './fs/LazyDir.js'
 import { LazyFile } from './fs/LazyFile.js'
 import { RecursiveWildcardMatcher } from './matchers/RecursiveWildcardMatcher.js'
 
+class NextChildren {
+  /** @type {Matcher[]} */
+  children = []
+  /** @type {null | NextChildren} */
+  next = null
+}
+
+/** @type {NextChildren | null} */
+let childrenAllocationPool = null
+
+function acquireNextChildren() {
+  if (!childrenAllocationPool) {
+    return new NextChildren()
+  } else {
+    const result = childrenAllocationPool
+    childrenAllocationPool = result.next
+    result.next = null
+    return result
+  }
+}
+
+/** @param {NextChildren} next */
+function relinquishNextChildren(next) {
+  next.children.length = 0
+  next.next = childrenAllocationPool
+  childrenAllocationPool = next
+}
+
 /**
  * @param {LazyDir} dir
  * @param {MatchOptions} options
@@ -36,10 +64,7 @@ function matchDirEntry(entry, options, children, result) {
   // In doing so we can filter out any parts of the matcher tree which are not useful for
   // matching against nested files/dirs.
 
-  /**
-   * @type {Matcher[]}
-   */
-  const nextChildren = []
+  const next = acquireNextChildren()
   let didPush = false
 
   const includeEntry = () => {
@@ -59,7 +84,7 @@ function matchDirEntry(entry, options, children, result) {
         // A partial match means that this matcher has children that might match
         // a subpath of this entry, so we need to recurse using this matcher's children.
         assert(matcher.children.length)
-        nextChildren.unshift(...matcher.children)
+        next.children.push(...matcher.children)
         break
       case 'try-next':
       case 'recursive':
@@ -68,8 +93,8 @@ function matchDirEntry(entry, options, children, result) {
         // `recursive` means to do that, but then to also apply the current matcher to the
         // entry's children.
         // See the RecursiveWildcardMatcher class for more details about when these are returned.
-        for (let i = matcher.children.length - 1; i >= 0; i--) {
-          const stopEarly = checkChildMatcher(matcher.children[i])
+        for (const child of matcher.children) {
+          const stopEarly = checkChildMatcher(child)
           // stopping early happens when a negative match is found that should prevent this entry
           // from being included (unless there are partial matches 'below' this layer that should be checked)
           if (stopEarly) {
@@ -77,7 +102,7 @@ function matchDirEntry(entry, options, children, result) {
           }
         }
         if (match !== 'try-next') {
-          nextChildren.unshift(matcher)
+          next.children.push(matcher)
         }
         // If we are matching dirs and this entry is a dir, then we need to
         // check whether this matcher has children. If it does not, then this matcher
@@ -98,7 +123,7 @@ function matchDirEntry(entry, options, children, result) {
         if (entry instanceof LazyDir) {
           if (options.expandDirectories) {
             // we need to grab everything in this directory
-            nextChildren.unshift(new RecursiveWildcardMatcher(false))
+            next.children.push(new RecursiveWildcardMatcher(false))
           }
         }
 
@@ -116,8 +141,7 @@ function matchDirEntry(entry, options, children, result) {
     }
   }
 
-  for (let i = children.length - 1; i >= 0; i--) {
-    const child = children[i]
+  for (const child of children) {
     const stopEarly = checkChildMatcher(child)
     if (stopEarly) {
       break
@@ -128,12 +152,14 @@ function matchDirEntry(entry, options, children, result) {
 
   if (
     follow &&
-    nextChildren.length &&
+    next.children.length &&
     entry instanceof LazyDir &&
-    !nextChildren.every((m) => m.negating)
+    !next.children.every((m) => m.negating)
   ) {
-    matchInDir(entry, options, nextChildren, result)
+    matchInDir(entry, options, next.children, result)
   }
+
+  relinquishNextChildren(next)
 
   return result
 }

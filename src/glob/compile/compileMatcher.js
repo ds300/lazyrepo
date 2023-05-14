@@ -18,9 +18,11 @@ import { expandBraces, segmentize } from './expandBraces.js'
  */
 function findSimpaticoMatcher(children, negating, terminal, pred) {
   for (
-    let i = children.length - 1;
-    i >= 0 && children[i].negating === negating && terminal === !children[i].children.length;
-    i--
+    let i = 0;
+    i < children.length &&
+    children[i].negating === negating &&
+    terminal === !children[i].children.length;
+    i++
   ) {
     const matcher = children[i]
     if (pred(matcher)) {
@@ -49,7 +51,7 @@ function compilePathSegment(opts, prev, segment, negating, terminal) {
     const existing = findSimpaticoMatcher(prev.children, negating, terminal, simpaticoPred)
     if (existing) return existing
     const matcher = ctor()
-    prev.children.push(matcher)
+    prev.children.unshift(matcher)
     return matcher
   }
 
@@ -64,10 +66,18 @@ function compilePathSegment(opts, prev, segment, negating, terminal) {
   }
 
   if (only?.type === 'wildcard') {
-    return make(
-      (m) => m instanceof WildcardMatcher,
-      () => new WildcardMatcher(negating),
-    )
+    if (only.wildcardType === '*') {
+      return make(
+        (m) => m instanceof WildcardMatcher,
+        () => new WildcardMatcher(negating),
+      )
+    } else {
+      const source = compileRegexSourceFromSegment([only], opts, negating)
+      return make(
+        (m) => m instanceof RegExpMatcher && m.source === source,
+        () => new RegExpMatcher(source, new RegExp(source), negating),
+      )
+    }
   }
 
   // match a boring file/dir name that does not require any regex stuff
@@ -191,6 +201,9 @@ function compileRegexSourceFromExpression(expr, opts, negating) {
     }
     case 'recursive_wildcard':
     case 'wildcard':
+      if (expr.type === 'wildcard' && expr.wildcardType === '?') {
+        return opts.dot || negating ? '.' : '(?:(?=^)[^.]|(?!^).)'
+      }
       return opts.dot || negating ? '.*' : '(?:(?!^\\.).*)'
     case 'string':
       // replace all non-word characters with escaped versions
