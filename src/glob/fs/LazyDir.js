@@ -85,7 +85,7 @@ export class LazyDir {
 
       for (const entry of readdirSync(this.path, { withFileTypes: true })) {
         let result = prevListingByName?.[entry.name]
-        const entryPath = this.path + '/' + entry.name
+        const entryPath = this.path === '/' ? '/' + entry.name : this.path + '/' + entry.name
         try {
           if (entry.isDirectory() && (!result || !(result instanceof LazyDir))) {
             result = new LazyDir(

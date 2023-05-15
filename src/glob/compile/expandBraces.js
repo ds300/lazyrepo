@@ -113,13 +113,6 @@ export function segmentize(path, cwd) {
       const value = segment[0].value
       if (value === '.') {
         result.splice(i, 1)
-      } else if (value === '..') {
-        if (i === 0) {
-          continue
-        } else {
-          result.splice(i - 1, 2)
-          i--
-        }
       }
     }
   }

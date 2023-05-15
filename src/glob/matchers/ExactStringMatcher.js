@@ -1,5 +1,7 @@
+import { BaseMatcher } from './BaseMatcher.js'
+
 /** @implements {Matcher} */
-export class ExactStringMatcher {
+export class ExactStringMatcher extends BaseMatcher {
   /**
    * @type {string}
    * @readonly
@@ -7,22 +9,13 @@ export class ExactStringMatcher {
   pattern
 
   /**
-   * @type {boolean}
-   * @readonly
-   */
-  negating
-
-  /**
    * @param {string} pattern
    * @param {boolean} negating
    */
   constructor(pattern, negating) {
+    super(negating)
     this.pattern = pattern
-    this.negating = negating
   }
-
-  /** @type {Matcher[]} */
-  children = []
 
   /**
    * @param {import("../fs/LazyEntry.js").LazyEntry} entry
@@ -31,7 +24,7 @@ export class ExactStringMatcher {
    */
   match(entry, _options) {
     if (this.pattern === entry.name) {
-      return this.children.length === 0 ? 'terminal' : 'partial'
+      return this.children.length === 0 ? 'terminal' : this.children
     } else {
       return 'none'
     }

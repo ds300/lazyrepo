@@ -31,6 +31,33 @@ function relinquishNextChildren(next) {
   childrenAllocationPool = next
 }
 
+class MatcherIterator {
+  /** @type {Matcher[][]} */
+  stack = []
+  /** @type {number[]} */
+  indices = []
+
+  /** @returns {Matcher | null} */
+  next() {
+    if (this.stack.length === 0) return null
+    const topElems = this.stack[this.stack.length - 1]
+    const topIndex = this.indices[this.indices.length - 1]
+    if (topIndex >= topElems.length) {
+      this.stack.pop()
+      this.indices.pop()
+      return this.next()
+    }
+    this.indices[this.indices.length - 1]++
+    return topElems[topIndex]
+  }
+
+  /** @param {Matcher[]} matchers */
+  push(matchers) {
+    this.stack.push(matchers)
+    this.indices.push(0)
+  }
+}
+
 /**
  * @param {LazyDir} dir
  * @param {MatchOptions} options
@@ -74,77 +101,59 @@ function matchDirEntry(entry, options, children, result) {
     }
   }
 
-  /** @param {Matcher} matcher */
-  function checkChildMatcher(matcher) {
+  const iter = new MatcherIterator()
+  iter.push(children)
+
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const matcher = iter.next()
+    if (!matcher) break
+
     const match = matcher.match(entry, options)
-    switch (match) {
-      case 'none':
-        break
-      case 'partial':
-        // A partial match means that this matcher has children that might match
-        // a subpath of this entry, so we need to recurse using this matcher's children.
-        assert(matcher.children.length)
-        next.children.push(...matcher.children)
-        break
-      case 'try-next':
-      case 'recursive':
-        // `try-next` and `recursive` are only return by the RecursiveWildcardMatcher (**).
-        // `try-next` means to try using this matcher's children to match the current entry.
-        // `recursive` means to do that, but then to also apply the current matcher to the
-        // entry's children.
-        // See the RecursiveWildcardMatcher class for more details about when these are returned.
-        for (const child of matcher.children) {
-          const stopEarly = checkChildMatcher(child)
-          // stopping early happens when a negative match is found that should prevent this entry
-          // from being included (unless there are partial matches 'below' this layer that should be checked)
-          if (stopEarly) {
-            return true
-          }
-        }
-        if (match !== 'try-next') {
-          next.children.push(matcher)
-        }
-        // If we are matching dirs and this entry is a dir, then we need to
-        // check whether this matcher has children. If it does not, then this matcher
-        // matches this dir and we should include it in the result.
-        if (
-          matcher.children.length === 0 &&
-          entry instanceof LazyDir &&
-          (options.types === 'all' || options.types === 'dirs')
-        ) {
-          includeEntry()
-        }
-        break
-      case 'terminal':
-        if (matcher.negating) {
-          // break early
-          return true
-        }
-        if (entry instanceof LazyDir) {
-          if (options.expandDirectories) {
-            // we need to grab everything in this directory
-            next.children.push(new RecursiveWildcardMatcher(false))
-          }
-        }
-
-        if (
-          options.types === 'all' ||
-          (options.types === 'dirs' && entry instanceof LazyDir) ||
-          (options.types === 'files' && entry instanceof LazyFile)
-        ) {
-          includeEntry()
-        }
-
-        break
-      default:
-        throw new Error(`Unknown match type: ${match}`)
+    if (match === 'none') continue
+    if (Array.isArray(match)) {
+      assert(matcher.children.length)
+      next.children.push(...matcher.children)
+      continue
     }
-  }
+    if (match === 'terminal') {
+      if (matcher.negating) {
+        // break early
+        break
+      }
+      if (entry instanceof LazyDir) {
+        if (options.expandDirectories) {
+          // we need to grab everything in this directory
+          next.children.push(new RecursiveWildcardMatcher(false))
+        }
+      }
 
-  for (const child of children) {
-    const stopEarly = checkChildMatcher(child)
-    if (stopEarly) {
-      break
+      if (
+        options.types === 'all' ||
+        (options.types === 'dirs' && entry instanceof LazyDir) ||
+        (options.types === 'files' && entry instanceof LazyFile)
+      ) {
+        includeEntry()
+      }
+
+      continue
+    }
+
+    if (match.down) {
+      next.children.push(...match.down)
+    }
+    if (match.recur) {
+      iter.push(matcher.children)
+    }
+
+    // check whether this matcher has children. If it does not, then this matcher
+    // matches this dir and we should include it in the result.
+    if (
+      matcher.children.length === 0 &&
+      entry instanceof LazyDir &&
+      (options.types === 'all' || options.types === 'dirs')
+    ) {
+      includeEntry()
     }
   }
 

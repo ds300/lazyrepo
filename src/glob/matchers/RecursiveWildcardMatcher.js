@@ -1,21 +1,8 @@
 import { LazyFile } from '../fs/LazyFile.js'
+import { BaseMatcher } from './BaseMatcher.js'
 
 /** @implements {Matcher} */
-export class RecursiveWildcardMatcher {
-  /**
-   * @type {boolean}
-   * @readonly
-   */
-  negating
-
-  /**
-   * @param {boolean} negating
-   */
-  constructor(negating) {
-    this.negating = negating
-  }
-  /** @type {Matcher[]} */
-  children = []
+export class RecursiveWildcardMatcher extends BaseMatcher {
   /**
    * @param {import("../fs/LazyEntry.js").LazyEntry} entry
    * @param {MatchOptions} options
@@ -30,7 +17,7 @@ export class RecursiveWildcardMatcher {
         ? 'none'
         : options.expandDirectories || entry instanceof LazyFile
         ? 'terminal'
-        : 'recursive'
+        : { recur: this.children, down: [this] }
     } else {
       // If this entry is a dotfile and we're not matching dotfiles, then
       // a child matcher might still match the dotfile, so we don't want to ignore
@@ -45,7 +32,7 @@ export class RecursiveWildcardMatcher {
 
       // 'recursive' means to recursively apply this matcher to the entry's children while
       // also trying the children of this matcher against the entry.
-      return ignore ? 'try-next' : 'recursive'
+      return { recur: this.children, down: ignore ? undefined : [this] }
     }
   }
 }

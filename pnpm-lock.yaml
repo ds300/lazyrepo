@@ -118,6 +118,9 @@ importers:
       eslint-plugin-n:
         specifier: ^15.7.0
         version: 15.7.0(eslint@8.38.0)
+      glob:
+        specifier: ^10.2.3
+        version: 10.2.3
       husky:
         specifier: ^8.0.0
         version: 8.0.3
@@ -3702,8 +3705,8 @@ packages:
       is-glob: 4.0.3
     dev: true
 
-  /glob@10.2.2:
-    resolution: {integrity: sha512-Xsa0BcxIC6th9UwNjZkhrMtNo/MnyRL8jGCP+uEwhA5oFOCY1f2s1/oNKY47xQ0Bg5nkjsfAEIej1VeH62bDDQ==}
+  /glob@10.2.3:
+    resolution: {integrity: sha512-Kb4rfmBVE3eQTAimgmeqc2LwSnN0wIOkkUL6HmxEFxNJ4fHghYHVbFba/HcGcRjE6s9KoMNK3rSOwkL4PioZjg==}
     engines: {node: '>=16 || 14 >=14.17'}
     hasBin: true
     dependencies:
@@ -5540,7 +5543,7 @@ packages:
     engines: {node: '>=14'}
     hasBin: true
     dependencies:
-      glob: 10.2.2
+      glob: 10.2.3
     dev: true
 
   /rollup-plugin-inject@3.0.2:

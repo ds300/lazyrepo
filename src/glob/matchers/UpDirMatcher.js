@@ -1,7 +1,7 @@
 import { BaseMatcher } from './BaseMatcher.js'
 
 /** @implements {Matcher} */
-export class WildcardMatcher extends BaseMatcher {
+export class UpDirMatcher extends BaseMatcher {
   /**
    * @param {import("../fs/LazyEntry.js").LazyEntry} entry
    * @param {MatchOptions} options

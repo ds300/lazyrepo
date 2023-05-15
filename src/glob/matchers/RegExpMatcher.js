@@ -1,5 +1,7 @@
+import { BaseMatcher } from './BaseMatcher.js'
+
 /** @implements {Matcher} */
-export class RegExpMatcher {
+export class RegExpMatcher extends BaseMatcher {
   /**
    * @type {RegExp}
    */
@@ -12,24 +14,15 @@ export class RegExpMatcher {
   source
 
   /**
-   * @type {boolean}
-   * @readonly
-   */
-  negating
-
-  /**
    * @param {string} source
    * @param {RegExp} pattern
    * @param {boolean} negating
    */
   constructor(source, pattern, negating) {
+    super(negating)
     this.source = source
     this.#pattern = pattern
-    this.negating = negating
   }
-
-  /** @type {Matcher[]} */
-  children = []
 
   /**
    * @param {import("../fs/LazyEntry.js").LazyEntry} entry
@@ -39,7 +32,7 @@ export class RegExpMatcher {
   match(entry, _options) {
     // the dot option is handled by micromatch
     if (this.#pattern.test(entry.name)) {
-      return this.children.length === 0 ? 'terminal' : 'partial'
+      return this.children.length === 0 ? 'terminal' : this.children
     } else {
       return 'none'
     }

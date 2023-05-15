@@ -1,4 +1,13 @@
-type MatchResult = 'terminal' | 'partial' | 'recursive' | 'none' | 'try-next'
+type MatchResult =
+  | 'terminal'
+  | 'none'
+  // partial match, go up
+  | Matcher[]
+  | {
+      up?: Matcher[]
+      down?: Matcher[]
+      recur?: Matcher[]
+    }
 
 interface Matcher {
   children: Matcher[]
