@@ -1,7 +1,8 @@
-import { BaseMatcher } from './BaseMatcher.js'
-
 /** @implements {Matcher} */
-export class ExactStringMatcher extends BaseMatcher {
+export class ExactStringMatcher {
+  /** @type {Matcher[]} */
+  children = []
+
   /**
    * @type {string}
    * @readonly
@@ -13,8 +14,8 @@ export class ExactStringMatcher extends BaseMatcher {
    * @param {boolean} negating
    */
   constructor(pattern, negating) {
-    super(negating)
     this.pattern = pattern
+    this.negating = negating
   }
 
   /**

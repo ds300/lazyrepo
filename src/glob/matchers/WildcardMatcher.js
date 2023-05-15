@@ -1,7 +1,12 @@
-import { BaseMatcher } from './BaseMatcher.js'
-
 /** @implements {Matcher} */
-export class WildcardMatcher extends BaseMatcher {
+export class WildcardMatcher {
+  /** @type {Matcher[]} */
+  children = []
+
+  /** @param {boolean} negating */
+  constructor(negating) {
+    this.negating = negating
+  }
   /**
    * @param {import("../fs/LazyEntry.js").LazyEntry} entry
    * @param {MatchOptions} options

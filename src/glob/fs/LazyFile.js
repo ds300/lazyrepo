@@ -1,5 +1,3 @@
-import { basename } from '../../path.js'
-
 export class LazyFile {
   /**
    * @type {string}
@@ -23,7 +21,7 @@ export class LazyFile {
    */
   constructor(path, isSymbolicLink) {
     this.path = path
-    this.name = basename(path)
+    this.name = path.slice(path.lastIndexOf('/') + 1)
     this.isSymbolicLink = isSymbolicLink
   }
 }

@@ -10,6 +10,7 @@ export function clean() {
     ignore: ['**/node_modules'],
     types: 'dirs',
     cwd: project.root.dir,
+    absolute: true,
   })
 
   logger.log(`Cleaning ${cacheDirs.length} cache directories...`)

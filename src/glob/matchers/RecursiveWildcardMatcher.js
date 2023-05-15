@@ -1,8 +1,14 @@
 import { LazyFile } from '../fs/LazyFile.js'
-import { BaseMatcher } from './BaseMatcher.js'
 
 /** @implements {Matcher} */
-export class RecursiveWildcardMatcher extends BaseMatcher {
+export class RecursiveWildcardMatcher {
+  /** @type {Matcher[]} */
+  children = []
+
+  /** @param {boolean} negating */
+  constructor(negating) {
+    this.negating = negating
+  }
   /**
    * @param {import("../fs/LazyEntry.js").LazyEntry} entry
    * @param {MatchOptions} options

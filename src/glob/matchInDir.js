@@ -1,32 +1,29 @@
-import assert from 'assert'
 import { LazyDir } from './fs/LazyDir.js'
 import { LazyFile } from './fs/LazyFile.js'
 import { RecursiveWildcardMatcher } from './matchers/RecursiveWildcardMatcher.js'
 
 class MatcherIterator {
-  /** @type {Matcher[][]} */
-  stack = []
-  /** @type {number[]} */
-  indices = []
-
-  /** @returns {Matcher | null} */
-  next() {
-    if (this.stack.length === 0) return null
-    const topElems = this.stack[this.stack.length - 1]
-    const topIndex = this.indices[this.indices.length - 1]
-    if (topIndex >= topElems.length) {
-      this.stack.pop()
-      this.indices.pop()
-      return this.next()
-    }
-    this.indices[this.indices.length - 1]++
-    return topElems[topIndex]
+  constructor(
+    /** @type {Matcher[]} */
+    matchers,
+    /** @type {MatcherIterator | null} */
+    below,
+  ) {
+    this.below = below
+    this.matchers = matchers
+    this.index = 0
   }
 
-  /** @param {Matcher[]} matchers */
-  push(matchers) {
-    this.stack.push(matchers)
-    this.indices.push(0)
+  /** @returns {Matcher | undefined} */
+  next() {
+    if (this.index >= this.matchers.length) {
+      if (!this.below) return undefined
+      this.matchers = this.below.matchers
+      this.index = this.below.index
+      this.below = this.below.below
+      return this.next()
+    }
+    return this.matchers[this.index++]
   }
 }
 
@@ -47,6 +44,32 @@ export function matchInDir(dir, options, matchers, result = []) {
   return result
 }
 
+const RECURSE = new RecursiveWildcardMatcher(false)
+
+// function createPerfTimer() {
+//   const timer = createTimer()
+//   let total = 0n
+//   return {
+//     start() {
+//       timer.reset()
+//     },
+//     stop() {
+//       total += timer.getElapsedNs()
+//     },
+//     getElapsedNs() {
+//       return total
+//     },
+//   }
+// }
+
+// const timers = {
+//   include: createPerfTimer(),
+//   iter: createPerfTimer(),
+//   match: createPerfTimer(),
+//   arrayCheck: createPerfTimer(),
+//   every: createPerfTimer(),
+// }
+
 /**
  * @param {import("./fs/LazyEntry.js").LazyEntry} entry
  * @param {MatchOptions} options
@@ -63,6 +86,7 @@ function matchDirEntry(entry, options, children, result) {
   // In doing so we can filter out any parts of the matcher tree which are not useful for
   // matching against nested files/dirs.
 
+  /** @type {Matcher[]} */
   const nextChildren = []
   let didPush = false
 
@@ -73,8 +97,7 @@ function matchDirEntry(entry, options, children, result) {
     }
   }
 
-  const iter = new MatcherIterator()
-  iter.push(children)
+  let iter = new MatcherIterator(children, null)
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -83,9 +106,12 @@ function matchDirEntry(entry, options, children, result) {
 
     const match = matcher.match(entry, options)
     if (match === 'none') continue
+
     if (Array.isArray(match)) {
-      assert(matcher.children.length)
-      nextChildren.push(...matcher.children)
+      const l = match.length
+      for (let i = 0; i < l; i++) {
+        nextChildren.push(match[i])
+      }
       continue
     }
     if (match === 'terminal') {
@@ -96,7 +122,7 @@ function matchDirEntry(entry, options, children, result) {
       if (entry instanceof LazyDir) {
         if (options.expandDirectories) {
           // we need to grab everything in this directory
-          nextChildren.push(new RecursiveWildcardMatcher(false))
+          nextChildren.push(RECURSE)
         }
       }
 
@@ -115,7 +141,7 @@ function matchDirEntry(entry, options, children, result) {
       nextChildren.push(...match.down)
     }
     if (match.recur) {
-      iter.push(matcher.children)
+      iter = new MatcherIterator(matcher.children, iter)
     }
 
     // check whether this matcher has children. If it does not, then this matcher

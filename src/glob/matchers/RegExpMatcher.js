@@ -1,7 +1,7 @@
-import { BaseMatcher } from './BaseMatcher.js'
-
 /** @implements {Matcher} */
-export class RegExpMatcher extends BaseMatcher {
+export class RegExpMatcher {
+  /** @type {Matcher[]} */
+  children = []
   /**
    * @type {RegExp}
    */
@@ -19,7 +19,7 @@ export class RegExpMatcher extends BaseMatcher {
    * @param {boolean} negating
    */
   constructor(source, pattern, negating) {
-    super(negating)
+    this.negating = negating
     this.source = source
     this.#pattern = pattern
   }

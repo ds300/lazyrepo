@@ -1,10 +1,10 @@
-import { BaseMatcher } from './BaseMatcher.js'
-
 /** @implements {Matcher} */
-export class RootMatcher extends BaseMatcher {
-  constructor() {
-    super(false)
-  }
+export class RootMatcher {
+  /** @type {Matcher[]} */
+  children = []
+
+  negating = false
+
   /**
    * @param {import("../fs/LazyEntry.js").LazyEntry} _entry
    * @param {MatchOptions} _options
