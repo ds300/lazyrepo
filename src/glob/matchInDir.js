@@ -3,34 +3,6 @@ import { LazyDir } from './fs/LazyDir.js'
 import { LazyFile } from './fs/LazyFile.js'
 import { RecursiveWildcardMatcher } from './matchers/RecursiveWildcardMatcher.js'
 
-class NextChildren {
-  /** @type {Matcher[]} */
-  children = []
-  /** @type {null | NextChildren} */
-  next = null
-}
-
-/** @type {NextChildren | null} */
-let childrenAllocationPool = null
-
-function acquireNextChildren() {
-  if (!childrenAllocationPool) {
-    return new NextChildren()
-  } else {
-    const result = childrenAllocationPool
-    childrenAllocationPool = result.next
-    result.next = null
-    return result
-  }
-}
-
-/** @param {NextChildren} next */
-function relinquishNextChildren(next) {
-  next.children.length = 0
-  next.next = childrenAllocationPool
-  childrenAllocationPool = next
-}
-
 class MatcherIterator {
   /** @type {Matcher[][]} */
   stack = []
@@ -91,7 +63,7 @@ function matchDirEntry(entry, options, children, result) {
   // In doing so we can filter out any parts of the matcher tree which are not useful for
   // matching against nested files/dirs.
 
-  const next = acquireNextChildren()
+  const nextChildren = []
   let didPush = false
 
   const includeEntry = () => {
@@ -113,7 +85,7 @@ function matchDirEntry(entry, options, children, result) {
     if (match === 'none') continue
     if (Array.isArray(match)) {
       assert(matcher.children.length)
-      next.children.push(...matcher.children)
+      nextChildren.push(...matcher.children)
       continue
     }
     if (match === 'terminal') {
@@ -124,7 +96,7 @@ function matchDirEntry(entry, options, children, result) {
       if (entry instanceof LazyDir) {
         if (options.expandDirectories) {
           // we need to grab everything in this directory
-          next.children.push(new RecursiveWildcardMatcher(false))
+          nextChildren.push(new RecursiveWildcardMatcher(false))
         }
       }
 
@@ -140,7 +112,7 @@ function matchDirEntry(entry, options, children, result) {
     }
 
     if (match.down) {
-      next.children.push(...match.down)
+      nextChildren.push(...match.down)
     }
     if (match.recur) {
       iter.push(matcher.children)
@@ -161,14 +133,12 @@ function matchDirEntry(entry, options, children, result) {
 
   if (
     follow &&
-    next.children.length &&
+    nextChildren.length &&
     entry instanceof LazyDir &&
-    !next.children.every((m) => m.negating)
+    !nextChildren.every((m) => m.negating)
   ) {
-    matchInDir(entry, options, next.children, result)
+    matchInDir(entry, options, nextChildren, result)
   }
-
-  relinquishNextChildren(next)
 
   return result
 }
