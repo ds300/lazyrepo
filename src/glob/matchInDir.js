@@ -1,39 +1,16 @@
+import assert from 'assert'
+import { SortedArraySet } from './SortedArraySet.js'
+import { matcher, recursiveWildcardMatchFn } from './compile/matcher.js'
 import { LazyDir } from './fs/LazyDir.js'
 import { LazyFile } from './fs/LazyFile.js'
-import { RecursiveWildcardMatcher } from './matchers/RecursiveWildcardMatcher.js'
-
-class MatcherIterator {
-  constructor(
-    /** @type {Matcher[]} */
-    matchers,
-    /** @type {MatcherIterator | null} */
-    below,
-  ) {
-    this.below = below
-    this.matchers = matchers
-    this.index = 0
-  }
-
-  /** @returns {Matcher | undefined} */
-  next() {
-    if (this.index >= this.matchers.length) {
-      if (!this.below) return undefined
-      this.matchers = this.below.matchers
-      this.index = this.below.index
-      this.below = this.below.below
-      return this.next()
-    }
-    return this.matchers[this.index++]
-  }
-}
 
 /**
  * @param {LazyDir} dir
  * @param {MatchOptions} options
  * @param {Matcher[]} matchers
- * @param {string[]} [result]
+ * @param {SortedArraySet} [result]
  */
-export function matchInDir(dir, options, matchers, result = []) {
+export function matchInDir(dir, options, matchers, result = new SortedArraySet()) {
   for (const child of dir.getListing().order) {
     // ignore files when we're only matching directories
     if (options.types === 'dirs' && !(child instanceof LazyDir)) continue
@@ -41,10 +18,10 @@ export function matchInDir(dir, options, matchers, result = []) {
     if (child.isSymbolicLink && options.symbolicLinks === 'ignore') continue
     matchDirEntry(child, options, matchers, result)
   }
-  return result
+  return
 }
 
-const RECURSE = new RecursiveWildcardMatcher(false)
+const RECURSE = matcher('**', false, recursiveWildcardMatchFn)
 
 // function createPerfTimer() {
 //   const timer = createTimer()
@@ -74,7 +51,7 @@ const RECURSE = new RecursiveWildcardMatcher(false)
  * @param {import("./fs/LazyEntry.js").LazyEntry} entry
  * @param {MatchOptions} options
  * @param {Matcher[]} children
- * @param {string[]} result
+ * @param {SortedArraySet} result
  */
 function matchDirEntry(entry, options, children, result) {
   // We evaluate the children from bottom to top, so that we can stop early
@@ -97,21 +74,21 @@ function matchDirEntry(entry, options, children, result) {
     }
   }
 
-  let iter = new MatcherIterator(children, null)
-
+  let i = 0
+  /** @type {Matcher | null} */
+  let stashedMatcher = null
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const matcher = iter.next()
+    const matcher = stashedMatcher ?? children[i++]
     if (!matcher) break
+    stashedMatcher = null
 
-    const match = matcher.match(entry, options)
+    const match = matcher.match(entry, options, matcher)
     if (match === 'none') continue
 
-    if (Array.isArray(match)) {
-      const l = match.length
-      for (let i = 0; i < l; i++) {
-        nextChildren.push(match[i])
-      }
+    if (match === 'next') {
+      assert(matcher.next)
+      nextChildren.push(matcher.next)
       continue
     }
     if (match === 'terminal') {
@@ -137,17 +114,28 @@ function matchDirEntry(entry, options, children, result) {
       continue
     }
 
-    if (match.down) {
-      nextChildren.push(...match.down)
+    if (match === 'recur') {
+      nextChildren.push(matcher)
+      if (matcher.next) {
+        stashedMatcher = /** @type {Matcher} */ (matcher.next)
+      } else if (options.types !== 'files') {
+        // ** should match dirs if there is no next matcher and types is not 'files'
+        includeEntry()
+      }
+      continue
     }
-    if (match.recur) {
-      iter = new MatcherIterator(matcher.children, iter)
+
+    if (match === 'try-next') {
+      if (matcher.next) {
+        stashedMatcher = /** @type {Matcher} */ (matcher.next)
+      }
+      continue
     }
 
     // check whether this matcher has children. If it does not, then this matcher
     // matches this dir and we should include it in the result.
     if (
-      matcher.children.length === 0 &&
+      !matcher.next &&
       entry instanceof LazyDir &&
       (options.types === 'all' || options.types === 'dirs')
     ) {

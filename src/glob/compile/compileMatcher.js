@@ -1,101 +1,56 @@
 import assert from 'assert'
 import { isAbsolute } from '../../path.js'
-import { ExactStringMatcher } from '../matchers/ExactStringMatcher.js'
-import { RecursiveWildcardMatcher } from '../matchers/RecursiveWildcardMatcher.js'
-import { RegExpMatcher } from '../matchers/RegExpMatcher.js'
-import { RootMatcher } from '../matchers/RootMatcher.js'
-import { WildcardMatcher } from '../matchers/WildcardMatcher.js'
 import { Parser } from './Parser.js'
 import { expandBraces, segmentize } from './expandBraces.js'
-
-/**
- * Finds a matcher in an existing list of children that does the same thing as a new matcher.
- * If it is we can combine the two to build a more efficient tree structure.
- * @param {Matcher[]} children
- * @param {boolean} negating
- * @param {boolean} terminal
- * @param {(m: Matcher) => boolean} pred
- */
-function findSimpaticoMatcher(children, negating, terminal, pred) {
-  for (
-    let i = 0;
-    i < children.length &&
-    children[i].negating === negating &&
-    terminal === !children[i].children.length;
-    i++
-  ) {
-    const matcher = children[i]
-    if (pred(matcher)) {
-      return matcher
-    }
-  }
-  return null
-}
+import {
+  makeRegexpMatchFn,
+  matcher,
+  oneCharMatchFn,
+  recursiveWildcardMatchFn,
+  upMatchFn,
+  wildcardMatchFn,
+} from './matcher.js'
 
 /**
  * @param {MatchOptions} opts
- * @param {Matcher} prev
  * @param {Expression[]} segment
  * @param {boolean} negating
- * @param {boolean} terminal
  * @returns {Matcher}
  */
-function compilePathSegment(opts, prev, segment, negating, terminal) {
+function compilePathSegment(opts, segment, negating) {
   /**
    * Try to find a simpatico matcher in the existing children.
    * If none is found, create a new one using the given constructor.
    * @param {(m: Matcher) => boolean} simpaticoPred
    * @param {() => Matcher} ctor
    */
-  const make = (simpaticoPred, ctor) => {
-    const existing = findSimpaticoMatcher(prev.children, negating, terminal, simpaticoPred)
-    if (existing) return existing
-    const matcher = ctor()
-    prev.children.unshift(matcher)
-    return matcher
-  }
 
   assert(segment.length > 0)
   const only = segment.length > 1 ? null : segment[0]
 
   if (only?.type === 'recursive_wildcard') {
-    return make(
-      (m) => m instanceof RecursiveWildcardMatcher,
-      () => new RecursiveWildcardMatcher(negating),
-    )
+    return matcher('**', negating, recursiveWildcardMatchFn)
   }
 
   if (only?.type === 'wildcard') {
     if (only.wildcardType === '*') {
-      return make(
-        (m) => m instanceof WildcardMatcher,
-        () => new WildcardMatcher(negating),
-      )
+      return matcher('*', negating, wildcardMatchFn)
     } else {
-      const source = compileRegexSourceFromSegment([only], opts, negating)
-      return make(
-        (m) => m instanceof RegExpMatcher && m.source === source,
-        () => new RegExpMatcher(source, new RegExp(source), negating),
-      )
+      return matcher('?', negating, oneCharMatchFn)
     }
   }
 
   // match a boring file/dir name that does not require any regex stuff
   if (only?.type === 'string') {
-    return make(
-      (m) => m instanceof ExactStringMatcher && m.pattern === only.value,
-      () => new ExactStringMatcher(only.value, negating),
-    )
+    if (only.value === '..') {
+      return matcher('..', negating, upMatchFn)
+    }
   }
 
   // Fall back to a regex matcher
 
   const source = compileRegexSourceFromSegment(segment, opts, negating)
-
-  return make(
-    (m) => m instanceof RegExpMatcher && m.source === source,
-    () => new RegExpMatcher(source, new RegExp(source), negating),
-  )
+  return matcher(source, negating, makeRegexpMatchFn(new RegExp(source)))
 }
 
 /**
@@ -110,6 +65,7 @@ function parsePattern(pattern) {
  * @param {MatchOptions} opts
  * @param {string[]} patterns
  * @param {string} rootDir
+ * @returns {Matcher[]}
  */
 export function compileMatcher(opts, patterns, rootDir) {
   let cwd = opts.cwd
@@ -119,24 +75,6 @@ export function compileMatcher(opts, patterns, rootDir) {
   // replace `c:/` on windows with just `/`
   if (cwd !== '/' && cwd.startsWith(rootDir)) {
     cwd = cwd.replace(rootDir, '/')
-  }
-
-  const root = new RootMatcher()
-
-  /**
-   * @param {MatchOptions} opts
-   * @param {Expression[]} path
-   * @param {boolean} negating
-   * @param {Expression[][]} cwdPath
-   */
-  function addSegments(opts, path, negating, cwdPath) {
-    assert(path.length !== 0)
-    let prev = root
-    const segments = segmentize(path, cwdPath)
-    for (let i = 0; i < segments.path.length; i++) {
-      const segment = segments.path[i]
-      prev = compilePathSegment(opts, prev, segment, negating, i === segments.path.length - 1)
-    }
   }
 
   /** @type {Expression[][]} */
@@ -149,18 +87,25 @@ export function compileMatcher(opts, patterns, rootDir) {
   if (firstIsNegating) {
     patterns = ['**/*', ...patterns]
   }
-  for (let pattern of patterns) {
+
+  return patterns.reverse().flatMap((pattern) => {
     const negating = pattern.startsWith('!')
     if (negating) {
       pattern = pattern.slice(1)
     }
-    for (let path of parsePattern(pattern)) {
-      // make sure the pattern is absolute
-      addSegments(opts, path, negating, cwdPath)
-    }
-  }
-
-  return root
+    return parsePattern(pattern).map((path) => {
+      const parts = segmentize(path, cwdPath)
+      const root = compilePathSegment(opts, parts[0], negating)
+      let prev = root
+      for (let i = 1; i < parts.length; i++) {
+        const segment = parts[i]
+        const next = compilePathSegment(opts, segment, negating)
+        prev.next = next
+        prev = next
+      }
+      return root
+    })
+  })
 }
 
 /**

@@ -78,11 +78,11 @@ export function expandBraces(node) {
  * This strips out the separators and returns the segments of the path as nested arrays
  * @param {Expression[]} path
  * @param {Expression[][]} cwd
- * @returns {{isAbsolute: boolean, path: Expression[][]}}
+ * @returns {Expression[][]}
  */
 export function segmentize(path, cwd) {
   if (path.length === 0) {
-    return { isAbsolute: false, path: [] }
+    return []
   }
   const isAbsolute = path[0]?.type === 'separator'
   /** @type {Expression[][]} */
@@ -117,5 +117,5 @@ export function segmentize(path, cwd) {
     }
   }
 
-  return { isAbsolute, path: result }
+  return result
 }

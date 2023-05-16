@@ -453,44 +453,38 @@ test('compileMatcher', () => {
       '/',
     ),
   ).toMatchInlineSnapshot(`
-    RootMatcher {
-      "children": [
-        ExactStringMatcher {
-          "children": [
-            ExactStringMatcher {
-              "children": [
-                ExactStringMatcher {
-                  "children": [
-                    ExactStringMatcher {
-                      "children": [
-                        RecursiveWildcardMatcher {
-                          "children": [
-                            RegExpMatcher {
-                              "children": [],
-                              "negating": false,
-                              "source": "^dope[\\w]$",
-                            },
-                          ],
-                          "negating": false,
-                        },
-                      ],
-                      "negating": false,
-                      "pattern": "src",
-                    },
-                  ],
-                  "negating": false,
-                  "pattern": "dgb",
-                },
-              ],
-              "negating": false,
-              "pattern": "users",
-            },
-          ],
+    [
+      {
+        "key": "^home$",
+        "match": [Function],
+        "negating": false,
+        "next": {
+          "key": "^users$",
+          "match": [Function],
           "negating": false,
-          "pattern": "home",
+          "next": {
+            "key": "^dgb$",
+            "match": [Function],
+            "negating": false,
+            "next": {
+              "key": "^src$",
+              "match": [Function],
+              "negating": false,
+              "next": {
+                "key": "**",
+                "match": [Function],
+                "negating": false,
+                "next": {
+                  "key": "^dope[\\w]$",
+                  "match": [Function],
+                  "negating": false,
+                  "next": null,
+                },
+              },
+            },
+          },
         },
-      ],
-      "negating": false,
-    }
+      },
+    ]
   `)
 })

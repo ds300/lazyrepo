@@ -1,31 +1,31 @@
 export class SortedArraySet {
   /** @type {string[]} */
-  arr = []
+  array = []
 
   /**
    * @param {string} value
    */
   push(value) {
-    if (this.arr.length === 0) {
-      this.arr.push(value)
+    if (this.array.length === 0) {
+      this.array.push(value)
       return
     }
-    const comparison = value.localeCompare(this.arr[this.arr.length - 1])
+    const comparison = value.localeCompare(this.array[this.array.length - 1])
     if (comparison === 0) return
     if (comparison > 0) {
-      this.arr.push(value)
+      this.array.push(value)
       return
     }
     // TODO: binary search
-    for (let i = this.arr.length - 2; i >= 0; i--) {
-      const comparison = value.localeCompare(this.arr[i])
+    for (let i = this.array.length - 2; i >= 0; i--) {
+      const comparison = value.localeCompare(this.array[i])
       if (comparison === 0) return
       if (comparison > 0) {
-        this.arr.splice(i + 1, 0, value)
+        this.array.splice(i + 1, 0, value)
         return
       }
     }
 
-    this.arr.unshift(value)
+    this.array.unshift(value)
   }
 }
