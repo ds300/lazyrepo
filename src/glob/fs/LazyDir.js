@@ -38,14 +38,18 @@ export class LazyDir {
    */
   noCache
 
+  /** @type {LazyDir} */
+  parentDir
+
   /**
    * @param {LogicalClock} clock
    * @param {string} path
    * @param {number} mtime
    * @param {boolean} isSymbolicLink
    * @param {boolean} noCache
+   * @param {LazyDir | null} parentDir
    */
-  constructor(clock, path, mtime, isSymbolicLink, noCache) {
+  constructor(clock, path, mtime, isSymbolicLink, noCache, parentDir) {
     this.#clock = clock
     this.path = path
     this.name = basename(path)
@@ -56,6 +60,7 @@ export class LazyDir {
     this.#lastStatTime = clock.time
     this.isSymbolicLink = isSymbolicLink
     this.noCache = noCache
+    this.parentDir = parentDir ?? this
   }
 
   #updateStat() {
@@ -94,15 +99,16 @@ export class LazyDir {
               this.noCache ? 0 : statSync(entryPath).mtimeMs,
               false,
               this.noCache,
+              this,
             )
           } else if (entry.isFile() && (!result || !(result instanceof LazyFile))) {
-            result = new LazyFile(entryPath, false)
+            result = new LazyFile(entryPath, false, this)
           } else if (entry.isSymbolicLink()) {
             const stat = statSync(entryPath)
             if (stat.isDirectory()) {
-              result = new LazyDir(this.#clock, entryPath, stat.mtimeMs, true, this.noCache)
+              result = new LazyDir(this.#clock, entryPath, stat.mtimeMs, true, this.noCache, this)
             } else if (stat.isFile()) {
-              result = new LazyFile(entryPath, true)
+              result = new LazyFile(entryPath, true, this)
             }
           }
         } catch (_e) {

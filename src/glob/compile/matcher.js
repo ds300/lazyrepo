@@ -12,6 +12,7 @@ export function matcher(key, negating, match) {
     negating,
     match,
     next: null,
+    prev: null,
   }
 }
 
@@ -56,8 +57,11 @@ export const wildcardMatchFn = (entry, options, matcher) => {
 }
 
 /** @type {MatchFn} */
-export const oneCharMatchFn = (entry, _options, _matcher) => {
-  return entry.name.length === 1 ? 'next' : 'terminal'
+export const oneCharMatchFn = (entry, _options, matcher) => {
+  if (entry.name.length === 1) {
+    return matcher.next ? 'next' : 'terminal'
+  }
+  return 'none'
 }
 
 /** @type {MatchFn} */

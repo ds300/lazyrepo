@@ -15,7 +15,7 @@ export class LazyGlob {
   #getRootDir(rootDir) {
     const existing = this.#rootDirs.get(rootDir)
     if (existing) return existing
-    const dir = new LazyDir(this.#clock, rootDir, 0, false, false)
+    const dir = new LazyDir(this.#clock, rootDir, 0, false, false, null)
     this.#rootDirs.set(rootDir, dir)
     return dir
   }
@@ -40,7 +40,7 @@ export class LazyGlob {
       symbolicLinks: opts?.symbolicLinks ?? 'follow',
     }
 
-    const rootMatcher = compileMatcher(
+    const matchers = compileMatcher(
       matchOpts,
       patterns.concat(opts?.ignore?.map((p) => '!' + p) ?? []),
       rootDir,
@@ -53,10 +53,10 @@ export class LazyGlob {
     const result = new SortedArraySet()
     matchInDir(
       cache === 'none'
-        ? new LazyDir(this.#clock, rootDir, 0, false, true)
+        ? new LazyDir(this.#clock, rootDir, 0, false, true, null)
         : this.#getRootDir(rootDir),
       matchOpts,
-      rootMatcher,
+      matchers,
       result,
     )
 

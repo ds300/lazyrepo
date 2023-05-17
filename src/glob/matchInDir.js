@@ -132,6 +132,14 @@ function matchDirEntry(entry, options, children, result) {
       continue
     }
 
+    if (match === 'up') {
+      if (matcher.next === null) {
+        result.push(entry.parentDir.path)
+      } else {
+        matchDirEntry(entry.parentDir, options, [matcher.next], result)
+      }
+    }
+
     // check whether this matcher has children. If it does not, then this matcher
     // matches this dir and we should include it in the result.
     if (

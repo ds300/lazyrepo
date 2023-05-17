@@ -10,6 +10,7 @@ type MatchResult =
 interface Matcher {
   key: string
   next: Matcher | null
+  prev: Matcher | null
   negating: boolean
   match: MatchFn
 }

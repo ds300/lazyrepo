@@ -1,4 +1,20 @@
 /**
+ * @param {Expression[]} expressions
+ * @returns {Expression[]}
+ */
+function dedupeExpressions(expressions) {
+  const seen = new Set()
+  return expressions.filter((expr) => {
+    const source = expr.type === 'string' ? expr.value : expr.source.slice(expr.start, expr.end)
+    if (seen.has(source)) {
+      return false
+    }
+    seen.add(source)
+    return true
+  })
+}
+
+/**
  * @param {Expression} node
  * @returns {Expression[][]}
  */
@@ -19,7 +35,7 @@ function _expandBraces(node) {
       if (node.type === 'parens' && node.extGlobPrefix) {
         return [[node]]
       }
-      const result = node.options.flatMap(_expandBraces)
+      const result = dedupeExpressions(node.options).flatMap(_expandBraces)
       if (result.length === 0) {
         return [[]]
       }
@@ -34,7 +50,13 @@ function _expandBraces(node) {
       }
       const [first, ...rest] = node.expressions
       const firstPaths = _expandBraces(first)
-      const restPaths = _expandBraces({ type: 'sequence', expressions: rest, start: 0, end: 0 })
+      const restPaths = _expandBraces({
+        type: 'sequence',
+        source: '',
+        expressions: rest,
+        start: 0,
+        end: 0,
+      })
       return restPaths.flatMap((restPath) => {
         return firstPaths.map((firstPath) => [...firstPath, ...restPath])
       })
@@ -78,22 +100,22 @@ export function expandBraces(node) {
  * This strips out the separators and returns the segments of the path as nested arrays
  * @param {Expression[]} path
  * @param {Expression[][]} cwd
- * @returns {Expression[][]}
+ * @returns {{segments: Expression[][], hasIrreconcilableDotDot: boolean}}
  */
 export function segmentize(path, cwd) {
   if (path.length === 0) {
-    return []
+    return { segments: [], hasIrreconcilableDotDot: false }
   }
   const isAbsolute = path[0]?.type === 'separator'
   /** @type {Expression[][]} */
-  const result = isAbsolute ? [] : [...cwd]
+  const segments = isAbsolute ? [] : [...cwd]
   /** @type {Expression[]} */
   let nextSegment = []
   for (let i = 0; i < path.length; i++) {
     const expr = path[i]
     if (expr.type === 'separator') {
       if (nextSegment.length > 0) {
-        result.push(nextSegment)
+        segments.push(nextSegment)
         nextSegment = []
       }
     } else {
@@ -103,19 +125,51 @@ export function segmentize(path, cwd) {
   // we would always expect the nextSegment to be nonempty unless the path is empty or ends in a forward slash
   // (which should never happen because we check for that above)
   if (nextSegment.length !== 0) {
-    result.push(nextSegment)
+    segments.push(nextSegment)
   }
 
+  let hasDotDot = false
+
   // normalize path, removing `.` and `..` segments
-  for (let i = result.length - 1; i >= 0; i--) {
-    const segment = result[i]
+  for (let i = segments.length - 1; i >= 0; i--) {
+    const segment = segments[i]
     if (segment.length === 1 && segment[0].type === 'string') {
       const value = segment[0].value
       if (value === '.') {
-        result.splice(i, 1)
+        segments.splice(i, 1)
+      } else if (value === '..') {
+        hasDotDot = true
       }
     }
   }
 
-  return result
+  let hasIrreconcilableDotDot = false
+  if (hasDotDot) {
+    let i = 1
+    while (i < segments.length) {
+      const prevSegment = segments[i - 1]
+      const nextSegment = segments[i]
+      if (
+        nextSegment.length === 1 &&
+        nextSegment[0].type === 'string' &&
+        nextSegment[0].value === '..'
+      ) {
+        if (
+          prevSegment.length === 1 &&
+          prevSegment[0].type === 'string' &&
+          prevSegment[0].value !== '..'
+        ) {
+          // simple path segment can be cancelled out
+          segments.splice(i - 1, 2)
+        } else {
+          hasIrreconcilableDotDot = true
+          i++
+        }
+      } else {
+        i++
+      }
+    }
+  }
+
+  return { segments, hasIrreconcilableDotDot }
 }

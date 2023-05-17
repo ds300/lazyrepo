@@ -1,6 +1,6 @@
 import assert from 'assert'
 import { isAbsolute } from '../../path.js'
-import { Parser } from './Parser.js'
+import { Parser, ParserError } from './Parser.js'
 import { expandBraces, segmentize } from './expandBraces.js'
 import {
   makeRegexpMatchFn,
@@ -81,7 +81,7 @@ export function compileMatcher(opts, patterns, rootDir) {
   const cwdPath = cwd
     .split('/')
     .filter(Boolean)
-    .map((s) => [{ type: 'string', value: s, start: 0, end: 0 }])
+    .map((s) => [{ type: 'string', source: '', value: s, start: 0, end: 0 }])
 
   const firstIsNegating = patterns[0]?.startsWith('!')
   if (firstIsNegating) {
@@ -94,12 +94,16 @@ export function compileMatcher(opts, patterns, rootDir) {
       pattern = pattern.slice(1)
     }
     return parsePattern(pattern).map((path) => {
-      const parts = segmentize(path, cwdPath)
-      const root = compilePathSegment(opts, parts[0], negating)
+      const { segments, hasIrreconcilableDotDot } = segmentize(path, cwdPath)
+      if (negating && hasIrreconcilableDotDot) {
+        throw new ParserError('Cannot negate a path with .. in it', 0, pattern.length, pattern)
+      }
+      const root = compilePathSegment(opts, segments[0], negating)
       let prev = root
-      for (let i = 1; i < parts.length; i++) {
-        const segment = parts[i]
+      for (let i = 1; i < segments.length; i++) {
+        const segment = segments[i]
         const next = compilePathSegment(opts, segment, negating)
+        next.prev = prev
         prev.next = next
         prev = next
       }

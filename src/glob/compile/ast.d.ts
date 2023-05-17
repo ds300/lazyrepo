@@ -1,6 +1,7 @@
 interface ASTNode {
   start: number
   end: number
+  source: string
 }
 interface StringNode extends ASTNode {
   type: 'string'

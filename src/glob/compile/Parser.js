@@ -85,13 +85,14 @@ export class Parser {
       }
     }
     if (expressions.length === 0) {
-      return string('', start, this.lex.index)
+      return this.string('', start, this.lex.index)
     }
     if (expressions.length === 1) {
       return expressions[0]
     }
     return {
       type: 'sequence',
+      source: this.lex.pattern,
       start,
       end: this.lex.index,
       expressions: expressions,
@@ -107,7 +108,7 @@ export class Parser {
     const peek = this.lex.peek()
     if (typeof peek === 'string') {
       this.lex.nextToken()
-      return string(peek, start, this.lex.index)
+      return this.string(peek, start, this.lex.index)
     } else if (peek === EXCLAMATION) {
       this.lex.nextToken()
       if (!this.lex.hasMoreTokens()) {
@@ -123,6 +124,7 @@ export class Parser {
         this.lex.nextToken()
         return {
           type: 'recursive_wildcard',
+          source: this.lex.pattern,
           start: start,
           end: this.lex.index,
         }
@@ -132,6 +134,7 @@ export class Parser {
       }
       return {
         type: 'wildcard',
+        source: this.lex.pattern,
         wildcardType: '*',
         start: start,
         end: this.lex.index,
@@ -143,6 +146,7 @@ export class Parser {
       }
       return {
         type: 'wildcard',
+        source: this.lex.pattern,
         wildcardType: '?',
         start: start,
         end: this.lex.index,
@@ -154,6 +158,7 @@ export class Parser {
       }
       return {
         type: 'separator',
+        source: this.lex.pattern,
         end: this.lex.index,
         start: start,
       }
@@ -162,13 +167,13 @@ export class Parser {
       if (this.lex.peek() === OPEN_PAREN) {
         return this.parseParens('+')
       }
-      return string('+', start, this.lex.index)
+      return this.string('+', start, this.lex.index)
     } else if (peek === AT) {
       this.lex.nextToken()
       if (this.lex.peek() === OPEN_PAREN) {
         return this.parseParens('@')
       }
-      return string('@', start, this.lex.index)
+      return this.string('@', start, this.lex.index)
     } else if (peek === OPEN_BRACE) {
       if (isExtGlobMode) {
         this.err('"{" is not allowed in extglob expressions', start)
@@ -180,7 +185,7 @@ export class Parser {
       return this.parseCharacterClass()
     } else {
       this.lex.nextToken()
-      return string(peek.description ?? '', start, this.lex.index)
+      return this.string(peek.description ?? '', start, this.lex.index)
     }
   }
 
@@ -214,6 +219,7 @@ export class Parser {
     this.lex.nextToken(false)
     return {
       type: 'character_class',
+      source: this.lex.pattern,
       start: start,
       end: this.lex.index,
       negating,
@@ -229,21 +235,22 @@ export class Parser {
       return next
     }
     if (this.lex.peek(false) !== '-') {
-      return characterLiteral(next, start, this.lex.index)
+      return this.characterLiteral(next, start, this.lex.index)
     }
     this.lex.nextToken(false)
     if (!this.lex.hasMoreTokens()) {
       throw this.err('Unterminated character class', start)
     }
     if (this.lex.peek(false) === ']') {
-      return characterLiteral('-', start, this.lex.index)
+      return this.characterLiteral('-', start, this.lex.index)
     }
     const end = this.parseCharacterClassChar()
     if (typeof end === 'object') {
-      return characterLiteral('-', start, this.lex.index)
+      return this.characterLiteral('-', start, this.lex.index)
     }
     return {
       type: 'character_class_range',
+      source: this.lex.pattern,
       start: start,
       end: this.lex.index,
       startChar: next,
@@ -272,6 +279,7 @@ export class Parser {
       assert(this.lex.nextToken(false) === CLOSE_BRACKET)
       return {
         type: 'character_class_builtin',
+        source: this.lex.pattern,
         class: posixClasses[/** @type {keyof typeof posixClasses} */ (className)],
         start,
         end: this.lex.index,
@@ -288,17 +296,17 @@ export class Parser {
     const next = this.lex.nextToken(false)
     if (typeof next === 'string') {
       if (next === 'w') {
-        return builtinClass('word', start, this.lex.index)
+        return this.builtinClass('word', start, this.lex.index)
       } else if (next === 'W') {
-        return builtinClass('not_word', start, this.lex.index)
+        return this.builtinClass('not_word', start, this.lex.index)
       } else if (next === 'd') {
-        return builtinClass('digit', start, this.lex.index)
+        return this.builtinClass('digit', start, this.lex.index)
       } else if (next === 'D') {
-        return builtinClass('not_digit', start, this.lex.index)
+        return this.builtinClass('not_digit', start, this.lex.index)
       } else if (next === 's') {
-        return builtinClass('space', start, this.lex.index)
+        return this.builtinClass('space', start, this.lex.index)
       } else if (next === 'S') {
-        return builtinClass('not_space', start, this.lex.index)
+        return this.builtinClass('not_space', start, this.lex.index)
       }
     }
     return asString(next)
@@ -321,7 +329,7 @@ export class Parser {
       if (this.lex.peek() === COMMA) {
         this.lex.nextToken()
         if (this.lex.peek() === CLOSE_BRACE) {
-          options.push(string('', this.lex.index, this.lex.index))
+          options.push(this.string('', this.lex.index, this.lex.index))
         }
       }
     }
@@ -336,18 +344,20 @@ export class Parser {
       // instead the braces are treated as a literal
       return {
         type: 'sequence',
+        source: this.lex.pattern,
         start,
         end: this.lex.index,
         expressions: [
-          string('{', start, start + 1),
+          this.string('{', start, start + 1),
           options[0],
-          string('}', this.lex.index - 1, this.lex.index),
+          this.string('}', this.lex.index - 1, this.lex.index),
         ],
       }
     }
 
     return {
       type: 'braces',
+      source: this.lex.pattern,
       start: start,
       end: this.lex.index,
       options,
@@ -372,7 +382,7 @@ export class Parser {
       if (this.lex.peek() === PIPE) {
         this.lex.nextToken()
         if (this.lex.peek() === CLOSE_PAREN) {
-          options.push(string('', this.lex.index, this.lex.index))
+          options.push(this.string('', this.lex.index, this.lex.index))
         }
       }
     }
@@ -384,6 +394,7 @@ export class Parser {
 
     return {
       type: 'parens',
+      source: this.lex.pattern,
       start: start,
       end: this.lex.index,
       options,
@@ -420,6 +431,7 @@ export class Parser {
       const pad = numZeros > 0 ? numZeros + next.length : 0
       return {
         type: 'range_expansion',
+        source: this.lex.pattern,
         start: start,
         end: this.lex.index,
         startNumber: Number(next.replace(/^0*/, '')),
@@ -431,6 +443,54 @@ export class Parser {
 
     this.lex.stash(next, start)
     return this.parseSequence([COMMA, CLOSE_BRACE])
+  }
+
+  /**
+   * @param {string} value
+   * @param {number} start
+   * @param {number} end
+   * @returns {StringNode}
+   */
+  string(value, start, end) {
+    return {
+      type: 'string',
+      source: this.lex.pattern,
+      value,
+      start,
+      end,
+    }
+  }
+
+  /**
+   * @param {CharacterClassBuiltinClass['class']} name
+   * @param {number} start
+   * @param {number} end
+   * @returns {CharacterClassBuiltinClass}
+   */
+  builtinClass(name, start, end) {
+    return {
+      type: 'character_class_builtin',
+      source: this.lex.pattern,
+      class: name,
+      start,
+      end,
+    }
+  }
+
+  /**
+   * @param {string} char
+   * @param {number} start
+   * @param {number} end
+   * @returns {CharacterClassElementLiteral}
+   */
+  characterLiteral(char, start, end) {
+    return {
+      type: 'character_class_element_literal',
+      source: this.lex.pattern,
+      char,
+      start,
+      end,
+    }
   }
 }
 
@@ -447,51 +507,6 @@ function numLeadingZeroes(str) {
 /** @param {string} str */
 function stripLeadingZeroes(str) {
   return str.replace(/^0*/, '')
-}
-
-/**
- * @param {string} value
- * @param {number} start
- * @param {number} end
- * @returns {StringNode}
- */
-function string(value, start, end) {
-  return {
-    type: 'string',
-    value,
-    start,
-    end,
-  }
-}
-
-/**
- * @param {CharacterClassBuiltinClass['class']} name
- * @param {number} start
- * @param {number} end
- * @returns {CharacterClassBuiltinClass}
- */
-function builtinClass(name, start, end) {
-  return {
-    type: 'character_class_builtin',
-    class: name,
-    start,
-    end,
-  }
-}
-
-/**
- * @param {string} char
- * @param {number} start
- * @param {number} end
- * @returns {CharacterClassElementLiteral}
- */
-function characterLiteral(char, start, end) {
-  return {
-    type: 'character_class_element_literal',
-    char,
-    start,
-    end,
-  }
 }
 
 /**
