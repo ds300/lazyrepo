@@ -1,4 +1,6 @@
+import { LazyDir } from '../fs/LazyDir.js'
 import { LazyFile } from '../fs/LazyFile.js'
+import { reverseMatch } from '../reverseMatch.js'
 
 /**
  * @param {string} key
@@ -12,7 +14,6 @@ export function matcher(key, negating, match) {
     negating,
     match,
     next: null,
-    prev: null,
   }
 }
 
@@ -65,8 +66,18 @@ export const oneCharMatchFn = (entry, _options, matcher) => {
 }
 
 /** @type {MatchFn} */
-export const upMatchFn = (_entry, _options, _matcher) => {
-  return 'up'
+export const upMatchFn = (entry, _options, matcher) => {
+  if (!(entry instanceof LazyDir)) {
+    return 'none'
+  }
+  if (!entry.getListing().order.some((e) => e instanceof LazyDir)) {
+    return 'none'
+  }
+  if (matcher.next) {
+    return 'up'
+  } else {
+    return 'terminal'
+  }
 }
 
 /** @type {MatchFn} */
@@ -96,4 +107,29 @@ export const recursiveWildcardMatchFn = (entry, options, matcher) => {
     // also trying the children of this matcher against the entry.
     return ignore ? 'try-next' : 'recur'
   }
+}
+
+/**
+ * @param {Matcher} rootMatcher
+ * @returns {Matcher}
+ */
+export function reverseMatcher(rootMatcher) {
+  /**
+   * @type {MatchFn}
+   */
+  const match = (entry, options, _matcher) => {
+    const matches = reverseMatch(
+      /** @type {import('../fs/LazyEntry.js').LazyEntry} */ (entry),
+      options,
+      [rootMatcher],
+    )
+    if (matches) {
+      return 'terminal-and-next'
+    }
+    // a reversed matcher
+    return 'next'
+  }
+  const m = matcher('reversed:' + rootMatcher.key, rootMatcher.negating, match)
+  m.next = m
+  return m
 }

@@ -6,11 +6,11 @@ type MatchResult =
   | 'recur'
   | 'try-next'
   | 'up'
+  | 'terminal-and-next'
 
 interface Matcher {
   key: string
   next: Matcher | null
-  prev: Matcher | null
   negating: boolean
   match: MatchFn
 }

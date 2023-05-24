@@ -133,11 +133,14 @@ function matchDirEntry(entry, options, children, result) {
     }
 
     if (match === 'up') {
-      if (matcher.next === null) {
-        result.push(entry.parentDir.path)
-      } else {
-        matchDirEntry(entry.parentDir, options, [matcher.next], result)
-      }
+      throw new Error('"up" should only be used in reverse mode')
+    }
+
+    if (match === 'terminal-and-next') {
+      includeEntry()
+      assert(matcher.next)
+      nextChildren.push(matcher.next)
+      continue
     }
 
     // check whether this matcher has children. If it does not, then this matcher

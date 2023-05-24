@@ -4,9 +4,11 @@ import { Parser, ParserError } from './Parser.js'
 import { expandBraces, segmentize } from './expandBraces.js'
 import {
   makeRegexpMatchFn,
+  makeStringMatchFn,
   matcher,
   oneCharMatchFn,
   recursiveWildcardMatchFn,
+  reverseMatcher,
   upMatchFn,
   wildcardMatchFn,
 } from './matcher.js'
@@ -45,6 +47,7 @@ function compilePathSegment(opts, segment, negating) {
     if (only.value === '..') {
       return matcher('..', negating, upMatchFn)
     }
+    return matcher(only.value, negating, makeStringMatchFn(only.value))
   }
 
   // Fall back to a regex matcher
@@ -98,18 +101,39 @@ export function compileMatcher(opts, patterns, rootDir) {
       if (negating && hasIrreconcilableDotDot) {
         throw new ParserError('Cannot negate a path with .. in it', 0, pattern.length, pattern)
       }
-      const root = compilePathSegment(opts, segments[0], negating)
-      let prev = root
-      for (let i = 1; i < segments.length; i++) {
-        const segment = segments[i]
-        const next = compilePathSegment(opts, segment, negating)
-        next.prev = prev
-        prev.next = next
-        prev = next
+      const matchers = segments.map((segment) => compilePathSegment(opts, segment, negating))
+      if (hasIrreconcilableDotDot) {
+        const indexOfFirstNondeterministicSegment = segments.findIndex(
+          (s) => s.length !== 1 || s[0].type !== 'string',
+        )
+        const numDotDots = segments.filter(
+          (s) => s.length === 1 && s[0].type === 'string' && s[0].value === '..',
+        ).length
+        return stitchMatchers(
+          matchers
+            .slice(0, indexOfFirstNondeterministicSegment - numDotDots)
+            .concat([
+              reverseMatcher(
+                stitchMatchers(matchers.slice(indexOfFirstNondeterministicSegment).reverse()),
+              ),
+            ]),
+        )
+      } else {
+        return stitchMatchers(matchers)
       }
-      return root
     })
   })
+}
+
+/**
+ * @param {Matcher[]} matchers
+ * @returns {Matcher}
+ */
+function stitchMatchers(matchers) {
+  for (let i = 0; i < matchers.length - 1; i++) {
+    matchers[i].next = matchers[i + 1]
+  }
+  return matchers[0]
 }
 
 /**
