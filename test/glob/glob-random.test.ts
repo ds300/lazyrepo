@@ -93,6 +93,8 @@ class Source extends Random {
   getRandomPatternSegment(depth = 2, isInExtGlob = false): any {
     return this.execOneOf([
       () => '*',
+      // TODO: reenable this if minimatch fixes https://github.com/isaacs/minimatch/issues/211
+      // () => '?',
       () => '**',
       () => this.getRandomDirName(),
       () => this.getRandomDirName().replace(/-\w+/, '*'),
@@ -760,4 +762,19 @@ test('regression 27', () => {
       "/dist-dist/src",
     ]
   `)
+})
+
+test('regression 28', () => {
+  expect(
+    doComparison({
+      patterns: ['/*(?)'],
+      cwd: '/',
+      paths: {
+        'bulb.js': 'ok',
+      },
+      expandDirectories: false,
+      dot: false,
+      types: 'files',
+    }),
+  ).toMatchInlineSnapshot()
 })
