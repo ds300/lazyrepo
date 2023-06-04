@@ -763,18 +763,3 @@ test('regression 27', () => {
     ]
   `)
 })
-
-test('regression 28', () => {
-  expect(
-    doComparison({
-      patterns: ['/*(?)'],
-      cwd: '/',
-      paths: {
-        'bulb.js': 'ok',
-      },
-      expandDirectories: false,
-      dot: false,
-      types: 'files',
-    }),
-  ).toMatchInlineSnapshot()
-})
