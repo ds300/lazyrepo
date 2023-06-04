@@ -1,6 +1,6 @@
 import assert from 'assert'
 import { isAbsolute } from '../../path.js'
-import { Parser, ParserError } from './Parser.js'
+import { Parser } from './Parser.js'
 import { expandBraces, segmentize } from './expandBraces.js'
 import {
   makeRegexpMatchFn,
@@ -8,8 +8,6 @@ import {
   matcher,
   oneCharMatchFn,
   recursiveWildcardMatchFn,
-  reverseMatcher,
-  upMatchFn,
   wildcardMatchFn,
 } from './matcher.js'
 
@@ -44,9 +42,6 @@ function compilePathSegment(opts, segment, negating) {
 
   // match a boring file/dir name that does not require any regex stuff
   if (only?.type === 'string') {
-    if (only.value === '..') {
-      return matcher('..', negating, upMatchFn)
-    }
     return matcher(only.value, negating, makeStringMatchFn(only.value))
   }
 
@@ -97,30 +92,9 @@ export function compileMatcher(opts, patterns, rootDir) {
       pattern = pattern.slice(1)
     }
     return parsePattern(pattern).map((path) => {
-      const { segments, hasIrreconcilableDotDot } = segmentize(path, cwdPath)
-      if (negating && hasIrreconcilableDotDot) {
-        throw new ParserError('Cannot negate a path with .. in it', 0, pattern.length, pattern)
-      }
+      const { segments } = segmentize(path, cwdPath)
       const matchers = segments.map((segment) => compilePathSegment(opts, segment, negating))
-      if (hasIrreconcilableDotDot) {
-        const indexOfFirstNondeterministicSegment = segments.findIndex(
-          (s) => s.length !== 1 || s[0].type !== 'string',
-        )
-        const numDotDots = segments.filter(
-          (s) => s.length === 1 && s[0].type === 'string' && s[0].value === '..',
-        ).length
-        return stitchMatchers(
-          matchers
-            .slice(0, indexOfFirstNondeterministicSegment - numDotDots)
-            .concat([
-              reverseMatcher(
-                stitchMatchers(matchers.slice(indexOfFirstNondeterministicSegment).reverse()),
-              ),
-            ]),
-        )
-      } else {
-        return stitchMatchers(matchers)
-      }
+      return stitchMatchers(matchers)
     })
   })
 }

@@ -1,3 +1,5 @@
+import { ParserError } from './Parser.js'
+
 /**
  * @param {Expression[]} expressions
  * @returns {Expression[]}
@@ -100,11 +102,11 @@ export function expandBraces(node) {
  * This strips out the separators and returns the segments of the path as nested arrays
  * @param {Expression[]} path
  * @param {Expression[][]} cwd
- * @returns {{segments: Expression[][], hasIrreconcilableDotDot: boolean}}
+ * @returns {{segments: Expression[][]}}
  */
 export function segmentize(path, cwd) {
   if (path.length === 0) {
-    return { segments: [], hasIrreconcilableDotDot: false }
+    return { segments: [] }
   }
   const isAbsolute = path[0]?.type === 'separator'
   /** @type {Expression[][]} */
@@ -143,33 +145,29 @@ export function segmentize(path, cwd) {
     }
   }
 
-  let hasIrreconcilableDotDot = false
   if (hasDotDot) {
-    let i = 1
-    while (i < segments.length) {
-      const prevSegment = segments[i - 1]
-      const nextSegment = segments[i]
-      if (
-        nextSegment.length === 1 &&
-        nextSegment[0].type === 'string' &&
-        nextSegment[0].value === '..'
-      ) {
-        if (
-          prevSegment.length === 1 &&
-          prevSegment[0].type === 'string' &&
-          prevSegment[0].value !== '..'
-        ) {
-          // simple path segment can be cancelled out
-          segments.splice(i - 1, 2)
-        } else {
-          hasIrreconcilableDotDot = true
-          i++
+    let didFindNonDeterminism = false
+    const resolvedSegments = []
+    for (const segment of segments) {
+      if (segment.length === 1 && segment[0].type === 'string' && segment[0].value === '..') {
+        if (didFindNonDeterminism) {
+          throw new ParserError(
+            'hyper-glob cannot resolve ".." path segments used in non-deterministic expressions. Consider using the standard "glob" library instead.',
+            segment[0].start,
+            segment[0].end,
+            segment[0].source,
+          )
         }
+        resolvedSegments.pop()
       } else {
-        i++
+        if (segment.length !== 1 || segment[0].type !== 'string') {
+          didFindNonDeterminism = true
+        }
+        resolvedSegments.push(segment)
       }
     }
+    return { segments: resolvedSegments }
   }
 
-  return { segments, hasIrreconcilableDotDot }
+  return { segments }
 }

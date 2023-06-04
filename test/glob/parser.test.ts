@@ -67,7 +67,7 @@ const parseToString = (input: string) => {
       }
       depth--
     } else {
-      const { type, start, end, ...others } = node
+      const { type, start, end, source, ...others } = node
       print(jsonify(others))
     }
 
@@ -439,52 +439,120 @@ test('posix character classes', () => {
   `)
 })
 
-test('compileMatcher', () => {
-  expect(
-    compileMatcher(
-      {
-        cwd: '/home/users/dgb',
-        dot: false,
-        expandDirectories: false,
-        symbolicLinks: 'follow',
-        types: 'all',
-      },
-      ['src/**/dope[\\w]'],
-      '/',
-    ),
-  ).toMatchInlineSnapshot(`
-    [
-      {
-        "key": "^home$",
-        "match": [Function],
-        "negating": false,
-        "next": {
-          "key": "^users$",
+describe('compileMatcher', () => {
+  it('works', () => {
+    expect(
+      compileMatcher(
+        {
+          cwd: '/home/users/dgb',
+          dot: false,
+          expandDirectories: false,
+          symbolicLinks: 'follow',
+          types: 'all',
+        },
+        ['src/**/dope[\\w]'],
+        '/',
+      ),
+    ).toMatchInlineSnapshot(`
+          [
+            {
+              "key": "home",
+              "match": [Function],
+              "negating": false,
+              "next": {
+                "key": "users",
+                "match": [Function],
+                "negating": false,
+                "next": {
+                  "key": "dgb",
+                  "match": [Function],
+                  "negating": false,
+                  "next": {
+                    "key": "src",
+                    "match": [Function],
+                    "negating": false,
+                    "next": {
+                      "key": "**",
+                      "match": [Function],
+                      "negating": false,
+                      "next": {
+                        "key": "^dope[\\w]$",
+                        "match": [Function],
+                        "negating": false,
+                        "next": null,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          ]
+      `)
+  })
+
+  it('is fine with .. if used in deterministic ways', () => {
+    expect(
+      compileMatcher(
+        {
+          cwd: '/home/users/dgb',
+          dot: false,
+          expandDirectories: false,
+          symbolicLinks: 'follow',
+          types: 'all',
+        },
+        ['../jeff/**'],
+        '/',
+      ),
+    ).toMatchInlineSnapshot(`
+      [
+        {
+          "key": "home",
           "match": [Function],
           "negating": false,
           "next": {
-            "key": "^dgb$",
+            "key": "users",
             "match": [Function],
             "negating": false,
             "next": {
-              "key": "^src$",
+              "key": "jeff",
               "match": [Function],
               "negating": false,
               "next": {
                 "key": "**",
                 "match": [Function],
                 "negating": false,
-                "next": {
-                  "key": "^dope[\\w]$",
-                  "match": [Function],
-                  "negating": false,
-                  "next": null,
-                },
+                "next": null,
               },
             },
           },
         },
-      },
-    ]
-  `)
+      ]
+    `)
+  })
+
+  it('is throws if .. is used in nondeterministic ways', () => {
+    const env: MatchOptions = {
+      cwd: '/home/users/dgb',
+      dot: false,
+      expandDirectories: false,
+      symbolicLinks: 'follow',
+      types: 'all',
+    }
+    expect(() => compileMatcher(env, ['*/../jeff/**'], '/')).toThrowErrorMatchingInlineSnapshot(`
+      "hyper-glob cannot resolve ".." path segments used in non-deterministic expressions. Consider using the standard "glob" library instead.
+
+      */../jeff/**
+        ^^
+      "
+    `)
+
+    expect(() => compileMatcher(env, ['[[:alpha:]]/../*'], '/'))
+      .toThrowErrorMatchingInlineSnapshot(`
+      "hyper-glob cannot resolve ".." path segments used in non-deterministic expressions. Consider using the standard "glob" library instead.
+
+      [[:alpha:]]/../*
+                  ^^
+      "
+    `)
+  })
 })

@@ -5,8 +5,6 @@ type MatchResult =
   | 'next'
   | 'recur'
   | 'try-next'
-  | 'up'
-  | 'terminal-and-next'
 
 interface Matcher {
   key: string

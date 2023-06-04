@@ -47,7 +47,7 @@ export class ParserError extends Error {
    * @param {string} pattern
    */
   constructor(msg, start, end, pattern) {
-    super(msg)
+    super(msg + `\n\n${pattern}\n${' '.repeat(start)}${'^'.repeat(end - start)}\n`)
     this.start = start
     this.end = end
     this.pattern = pattern

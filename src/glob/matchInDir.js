@@ -132,17 +132,6 @@ function matchDirEntry(entry, options, children, result) {
       continue
     }
 
-    if (match === 'up') {
-      throw new Error('"up" should only be used in reverse mode')
-    }
-
-    if (match === 'terminal-and-next') {
-      includeEntry()
-      assert(matcher.next)
-      nextChildren.push(matcher.next)
-      continue
-    }
-
     // check whether this matcher has children. If it does not, then this matcher
     // matches this dir and we should include it in the result.
     if (
