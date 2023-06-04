@@ -54,13 +54,13 @@ export function referenceGlob(paths: string[] | Dir, patterns: string[], options
         assert(false)
     }
   }
-  if (patterns[0].startsWith('!')) {
+  if (patterns[0].startsWith('!') && !patterns[0].startsWith('!(')) {
     patterns = ['**', ...patterns]
   }
   // todo: if options.dirs then extract dirs from paths
   const result = new Set<string>()
   for (let pattern of patterns) {
-    const isNegative = pattern.startsWith('!')
+    const isNegative = pattern.startsWith('!') && !pattern.startsWith('!(')
     if (isNegative) {
       pattern = pattern.slice(1)
     }

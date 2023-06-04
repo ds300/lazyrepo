@@ -1,6 +1,6 @@
 import { getRootDir, cwd as procCwd } from '../cwd.js'
 import { resolve } from '../path.js'
-import { compileMatcher } from './compileMatcher.js'
+import { compileMatcher } from './compile/compileMatcher.js'
 import { LazyDir } from './fs/LazyDir.js'
 import { matchInDir } from './matchInDir.js'
 
@@ -14,7 +14,7 @@ export class LazyGlob {
   #getRootDir(rootDir) {
     const existing = this.#rootDirs.get(rootDir)
     if (existing) return existing
-    const dir = new LazyDir(this.#clock, rootDir, 0, false)
+    const dir = new LazyDir(this.#clock, rootDir, 0, false, false)
     this.#rootDirs.set(rootDir, dir)
     return dir
   }
@@ -39,10 +39,9 @@ export class LazyGlob {
       symbolicLinks: opts?.symbolicLinks ?? 'follow',
     }
 
-    const rootMatcher = compileMatcher(
+    const matchers = compileMatcher(
       matchOpts,
       patterns.concat(opts?.ignore?.map((p) => '!' + p) ?? []),
-      cwd,
       rootDir,
     )
 
@@ -50,11 +49,17 @@ export class LazyGlob {
       this.#clock.time++
     }
 
-    const result = matchInDir(
-      cache === 'none' ? new LazyDir(this.#clock, rootDir, 0, false) : this.#getRootDir(rootDir),
+    /**
+     * @type {string[]}
+     */
+    const result = []
+    matchInDir(
+      cache === 'none'
+        ? new LazyDir(this.#clock, rootDir, 0, false, true)
+        : this.#getRootDir(rootDir),
       matchOpts,
-      rootMatcher.children,
-      [],
+      matchers,
+      result,
     )
 
     return result

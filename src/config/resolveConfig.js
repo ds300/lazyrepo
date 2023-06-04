@@ -26,6 +26,7 @@ import { validateConfig } from './validateConfig.js'
 export async function resolveConfig(dir) {
   const files = glob.sync(['lazy.config.{js,cjs,mjs,ts,cts,mts}'], {
     cwd: dir,
+    absolute: true,
   })
 
   if (files.length > 1) {

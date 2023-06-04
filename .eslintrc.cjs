@@ -5,6 +5,7 @@ module.exports = {
     es2021: true,
     node: true,
   },
+  ignorePatterns: ['coverage/**/*'],
   extends: [
     'eslint:recommended',
     'plugin:n/recommended',

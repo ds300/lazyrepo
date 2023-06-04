@@ -72,9 +72,9 @@ function readPnpmWorkspaceYamlIfExists(dir) {
 
 /**
  * @param {string} dir
- * @returns {import('./project-types.js').PartialWorkspace}
+ * @returns {import('./project-types.js').PartialWorkspace | null}
  */
-export function loadWorkspace(dir) {
+export function loadWorkspace(dir, allowMissing = false) {
   let packageJson
   try {
     packageJson = readPackageJsonIfExists(dir)
@@ -84,6 +84,7 @@ export function loadWorkspace(dir) {
     })
   }
   if (!packageJson) {
+    if (allowMissing) return null
     throw logger.fail(`Could not find package.json in '${dir}'`)
   }
   let pnpmWorkspaceYaml

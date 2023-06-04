@@ -2,6 +2,7 @@ import assert from 'assert'
 import micromatch from 'micromatch'
 import { glob } from '../glob/glob.js'
 import { isAbsolute, join } from '../path.js'
+import { compact } from '../utils/compact.js'
 import { findRootWorkspace } from './findRootWorkspace.js'
 import { getPackageManager } from './getPackageManager.js'
 import { loadWorkspace } from './loadWorkspace.js'
@@ -10,9 +11,11 @@ import { loadWorkspace } from './loadWorkspace.js'
 function findDirectChildWorkspaces(workspace) {
   if (workspace.childWorkspaceGlobs.length === 0) return []
 
-  return glob
-    .sync(workspace.childWorkspaceGlobs, { types: 'dirs', cwd: workspace.dir })
-    .map(loadWorkspace)
+  return compact(
+    glob
+      .sync(workspace.childWorkspaceGlobs, { types: 'dirs', cwd: workspace.dir, absolute: true })
+      .map((dir) => loadWorkspace(dir, true)),
+  )
 }
 
 /**

@@ -1,9 +1,16 @@
-type MatchResult = 'terminal' | 'partial' | 'recursive' | 'none' | 'try-next'
+type MatchResult =
+  | 'terminal'
+  | 'none'
+  // partial match, go down
+  | 'next'
+  | 'recur'
+  | 'try-next'
 
 interface Matcher {
-  children: Matcher[]
+  key: string
+  next: Matcher | null
   negating: boolean
-  match(entry: LazyEntry, options: MatchOptions): MatchResult
+  match: MatchFn
 }
 
 type MatchTypes = 'files' | 'dirs' | 'all'
@@ -38,3 +45,5 @@ type ExpansionAST =
       choices: ExpansionAST[]
     }
   | string
+
+type MatchFn = (entry: { name: string }, options: MatchOptions, matcher: Matcher) => MatchResult

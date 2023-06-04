@@ -1,5 +1,5 @@
 import { readdirSync, statSync } from '../../fs.js'
-import { basename, join } from '../../path.js'
+import { basename } from '../../path.js'
 import { LazyFile } from './LazyFile.js'
 
 export class LazyDir {
@@ -33,12 +33,19 @@ export class LazyDir {
   #_listing
 
   /**
+   * @type {boolean}
+   * @readonly
+   */
+  noCache
+
+  /**
    * @param {LogicalClock} clock
    * @param {string} path
    * @param {number} mtime
    * @param {boolean} isSymbolicLink
+   * @param {boolean} noCache
    */
-  constructor(clock, path, mtime, isSymbolicLink) {
+  constructor(clock, path, mtime, isSymbolicLink, noCache) {
     this.#clock = clock
     this.path = path
     this.name = basename(path)
@@ -48,9 +55,13 @@ export class LazyDir {
     this.#lastListTime = clock.time - 1
     this.#lastStatTime = clock.time
     this.isSymbolicLink = isSymbolicLink
+    this.noCache = noCache
   }
 
   #updateStat() {
+    // If there's no cache, we will never be re-traversing a directory from a previous time,
+    // so we can skip the stat.
+    if (this.noCache) return false
     if (this.#lastStatTime === this.#clock.time) {
       return false
     }
@@ -72,29 +83,41 @@ export class LazyDir {
         byName: {},
       }
 
-      for (const entry of readdirSync(this.path, { withFileTypes: true })) {
-        let result = prevListingByName?.[entry.name]
-        try {
-          if (entry.isDirectory() && (!result || !(result instanceof LazyDir))) {
-            const stat = statSync(join(this.path, entry.name))
-            result = new LazyDir(this.#clock, join(this.path, entry.name), stat.mtimeMs, false)
-          } else if (entry.isFile() && (!result || !(result instanceof LazyFile))) {
-            result = new LazyFile(join(this.path, entry.name), false)
-          } else if (entry.isSymbolicLink()) {
-            const stat = statSync(join(this.path, entry.name))
-            if (stat.isDirectory()) {
-              result = new LazyDir(this.#clock, join(this.path, entry.name), stat.mtimeMs, true)
-            } else if (stat.isFile()) {
-              result = new LazyFile(join(this.path, entry.name), true)
+      try {
+        for (const entry of readdirSync(this.path, { withFileTypes: true })) {
+          let result = prevListingByName?.[entry.name]
+          const entryPath =
+            this.path.at(-1) === '/' ? this.path + entry.name : this.path + '/' + entry.name
+          try {
+            if (entry.isDirectory() && (!result || !(result instanceof LazyDir))) {
+              result = new LazyDir(
+                this.#clock,
+                entryPath,
+                this.noCache ? 0 : statSync(entryPath).mtimeMs,
+                false,
+                this.noCache,
+              )
+            } else if (entry.isFile() && (!result || !(result instanceof LazyFile))) {
+              result = new LazyFile(entryPath, false)
+            } else if (entry.isSymbolicLink()) {
+              const stat = statSync(entryPath)
+              if (stat.isDirectory()) {
+                result = new LazyDir(this.#clock, entryPath, stat.mtimeMs, true, this.noCache)
+              } else if (stat.isFile()) {
+                result = new LazyFile(entryPath, true)
+              }
             }
+          } catch (_e) {
+            // ignore
           }
-        } catch (_e) {
-          // ignore
+
+          if (result) {
+            this.#_listing.order.push(result)
+            this.#_listing.byName[entry.name] = result
+          }
         }
-        if (result) {
-          this.#_listing.order.push(result)
-          this.#_listing.byName[entry.name] = result
-        }
+      } catch (_e) {
+        // ignore
       }
 
       this.#lastListTime = this.#clock.time

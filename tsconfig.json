@@ -1,6 +1,6 @@
 {
   "include": ["**/*", ".eslintrc.cjs"],
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules", "coverage"],
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig to read more about this file */
 
