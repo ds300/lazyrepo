@@ -18,12 +18,10 @@ export class LazyFile {
   /**
    * @param {string} path
    * @param {boolean} isSymbolicLink
-   * @param {import('./LazyDir.js').LazyDir} parentDir
    */
-  constructor(path, isSymbolicLink, parentDir) {
+  constructor(path, isSymbolicLink) {
     this.path = path
     this.name = path.slice(path.lastIndexOf('/') + 1)
     this.isSymbolicLink = isSymbolicLink
-    this.parentDir = parentDir
   }
 }

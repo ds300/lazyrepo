@@ -1,5 +1,4 @@
 import assert from 'assert'
-import { SortedArraySet } from './SortedArraySet.js'
 import { matcher, recursiveWildcardMatchFn } from './compile/matcher.js'
 import { LazyDir } from './fs/LazyDir.js'
 import { LazyFile } from './fs/LazyFile.js'
@@ -8,9 +7,9 @@ import { LazyFile } from './fs/LazyFile.js'
  * @param {LazyDir} dir
  * @param {MatchOptions} options
  * @param {Matcher[]} matchers
- * @param {SortedArraySet} [result]
+ * @param {string[]} [result]
  */
-export function matchInDir(dir, options, matchers, result = new SortedArraySet()) {
+export function matchInDir(dir, options, matchers, result = []) {
   for (const child of dir.getListing().order) {
     // ignore files when we're only matching directories
     if (options.types === 'dirs' && !(child instanceof LazyDir)) continue
@@ -51,7 +50,7 @@ const RECURSE = matcher('**', false, recursiveWildcardMatchFn)
  * @param {import("./fs/LazyEntry.js").LazyEntry} entry
  * @param {MatchOptions} options
  * @param {Matcher[]} children
- * @param {SortedArraySet} result
+ * @param {string[]} result
  */
 function matchDirEntry(entry, options, children, result) {
   // We evaluate the children from bottom to top, so that we can stop early
