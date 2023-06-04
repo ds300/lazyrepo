@@ -118,9 +118,6 @@ importers:
       eslint-plugin-n:
         specifier: ^15.7.0
         version: 15.7.0(eslint@8.38.0)
-      glob:
-        specifier: ^10.2.3
-        version: 10.2.3
       husky:
         specifier: ^8.0.0
         version: 8.0.3
