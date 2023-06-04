@@ -91,6 +91,9 @@ export function compileMatcher(opts, patterns, rootDir) {
     if (negating) {
       pattern = pattern.slice(1)
     }
+    if (pattern.startsWith(rootDir)) {
+      pattern = '/' + pattern.slice(rootDir.length)
+    }
     return parsePattern(pattern).map((path) => {
       const { segments } = segmentize(path, cwdPath)
       const matchers = segments.map((segment) => compilePathSegment(opts, segment, negating))
