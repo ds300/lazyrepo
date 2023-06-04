@@ -90,7 +90,7 @@ class Source extends Random {
     return result
   }
 
-  getRandomPatternSegment(depth = 2): any {
+  getRandomPatternSegment(depth = 2, isInExtGlob = false): any {
     return this.execOneOf([
       () => '*',
       () => '**',
@@ -101,8 +101,20 @@ class Source extends Random {
       () => this.getRandomFileName().replace(/-\w+/, '*'),
       () => this.getRandomFileName().replace(/\w+-/, '*'),
       () => {
-        if (depth === 0) {
-          return '**'
+        if (isInExtGlob || depth === 0) {
+          return this.getRandomPatternSegment(depth, true)
+        }
+        const extGlobPrefix = this.useOneOf(['+', '@', '!', '?', '*'])
+        const numSubPatterns = this.random(3) + 1
+        const parts = []
+        for (let i = 0; i < numSubPatterns; i++) {
+          parts.push(this.getRandomPatternSegment(depth - 1, true))
+        }
+        return extGlobPrefix + '(' + parts.join('|') + ')'
+      },
+      () => {
+        if (isInExtGlob || depth === 0) {
+          return this.getRandomPatternSegment(depth, true)
         }
         const numSubPatterns = this.random(3) + 1
         const parts = []
@@ -636,4 +648,116 @@ test('regression 21', () => {
       types: 'dirs',
     }),
   ).toMatchInlineSnapshot(`[]`)
+})
+
+test('regression 22', () => {
+  expect(
+    doComparison({
+      patterns: ['lib/!(*)/*'],
+      cwd: '/',
+      paths: {
+        lib: {
+          '.node': {
+            'ok.js': 'ok',
+          },
+        },
+      },
+      expandDirectories: true,
+      dot: false,
+      types: 'files',
+    }),
+  ).toMatchInlineSnapshot(`[]`)
+})
+
+test('regression 23', () => {
+  expect(
+    doComparison({
+      patterns: ['/!(bulb)'],
+      cwd: '/',
+      paths: {
+        'bulb.js': 'ok',
+      },
+      expandDirectories: true,
+      dot: false,
+      types: 'files',
+    }),
+  ).toMatchInlineSnapshot(`
+    [
+      "/bulb.js",
+    ]
+  `)
+})
+
+test('regression 24', () => {
+  expect(
+    doComparison({
+      patterns: ['/!(src)/*'],
+      cwd: '/stove',
+      paths: {
+        '.lib': {
+          bulb: 'ok',
+        },
+      },
+      expandDirectories: false,
+      dot: false,
+      types: 'files',
+    }),
+  ).toMatchInlineSnapshot(`[]`)
+})
+
+test('regression 25', () => {
+  expect(
+    doComparison({
+      patterns: ['**', '!(**)/dist'],
+      cwd: '/',
+      paths: {
+        dist: {},
+      },
+      expandDirectories: true,
+      dot: false,
+      types: 'dirs',
+    }),
+  ).toMatchInlineSnapshot(`
+    [
+      "/dist",
+    ]
+  `)
+})
+
+test('regression 26', () => {
+  expect(
+    doComparison({
+      patterns: ['!(stick)/**/src_src/jeff.json'],
+      cwd: '/',
+      paths: {
+        dist: {
+          'ok.txt': 'ok',
+        },
+      },
+      expandDirectories: false,
+      dot: false,
+      types: 'files',
+    }),
+  ).toMatchInlineSnapshot(`[]`)
+})
+
+test('regression 27', () => {
+  expect(
+    doComparison({
+      patterns: ['!(any)/**'],
+      cwd: '/',
+      paths: {
+        'dist-dist': {
+          src: {},
+        },
+      },
+      expandDirectories: false,
+      dot: true,
+      types: 'dirs',
+    }),
+  ).toMatchInlineSnapshot(`
+    [
+      "/dist-dist/src",
+    ]
+  `)
 })

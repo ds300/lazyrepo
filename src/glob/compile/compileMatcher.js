@@ -60,6 +60,14 @@ function parsePattern(pattern) {
 }
 
 /**
+ * @param {string} pattern
+ * @returns {boolean}
+ */
+export function isNegating(pattern) {
+  return pattern.startsWith('!') && !pattern.startsWith('!(')
+}
+
+/**
  * @param {MatchOptions} opts
  * @param {string[]} patterns
  * @param {string} rootDir
@@ -81,13 +89,13 @@ export function compileMatcher(opts, patterns, rootDir) {
     .filter(Boolean)
     .map((s) => [{ type: 'string', source: '', value: s, start: 0, end: 0 }])
 
-  const firstIsNegating = patterns[0]?.startsWith('!')
+  const firstIsNegating = isNegating(patterns[0])
   if (firstIsNegating) {
     patterns = ['**/*', ...patterns]
   }
 
   return patterns.reverse().flatMap((pattern) => {
-    const negating = pattern.startsWith('!')
+    const negating = isNegating(pattern)
     if (negating) {
       pattern = pattern.slice(1)
     }
@@ -121,8 +129,9 @@ function stitchMatchers(matchers) {
  */
 function compileRegexSourceFromSegment(segment, opts, negating) {
   let source = '^'
-  for (const expr of segment) {
-    source += compileRegexSourceFromExpression(expr, opts, negating)
+  for (let i = 0; i < segment.length; i++) {
+    const expr = segment[i]
+    source += compileRegexSourceFromExpression(expr, opts, negating, i === segment.length - 1)
   }
   return source + '$'
 }
@@ -131,9 +140,10 @@ function compileRegexSourceFromSegment(segment, opts, negating) {
  * @param {Expression} expr
  * @param {MatchOptions} opts
  * @param {boolean} negating
+ * @param {boolean} isLast
  * @returns {string}
  */
-function compileRegexSourceFromExpression(expr, opts, negating) {
+function compileRegexSourceFromExpression(expr, opts, negating, isLast) {
   switch (expr.type) {
     case 'range_expansion': {
       const start = Math.min(expr.startNumber, expr.endNumber)
@@ -163,11 +173,17 @@ function compileRegexSourceFromExpression(expr, opts, negating) {
     case 'parens': {
       assert(expr.extGlobPrefix !== null)
       const options = expr.options
-        .map((o) => compileRegexSourceFromExpression(o, opts, negating))
+        .map((o) =>
+          compileRegexSourceFromExpression(o, opts, negating || expr.extGlobPrefix === '!', isLast),
+        )
         .join('|')
       switch (expr.extGlobPrefix) {
         case '!':
-          return `(?!${options}).*`
+          if (opts.dot) {
+            return isLast ? `(?!(${options})$).*` : `(?!${options}).*`
+          } else {
+            return isLast ? `(?:(?!^\\.)(?!(${options})$).*)` : `(?:(?!^\\.)(?!${options}).*)`
+          }
         case '*':
           return `(${options})*`
         case '+':
@@ -197,6 +213,19 @@ function compileRegexSourceFromExpression(expr, opts, negating) {
         }
       }
       return out + ']'
+    }
+    case 'sequence': {
+      let out = ''
+      for (let i = 0; i < expr.expressions.length; i++) {
+        const child = expr.expressions[i]
+        out += compileRegexSourceFromExpression(
+          child,
+          opts,
+          negating,
+          isLast && i === expr.expressions.length - 1,
+        )
+      }
+      return out
     }
 
     default: {
