@@ -1,6 +1,5 @@
 import { getRootDir, cwd as procCwd } from '../cwd.js'
 import { resolve } from '../path.js'
-import { SortedArraySet } from './SortedArraySet.js'
 import { compileMatcher } from './compile/compileMatcher.js'
 import { LazyDir } from './fs/LazyDir.js'
 import { matchInDir } from './matchInDir.js'
@@ -15,7 +14,7 @@ export class LazyGlob {
   #getRootDir(rootDir) {
     const existing = this.#rootDirs.get(rootDir)
     if (existing) return existing
-    const dir = new LazyDir(this.#clock, rootDir, 0, false, false, null)
+    const dir = new LazyDir(this.#clock, rootDir, 0, false, false)
     this.#rootDirs.set(rootDir, dir)
     return dir
   }
@@ -50,17 +49,20 @@ export class LazyGlob {
       this.#clock.time++
     }
 
-    const result = new SortedArraySet()
+    /**
+     * @type {string[]}
+     */
+    const result = []
     matchInDir(
       cache === 'none'
-        ? new LazyDir(this.#clock, rootDir, 0, false, true, null)
+        ? new LazyDir(this.#clock, rootDir, 0, false, true)
         : this.#getRootDir(rootDir),
       matchOpts,
       matchers,
       result,
     )
 
-    return result.array
+    return result
   }
 
   invalidate() {

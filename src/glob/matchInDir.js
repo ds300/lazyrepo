@@ -7,9 +7,9 @@ import { LazyFile } from './fs/LazyFile.js'
  * @param {LazyDir} dir
  * @param {MatchOptions} options
  * @param {Matcher[]} matchers
- * @param {string[]} [result]
+ * @param {string[]} result
  */
-export function matchInDir(dir, options, matchers, result = []) {
+export function matchInDir(dir, options, matchers, result) {
   for (const child of dir.getListing().order) {
     // ignore files when we're only matching directories
     if (options.types === 'dirs' && !(child instanceof LazyDir)) continue
