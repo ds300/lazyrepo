@@ -352,4 +352,11 @@ export class Config {
       envInputs: config?.envInputs ?? [],
     }
   }
+
+  /**
+   * @returns {boolean}
+   */
+  get logManifestsOnCi() {
+    return this.rootConfig.config.logManifestsOnCi ?? false
+  }
 }

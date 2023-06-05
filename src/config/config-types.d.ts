@@ -336,4 +336,8 @@ export interface LazyConfig {
    * Warning! This will be true even if another workspace lists one of the ignored workspaces as a dependency.
    */
   ignoreWorkspaces?: string[]
+  /**
+   * Whether to log manifests directly to the terminal on CI
+   */
+  logManifestsOnCi?: boolean
 }

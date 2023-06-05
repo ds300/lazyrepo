@@ -78,7 +78,7 @@ export async function runTaskIfNeeded(task, tasks) {
 
   if (!didRunTask || didSucceed) {
     task.logger.note('input manifest: ' + relative(cwd, previousManifestPath))
-    if (isCi) {
+    if (isCi && tasks.config.logManifestsOnCi) {
       task.logger.group(
         'input manifest',
         readFileSync(
