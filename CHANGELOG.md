@@ -1,3 +1,28 @@
+# v0.0.0-alpha.27 (Mon Jun 05 2023)
+
+#### 💥 Breaking Change
+
+- Make full CI logging opt-in [#113](https://github.com/ds300/lazyrepo/pull/113) ([@ds300](https://github.com/ds300))
+
+#### 🐛 Bug Fix
+
+- Custom glob syntax [#112](https://github.com/ds300/lazyrepo/pull/112) ([@ds300](https://github.com/ds300))
+- David/windows support 2 [#103](https://github.com/ds300/lazyrepo/pull/103) ([@ds300](https://github.com/ds300))
+- Fix globbing [#99](https://github.com/ds300/lazyrepo/pull/99) ([@ds300](https://github.com/ds300))
+- Log package.json dir path if validation fails [#79](https://github.com/ds300/lazyrepo/pull/79) ([@mrkldshv](https://github.com/mrkldshv))
+
+#### ⚠️ Pushed to `main`
+
+- make windows tests run in band ([@ds300](https://github.com/ds300))
+- reinstate setup action ([@ds300](https://github.com/ds300))
+
+#### Authors: 2
+
+- David Sheldrick ([@ds300](https://github.com/ds300))
+- Mark Ladyshau ([@mrkldshv](https://github.com/mrkldshv))
+
+---
+
 # v0.0.0-alpha.26 (Tue May 02 2023)
 
 #### 🐛 Bug Fix
