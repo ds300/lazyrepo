@@ -134,6 +134,7 @@ export const lazyConfigSchema = z
     scripts: z.record(lazyScriptSchema).optional(),
     tasks: z.record(lazyScriptSchema).optional(),
     ignoreWorkspaces: z.array(z.string()).optional(),
+    logManifestsOnCi: z.boolean().optional(),
   })
   .strict()
 
