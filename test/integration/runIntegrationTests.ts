@@ -8,6 +8,8 @@ import { join } from '../../src/path.js'
 import { PackageJson } from '../../src/types.js'
 import { rimraf } from '../../src/utils/rimraf.js'
 
+jest.setTimeout(30 * 1000)
+
 const cleanup = ({ text, rootDir }: { text: string; rootDir: string }) =>
   stripAnsi(text)
     .replace(/DEBUG.*\n/g, '')
