@@ -68,8 +68,8 @@ importers:
         specifier: ^19.0.7
         version: 19.0.7
       '@octokit/webhooks-types':
-        specifier: ^6.11.0
-        version: 6.11.0
+        specifier: ^7.0.3
+        version: 7.0.3
       '@swc/core':
         specifier: ^1.3.51
         version: 1.3.51
@@ -1909,8 +1909,8 @@ packages:
       '@octokit/openapi-types': 17.0.0
     dev: true
 
-  /@octokit/webhooks-types@6.11.0:
-    resolution: {integrity: sha512-AanzbulOHljrku1NGfafxdpTCfw2ENaWzH01N2vqQM+cUFbk868Cgh0xylz0JIM9BoKbfI++bdD6EYX0Q/UTEw==}
+  /@octokit/webhooks-types@7.0.3:
+    resolution: {integrity: sha512-yDw/89TBaMotdT1/4gxVaiemBhswBd+jPazhL60/rS5WqXC6JZuj5CkDql7Dhc9vAbbkrJBkWsa2sppM/g8jxQ==}
     dev: true
 
   /@pkgjs/parseargs@0.11.0:
