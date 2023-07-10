@@ -74,7 +74,7 @@
     "@types/eslint": "^8.37.0",
     "@types/jest": "^29.5.0",
     "@types/micromatch": "^4.0.2",
-    "@types/node": "^18.15.11",
+    "@types/node": "^20.4.1",
     "@types/semver": "^7.3.13",
     "@types/slice-ansi": "^5.0.0",
     "@types/source-map-support": "^0.5.6",
