@@ -1,8 +1,21 @@
 import assert from 'assert'
 import micromatch from 'micromatch'
 import { existsSync } from '../fs.js'
+import { glob } from '../glob/glob.js'
 import { dirname, isAbsolute, join } from '../path.js'
 import { loadWorkspace } from './loadWorkspace.js'
+
+/**
+ * @param {string} dir
+ */
+
+function containsConfig(dir) {
+  const files = glob.sync(['lazy.config.{js,cjs,mjs,ts,cts,mts}'], {
+    cwd: dir,
+    absolute: true,
+  })
+  return files.length > 0
+}
 
 /**
  * @param {string} dir
@@ -13,7 +26,7 @@ function findContainingPackage(dir) {
   let currentDir = dir
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    if (existsSync(join(currentDir, 'package.json'))) {
+    if (existsSync(join(currentDir, 'package.json')) && containsConfig(currentDir)) {
       return loadWorkspace(currentDir)
     }
     if (currentDir === dirname(currentDir)) {
