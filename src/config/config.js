@@ -1,4 +1,3 @@
-import slugify from '@sindresorhus/slugify'
 import micromatch from 'micromatch'
 import pc from 'picocolors'
 import { cwd } from '../cwd.js'
@@ -37,6 +36,17 @@ export class RunsAfterConfig {
   get in() {
     return this._runsAfter.in ?? 'all-packages'
   }
+}
+
+/**
+ * @param {string} str
+ * @returns {string}
+ */
+const slugify = (str) => {
+  return str
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
 }
 
 export class TaskConfig {

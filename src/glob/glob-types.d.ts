@@ -47,3 +47,7 @@ type ExpansionAST =
   | string
 
 type MatchFn = (entry: { name: string }, options: MatchOptions, matcher: Matcher) => MatchResult
+
+type GlobResult = {
+  push: (path: string) => void
+}

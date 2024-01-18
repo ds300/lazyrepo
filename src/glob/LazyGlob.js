@@ -1,8 +1,9 @@
+import { Readable } from 'stream'
 import { getRootDir, cwd as procCwd } from '../cwd.js'
 import { resolve } from '../path.js'
 import { compileMatcher } from './compile/compileMatcher.js'
 import { LazyDir } from './fs/LazyDir.js'
-import { matchInDir } from './matchInDir.js'
+import { matchInDir, matchInDirAsync, matchInDirStream } from './matchInDir.js'
 
 export class LazyGlob {
   /** @type {LogicalClock} */
@@ -63,6 +64,92 @@ export class LazyGlob {
     )
 
     return result
+  }
+
+  /**
+   * @param {readonly string[]} patterns
+   * @param {LazyGlobOptions} [opts]
+   */
+  async async(patterns, opts) {
+    /** @type {LazyGlobOptions['cwd']} */
+    const cwd = resolve('./', opts?.cwd ?? procCwd)
+    const rootDir = getRootDir(cwd)
+    /** @type {LazyGlobOptions['cache']} */
+    const cache = opts?.cache ?? 'normal'
+
+    /** @type {MatchOptions} */
+    const matchOpts = {
+      dot: opts?.dot ?? false,
+      types: opts?.types ?? 'files',
+      cwd,
+      expandDirectories: opts?.expandDirectories ?? false,
+      symbolicLinks: opts?.symbolicLinks ?? 'follow',
+    }
+
+    const matchers = compileMatcher(
+      matchOpts,
+      patterns.concat(opts?.ignore?.map((p) => '!' + p) ?? []),
+      rootDir,
+    )
+
+    if (cache === 'normal') {
+      this.#clock.time++
+    }
+
+    /**
+     * @type {string[]}
+     */
+    const result = []
+    await matchInDirAsync(
+      cache === 'none'
+        ? new LazyDir(this.#clock, rootDir, 0, false, true)
+        : this.#getRootDir(rootDir),
+      matchOpts,
+      matchers,
+      result,
+    )
+
+    return result
+  }
+
+  /**
+   * @param {readonly string[]} patterns
+   * @param {LazyGlobOptions} [opts]
+   */
+  stream(patterns, opts) {
+    /** @type {LazyGlobOptions['cwd']} */
+    const cwd = resolve('./', opts?.cwd ?? procCwd)
+    const rootDir = getRootDir(cwd)
+    /** @type {LazyGlobOptions['cache']} */
+    const cache = opts?.cache ?? 'normal'
+
+    /** @type {MatchOptions} */
+    const matchOpts = {
+      dot: opts?.dot ?? false,
+      types: opts?.types ?? 'files',
+      cwd,
+      expandDirectories: opts?.expandDirectories ?? false,
+      symbolicLinks: opts?.symbolicLinks ?? 'follow',
+    }
+
+    const matchers = compileMatcher(
+      matchOpts,
+      patterns.concat(opts?.ignore?.map((p) => '!' + p) ?? []),
+      rootDir,
+    )
+
+    if (cache === 'normal') {
+      this.#clock.time++
+    }
+    return Readable.from(
+      matchInDirStream(
+        cache === 'none'
+          ? new LazyDir(this.#clock, rootDir, 0, false, true)
+          : this.#getRootDir(rootDir),
+        matchOpts,
+        matchers,
+      ),
+    )
   }
 
   invalidate() {
