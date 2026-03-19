@@ -23,7 +23,18 @@ export type GlobConfig =
 
 export interface CacheConfig {
   /**
+   * Whether to automatically detect input files by tracking file system access.
+   * When true (default), lazyrepo monitors which files the task actually reads
+   * and warns if the configured inputs don't match. Requires the fspy-trace binary.
+   *
+   * Set to false to rely only on configured glob patterns.
+   *
+   * @default true
+   */
+  auto?: boolean
+  /**
    * Globs of files that this script depends on.
+   * When auto-tracking is enabled, these globs are merged with the auto-detected files.
    *
    * If none are specified, all files in the package will be used.
    */

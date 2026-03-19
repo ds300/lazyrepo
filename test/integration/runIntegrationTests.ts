@@ -13,6 +13,8 @@ jest.setTimeout(30 * 1000)
 const cleanup = ({ text, rootDir }: { text: string; rootDir: string }) =>
   stripAnsi(text)
     .replace(/DEBUG.*\n/g, '')
+    .replace(/.*\(node:\d+\).*(?:Warning|DeprecationWarning).*\n/g, '')
+    .replace(/.*\(Use `node --trace-(?:warnings|deprecation) \.\.\.`.*\n/g, '')
     .replaceAll(rootDir, '__ROOT_DIR__')
 
 class TestHarness {
@@ -41,7 +43,13 @@ class TestHarness {
   }
 
   read(path: string) {
-    return readFileSync(join(this.config.dir, path), 'utf-8')
+    return (
+      readFileSync(join(this.config.dir, path), 'utf-8')
+        // eslint-disable-next-line no-control-regex
+        .replace(/\x1b\[[0-9;]*m/g, '')
+        .replace(/.*\(node:\d+\).*(?:Warning|DeprecationWarning).*\n/g, '')
+        .replace(/.*\(Use `node --trace-(?:warnings|deprecation) \.\.\.`.*\n/g, '')
+    )
   }
 
   exists(path: string) {

@@ -1,14 +1,62 @@
 import pc from 'picocolors'
 import stripAnsi from 'strip-ansi'
 import { cwd } from '../cwd.js'
+import { mkdirSync } from '../fs.js'
 import { createLazyWriteStream } from '../manifest/createLazyWriteStream.js'
-import { join, relative } from '../path.js'
+import { dirname, join, relative } from '../path.js'
 import { spawn } from './spawn.js'
+
+const SHELL_METACHARACTERS = /[|&;<>()$`\\"'*?#~!{}[\]\n]/
+const SHELL_BUILTINS = new Set([
+  'exit',
+  'cd',
+  'export',
+  'source',
+  'eval',
+  'exec',
+  'set',
+  'unset',
+  'alias',
+  'type',
+  'read',
+  'let',
+  'declare',
+  'local',
+  'return',
+  'trap',
+  'wait',
+  'shift',
+  'builtin',
+  'command',
+  'ulimit',
+  'umask',
+  'true',
+  'false',
+  'test',
+  'pushd',
+  'popd',
+  'dirs',
+  'hash',
+  'getopts',
+  'times',
+])
+
+/**
+ * Check whether a command string requires a shell to interpret it.
+ * Simple commands like `cat file.txt` or `tsc --build` can be exec'd directly,
+ * which avoids routing through Oils on macOS and the associated IPC race conditions.
+ * @param {string} command
+ */
+function commandNeedsShell(command) {
+  if (SHELL_METACHARACTERS.test(command)) return true
+  const firstWord = command.trim().split(/\s+/)[0]
+  return SHELL_BUILTINS.has(firstWord)
+}
 
 /**
  * @param {import('../types.js').ScheduledTask} task
  * @param {import('./TaskGraph.js').TaskGraph} tasks
- * @returns {Promise<{didSucceed: boolean;}>}
+ * @returns {Promise<{didSucceed: boolean, trackingOutputPath: string | null}>}
  */
 export async function runTask(task, tasks) {
   const taskConfig = tasks.config.getTaskConfig(task.workspace, task.scriptName)
@@ -19,6 +67,9 @@ export async function runTask(task, tasks) {
   const logStream = createLazyWriteStream(taskConfig.getLogPath())
   const ansiLogStream = createLazyWriteStream(taskConfig.getAnsiLogPath())
 
+  /** @type {string | null} */
+  let trackingOutputPath = null
+
   try {
     task.logger.log(
       pc.bold('RUN ') +
@@ -27,20 +78,51 @@ export async function runTask(task, tasks) {
         pc.gray(' in ' + (relative(cwd, task.workspace.dir) || './')),
     )
 
-    const proc = spawn(command, task.extraArgs, {
-      cwd: task.workspace.dir,
-      shell: true,
-      stdio: [null],
-      env: {
-        ...process.env,
-        PATH: `./node_modules/.bin:${join(tasks.config.project.root.dir, 'node_modules/.bin')}:${
-          process.env.PATH ?? ''
-        }`,
-        FORCE_COLOR: '1',
-        npm_lifecycle_event: task.scriptName,
-        __LAZY_WORKFLOW__: 'true',
-      },
-    })
+    const taskEnv = {
+      ...process.env,
+      PATH: `./node_modules/.bin:${join(tasks.config.project.root.dir, 'node_modules/.bin')}:${
+        process.env.PATH ?? ''
+      }`,
+      FORCE_COLOR: '1',
+      npm_lifecycle_event: task.scriptName,
+      __LAZY_WORKFLOW__: 'true',
+    }
+
+    /** @type {import('child_process').ChildProcessWithoutNullStreams} */
+    let proc
+
+    const cache = taskConfig.cache
+    const useTracking = tasks.fspyBinaryPath && cache !== 'none' && cache.auto !== false
+    if (useTracking) {
+      trackingOutputPath = taskConfig
+        .getManifestPath()
+        .replace('manifest.tsv', 'tracked-inputs.json')
+      mkdirSync(dirname(trackingOutputPath), { recursive: true })
+      const fullCommand = task.extraArgs.length ? `${command} ${task.extraArgs.join(' ')}` : command
+
+      /** @type {string[]} */
+      let fspyArgs
+      if (commandNeedsShell(fullCommand)) {
+        fspyArgs = ['--output', trackingOutputPath, '--', 'bash', '-c', fullCommand]
+      } else {
+        const parts = fullCommand.trim().split(/\s+/)
+        fspyArgs = ['--output', trackingOutputPath, '--', ...parts]
+      }
+
+      proc = spawn(tasks.fspyBinaryPath, fspyArgs, {
+        cwd: task.workspace.dir,
+        shell: false,
+        stdio: [null],
+        env: taskEnv,
+      })
+    } else {
+      proc = spawn(command, task.extraArgs, {
+        cwd: task.workspace.dir,
+        shell: true,
+        stdio: [null],
+        env: taskEnv,
+      })
+    }
 
     let streamPromises = []
     const { stdout, stderr } = proc
@@ -85,7 +167,7 @@ export async function runTask(task, tasks) {
 
     await Promise.all([finishPromise, ...streamPromises])
 
-    return { didSucceed: status === 0 }
+    return { didSucceed: status === 0, trackingOutputPath }
   } finally {
     await Promise.all([logStream.close(), ansiLogStream.close()])
   }

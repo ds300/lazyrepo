@@ -1,0 +1,75 @@
+name: fspy-trace tests
+
+on:
+  push:
+    paths:
+      - 'fspy-trace/**'
+      - 'src/tracking/**'
+      - 'src/config/**'
+      - 'src/tasks/runTask.js'
+      - 'src/tasks/runTaskIfNeeded.js'
+      - 'test/integration/track-inputs.test.ts'
+  pull_request:
+    paths:
+      - 'fspy-trace/**'
+      - 'src/tracking/**'
+      - 'src/config/**'
+      - 'src/tasks/runTask.js'
+      - 'src/tasks/runTaskIfNeeded.js'
+      - 'test/integration/track-inputs.test.ts'
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            rust-target: x86_64-unknown-linux-gnu
+          - os: macos-latest
+            rust-target: aarch64-apple-darwin
+          - os: windows-latest
+            rust-target: x86_64-pc-windows-msvc
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust nightly
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly-2026-03-05
+
+      - name: Cache Cargo registry and build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            fspy-trace/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('fspy-trace/Cargo.lock') }}
+
+      - name: Build fspy-trace
+        working-directory: fspy-trace
+        run: cargo build --release
+
+      - name: Run Rust tests
+        working-directory: fspy-trace
+        run: cargo test
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: Install JS dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Run JS tracking tests
+        run: npx jest test/integration/track-inputs.test.ts --no-coverage
+        env:
+          FSPY_TRACE_BIN: ${{ github.workspace }}/fspy-trace/target/release/fspy-trace${{ runner.os == 'Windows' && '.exe' || '' }}

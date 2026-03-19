@@ -3,6 +3,7 @@ import { cpus } from 'os'
 import pc from 'picocolors'
 import { logger } from '../logger/logger.js'
 import { isAbsolute, join } from '../path.js'
+import { findFspyBinary } from '../tracking/findFspyBinary.js'
 import { isTest } from '../utils/isTest.js'
 import { uniq } from '../utils/uniq.js'
 import { runTaskIfNeeded } from './runTaskIfNeeded.js'
@@ -45,12 +46,18 @@ export class TaskGraph {
    * @type {string[]}
    */
   sortedTaskKeys = []
+  /**
+   * @readonly
+   * @type {string | null}
+   */
+  fspyBinaryPath = null
 
   /**
    * @param {TaskGraphProps} arg
    */
   constructor({ config, requestedTasks }) {
     this.config = config
+    this.fspyBinaryPath = findFspyBinary(config.project.root.dir)
 
     /**
      * @param {string[]} path

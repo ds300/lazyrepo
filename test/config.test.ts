@@ -43,6 +43,7 @@ describe('script overrides', () => {
     expect(getTaskConfig(config, 'packages/core', 'build').cache).toEqual('none')
     expect(getTaskConfig(config, 'packages/utils', 'build').cache).toMatchInlineSnapshot(`
       {
+        "auto": true,
         "envInputs": [],
         "inheritsInputFromDependencies": true,
         "inputs": {

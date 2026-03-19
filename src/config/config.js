@@ -194,6 +194,7 @@ export class TaskConfig {
         : false
 
       return {
+        auto: this.scriptConfig.cache?.auto ?? true,
         envInputs: this.scriptConfig.cache?.envInputs ?? [],
         inputs: extractGlobPattern(this.scriptConfig.cache?.inputs, ['**/*']),
         outputs: extractGlobPattern(this.scriptConfig.cache?.outputs, []),

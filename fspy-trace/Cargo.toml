@@ -1,0 +1,24 @@
+[package]
+name = "fspy-trace"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "Standalone CLI wrapper around fspy for automatic file access tracking"
+
+[[bin]]
+name = "fspy-trace"
+path = "src/main.rs"
+
+[dependencies]
+fspy = { git = "https://github.com/voidzero-dev/vite-task", rev = "4a5c9bcd" }
+fspy_shared = { git = "https://github.com/voidzero-dev/vite-task", rev = "4a5c9bcd" }
+bytemuck = { version = "1", features = ["extern_crate_alloc"] }
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "io-util", "io-std"] }
+
+[dev-dependencies]
+assert_cmd = "2"
+predicates = "3"
+tempfile = "3"
