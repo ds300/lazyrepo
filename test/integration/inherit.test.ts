@@ -129,29 +129,29 @@ if (platform() !== 'win32')
         expect(t.exists('packages/utils/out.txt')).toBe(false)
         const run = await t.exec(['build'])
         expect(run.output).toMatchInlineSnapshot(`
-        "lazyrepo 0.0.0-test
-        -------------------
-        Loaded config file: lazy.config.js
+          "lazyrepo 0.0.0-test
+          -------------------
+          Loaded config file: lazy.config.js
 
-        build::packages/utils finding files took 1.00s
-        build::packages/utils hashed 4/4 files in 1.00s
-        build::packages/utils cache miss, no previous manifest found
-        build::packages/utils RUN SECRET_VAR=howdy node __ROOT_DIR__/build.js > out.txt in packages/utils
-        build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
-        build::packages/utils ✔ done in 1.00s
-        build::packages/core finding files took 1.00s
-        build::packages/core hashed 4/4 files in 1.00s
-        build::packages/core cache miss, no previous manifest found
-        build::packages/core RUN SECRET_VAR=sup node __ROOT_DIR__/build.js > out.txt in packages/core
-        build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
-        build::packages/core ✔ done in 1.00s
+          build::packages/utils finding files took 1.00s
+          build::packages/utils hashed 4/4 files in 1.00s
+          build::packages/utils cache miss, no previous manifest found
+          build::packages/utils RUN SECRET_VAR=howdy node __ROOT_DIR__/build.js > out.txt in packages/utils
+          build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
+          build::packages/utils ✔ done in 1.00s
+          build::packages/core finding files took 1.00s
+          build::packages/core hashed 4/4 files in 1.00s
+          build::packages/core cache miss, no previous manifest found
+          build::packages/core RUN SECRET_VAR=sup node __ROOT_DIR__/build.js > out.txt in packages/core
+          build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
+          build::packages/core ✔ done in 1.00s
 
-             Tasks:  2 successful, 2 total
-            Cached:  0/2 cached
-              Time:  1.00s
+               Tasks:  2 successful, 2 total
+              Cached:  0/2 cached
+                Time:  1.00s
 
-        "
-      `)
+          "
+        `)
         expect(t.read('packages/core/out.txt')).toMatchInlineSnapshot(`
         "secret sup
         args []

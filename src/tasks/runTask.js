@@ -92,7 +92,7 @@ export async function runTask(task, tasks) {
     let proc
 
     const cache = taskConfig.cache
-    const useTracking = tasks.fspyBinaryPath && cache !== 'none' && cache.auto !== false
+    const useTracking = cache !== 'none' && cache.auto !== false
     if (useTracking) {
       trackingOutputPath = taskConfig
         .getManifestPath()

@@ -113,8 +113,16 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   // create a release on github
   await auto.runRelease({ useVersion: nextVersion })
 
+  // build fspy-trace and bundle it before publishing
+  exec('cargo build --release --manifest-path fspy-trace/Cargo.toml')
+  const suffix = process.platform === 'win32' ? '.exe' : ''
+  const { copyFileSync, unlinkSync } = await import('fs')
+  const binaryName = `fspy-trace${suffix}`
+  copyFileSync(`fspy-trace/target/release/${binaryName}`, `assets/${binaryName}`)
+
   // finally, publish the packages [IF THIS STEP FAILS, RUN THE `publish-manual.ts` script locally]
   exec(`npm publish --tag ${prereleaseTag || 'latest'} --access public`)
+  unlinkSync(`assets/${binaryName}`)
   if (nextVersion.startsWith('0.0.0')) {
     await waitForPublish(nextVersion)
     exec(`npm dist-tag add lazyrepo@${nextVersion} latest`)

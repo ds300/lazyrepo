@@ -48,16 +48,16 @@ export class TaskGraph {
   sortedTaskKeys = []
   /**
    * @readonly
-   * @type {string | null}
+   * @type {string}
    */
-  fspyBinaryPath = null
+  fspyBinaryPath
 
   /**
    * @param {TaskGraphProps} arg
    */
   constructor({ config, requestedTasks }) {
     this.config = config
-    this.fspyBinaryPath = findFspyBinary(config.project.root.dir)
+    this.fspyBinaryPath = findFspyBinary()
 
     /**
      * @param {string[]} path

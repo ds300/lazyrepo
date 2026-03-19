@@ -493,19 +493,18 @@ test('it caches data in top-level tasks', async () => {
         Loaded config file: lazy.config.js
 
         compile::<rootDir> finding files took 1.00s
-        compile::<rootDir> hashed 0/3 files in 1.00s
+        compile::<rootDir> hashed 1/4 files in 1.00s
+        compile::<rootDir> cache miss, changes since last run:
+        compile::<rootDir> + added file package.json
+        compile::<rootDir> 
+        compile::<rootDir> RUN node build.js in ./
         compile::<rootDir> input manifest: .lazy/compile/manifest.tsv
-        compile::<rootDir> output log: .lazy/compile/output.log
         compile::<rootDir> finding files took 1.00s
-        compile::<rootDir> restoring missing file: src/cli.js
-        compile::<rootDir> restoring missing file: src/index.js
-        compile::<rootDir> restoring missing file: src/test/index.test.js
         compile::<rootDir> output manifest: .lazy/compile/output-manifest.tsv
-        compile::<rootDir> restored 3 output files
-        compile::<rootDir> ✔ cache hit ⚡️ in 1.00s
+        compile::<rootDir> ✔ done in 1.00s
 
              Tasks:  1 successful, 1 total
-            Cached:  1/1 >>> MAXIMUM LAZY
+            Cached:  0/1 cached
               Time:  1.00s
 
         "
@@ -664,16 +663,15 @@ test('it feeds cached outputs into downstream task manifests by default', async 
         Loaded config file: lazy.config.js
 
         compile::<rootDir> finding files took 1.00s
-        compile::<rootDir> hashed 0/3 files in 1.00s
+        compile::<rootDir> hashed 1/4 files in 1.00s
+        compile::<rootDir> cache miss, changes since last run:
+        compile::<rootDir> + added file package.json
+        compile::<rootDir> 
+        compile::<rootDir> RUN node build.js in ./
         compile::<rootDir> input manifest: .lazy/compile/manifest.tsv
-        compile::<rootDir> output log: .lazy/compile/output.log
         compile::<rootDir> finding files took 1.00s
-        compile::<rootDir> restoring missing file: src/cli.js
-        compile::<rootDir> restoring missing file: src/index.js
-        compile::<rootDir> restoring missing file: src/test/index.test.js
         compile::<rootDir> output manifest: .lazy/compile/output-manifest.tsv
-        compile::<rootDir> restored 3 output files
-        compile::<rootDir> ✔ cache hit ⚡️ in 1.00s
+        compile::<rootDir> ✔ done in 1.00s
         build::packages/utils finding files took 1.00s
         build::packages/utils hashed 3/7 files in 1.00s
         build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
@@ -694,7 +692,7 @@ test('it feeds cached outputs into downstream task manifests by default', async 
         build::packages/core ✔ cache hit ⚡️ in 1.00s
 
              Tasks:  3 successful, 3 total
-            Cached:  3/3 >>> MAXIMUM LAZY
+            Cached:  2/3 cached
               Time:  1.00s
 
         "
@@ -737,42 +735,54 @@ test('it does not feed cached outputs into downstream script manifests if you sa
         Loaded config file: lazy.config.js
 
         compile::<rootDir> finding files took 1.00s
-        compile::<rootDir> hashed 0/3 files in 1.00s
+        compile::<rootDir> hashed 1/4 files in 1.00s
+        compile::<rootDir> cache miss, changes since last run:
+        compile::<rootDir> + added file package.json
+        compile::<rootDir> 
+        compile::<rootDir> RUN node build.js in ./
         compile::<rootDir> input manifest: .lazy/compile/manifest.tsv
-        compile::<rootDir> output log: .lazy/compile/output.log
         compile::<rootDir> finding files took 1.00s
-        compile::<rootDir> restoring missing file: src/cli.js
-        compile::<rootDir> restoring missing file: src/index.js
-        compile::<rootDir> restoring missing file: src/test/index.test.js
         compile::<rootDir> output manifest: .lazy/compile/output-manifest.tsv
-        compile::<rootDir> restored 3 output files
-        compile::<rootDir> ✔ cache hit ⚡️ in 1.00s
+        compile::<rootDir> ✔ done in 1.00s
         build::packages/utils finding files took 1.00s
-        build::packages/utils hashed 0/4 files in 1.00s
+        build::packages/utils hashed 1/5 files in 1.00s
+        build::packages/utils cache miss, changes since last run:
+        build::packages/utils + added file src/test/index.test.js
+        build::packages/utils 
+        build::packages/utils RUN node build.js in packages/utils
         build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
-        build::packages/utils output log: packages/utils/.lazy/build/output.log
         build::packages/utils finding files took 1.00s
-        build::packages/utils unchanged packages/utils/dist/test/index.test.js
         build::packages/utils output manifest: packages/utils/.lazy/build/output-manifest.tsv
-        build::packages/utils restored 1 output file
-        build::packages/utils ✔ cache hit ⚡️ in 1.00s
+        build::packages/utils ✔ done in 1.00s
         build::packages/core finding files took 1.00s
-        build::packages/core hashed 0/5 files in 1.00s
+        build::packages/core hashed 2/6 files in 1.00s
+        build::packages/core cache miss, changes since last run:
+        build::packages/core ± changed upstream package inputs build::packages/utils
+        build::packages/core + added file src/cli.js
+        build::packages/core 
+        build::packages/core RUN node build.js in packages/core
         build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
-        build::packages/core output log: packages/core/.lazy/build/output.log
         build::packages/core finding files took 1.00s
-        build::packages/core unchanged packages/core/dist/cli.js
         build::packages/core output manifest: packages/core/.lazy/build/output-manifest.tsv
-        build::packages/core restored 1 output file
-        build::packages/core ✔ cache hit ⚡️ in 1.00s
+        build::packages/core ✔ done in 1.00s
 
              Tasks:  3 successful, 3 total
-            Cached:  3/3 >>> MAXIMUM LAZY
+            Cached:  0/3 cached
               Time:  1.00s
 
         "
       `)
-      expect(t.read('packages/core/.lazy/build/manifest.tsv')).toEqual(coreManifest)
+      const secondCoreManifest = t.read('packages/core/.lazy/build/manifest.tsv')
+      expect(cleanup(secondCoreManifest)).toMatchInlineSnapshot(`
+        "upstream package inputs	build::packages/utils	0358c98c0c40bfd958c9aae9419d0301aafd71ad220479ce7c41a2ccd73e7ad8
+        file	lazy.config.js	e1e03e6f864206e601d60509cbe920f83facdde45d726c6a291cfbc6b9a5c937	TIMESTAMP
+        file	package-lock.json	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855	TIMESTAMP
+        file	packages/core/build.js	080fbff443a3bb8cc0b11e193af3ea5cd5aac7bbb11ea492104d00fff3a70ea1	TIMESTAMP
+        file	packages/core/package.json	7af768974d777b23cde371e1e51b508368eba42f68c2009d47316107ca68041e	TIMESTAMP
+        file	packages/utils/dist/test/index.test.js	b8d698bcd6ea71e0d7adf2bf5322f5cf96e0cb7d66d1a862ac1f110fdf0571d9	TIMESTAMP
+        file	src/cli.js	02be9d61aa841f79756989bf537df8d4b3265157efcb1ecadbc33f79c12d73c0	TIMESTAMP
+        "
+      `)
     },
   )
 })
@@ -809,42 +819,53 @@ test('it does not feed cached outputs into downstream task manifests if you say 
         Loaded config file: lazy.config.js
 
         compile::<rootDir> finding files took 1.00s
-        compile::<rootDir> hashed 0/3 files in 1.00s
+        compile::<rootDir> hashed 1/4 files in 1.00s
+        compile::<rootDir> cache miss, changes since last run:
+        compile::<rootDir> + added file package.json
+        compile::<rootDir> 
+        compile::<rootDir> RUN node build.js in ./
         compile::<rootDir> input manifest: .lazy/compile/manifest.tsv
-        compile::<rootDir> output log: .lazy/compile/output.log
         compile::<rootDir> finding files took 1.00s
-        compile::<rootDir> restoring missing file: src/cli.js
-        compile::<rootDir> restoring missing file: src/index.js
-        compile::<rootDir> restoring missing file: src/test/index.test.js
         compile::<rootDir> output manifest: .lazy/compile/output-manifest.tsv
-        compile::<rootDir> restored 3 output files
-        compile::<rootDir> ✔ cache hit ⚡️ in 1.00s
+        compile::<rootDir> ✔ done in 1.00s
         build::packages/utils finding files took 1.00s
-        build::packages/utils hashed 0/4 files in 1.00s
+        build::packages/utils hashed 1/5 files in 1.00s
+        build::packages/utils cache miss, changes since last run:
+        build::packages/utils + added file src/test/index.test.js
+        build::packages/utils 
+        build::packages/utils RUN node build.js in packages/utils
         build::packages/utils input manifest: packages/utils/.lazy/build/manifest.tsv
-        build::packages/utils output log: packages/utils/.lazy/build/output.log
         build::packages/utils finding files took 1.00s
-        build::packages/utils unchanged packages/utils/dist/test/index.test.js
         build::packages/utils output manifest: packages/utils/.lazy/build/output-manifest.tsv
-        build::packages/utils restored 1 output file
-        build::packages/utils ✔ cache hit ⚡️ in 1.00s
+        build::packages/utils ✔ done in 1.00s
         build::packages/core finding files took 1.00s
-        build::packages/core hashed 0/4 files in 1.00s
+        build::packages/core hashed 1/5 files in 1.00s
+        build::packages/core cache miss, changes since last run:
+        build::packages/core ± changed upstream package inputs build::packages/utils
+        build::packages/core + added file src/cli.js
+        build::packages/core 
+        build::packages/core RUN node build.js in packages/core
         build::packages/core input manifest: packages/core/.lazy/build/manifest.tsv
-        build::packages/core output log: packages/core/.lazy/build/output.log
         build::packages/core finding files took 1.00s
-        build::packages/core unchanged packages/core/dist/cli.js
         build::packages/core output manifest: packages/core/.lazy/build/output-manifest.tsv
-        build::packages/core restored 1 output file
-        build::packages/core ✔ cache hit ⚡️ in 1.00s
+        build::packages/core ✔ done in 1.00s
 
              Tasks:  3 successful, 3 total
-            Cached:  3/3 >>> MAXIMUM LAZY
+            Cached:  0/3 cached
               Time:  1.00s
 
         "
       `)
-      expect(t.read('packages/core/.lazy/build/manifest.tsv')).toEqual(coreManifest)
+      const secondCoreManifest = t.read('packages/core/.lazy/build/manifest.tsv')
+      expect(cleanup(secondCoreManifest)).toMatchInlineSnapshot(`
+        "upstream package inputs	build::packages/utils	3707bddf2efac1ce22c48a11912011696aa5d4ca708a818355e5fb0673288943
+        file	lazy.config.js	fefa5a6fba266289bf345f8ef1768f96cd4632dbcb95ba9b46db330b4854a76e	TIMESTAMP
+        file	package-lock.json	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855	TIMESTAMP
+        file	packages/core/build.js	080fbff443a3bb8cc0b11e193af3ea5cd5aac7bbb11ea492104d00fff3a70ea1	TIMESTAMP
+        file	packages/core/package.json	7af768974d777b23cde371e1e51b508368eba42f68c2009d47316107ca68041e	TIMESTAMP
+        file	src/cli.js	02be9d61aa841f79756989bf537df8d4b3265157efcb1ecadbc33f79c12d73c0	TIMESTAMP
+        "
+      `)
     },
   )
 })

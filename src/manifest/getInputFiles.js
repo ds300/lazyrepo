@@ -1,7 +1,9 @@
 import assert from 'assert'
 import pc from 'picocolors'
+import { statSync } from '../fs.js'
 import { glob } from '../glob/glob.js'
 import { isAbsolute, join, relative } from '../path.js'
+import { getTrackedReadPaths } from '../tracking/compareTrackedInputs.js'
 import { createTimer } from '../utils/createTimer.js'
 import { uniq } from '../utils/uniq.js'
 
@@ -67,7 +69,36 @@ export function getInputFiles(tasks, task, extraFiles) {
     }),
   })
 
-  return [...new Set([...localFiles, ...extraFiles])].sort()
+  const trackedFiles = loadPreviousTrackedFiles(taskConfig, rootDir)
+
+  return [...new Set([...localFiles, ...extraFiles, ...trackedFiles])].sort()
+}
+
+/**
+ * Load tracked read paths from a previous run's tracking JSON, filtering out
+ * files that no longer exist and skipping if auto-tracking is disabled.
+ *
+ * @param {import('../config/config.js').TaskConfig} taskConfig
+ * @param {string} projectRoot
+ * @returns {string[]}
+ */
+function loadPreviousTrackedFiles(taskConfig, projectRoot) {
+  if (taskConfig.cache === 'none' || taskConfig.cache.auto === false) {
+    return []
+  }
+
+  const trackingPath = taskConfig.getManifestPath().replace('manifest.tsv', 'tracked-inputs.json')
+  const paths = getTrackedReadPaths(trackingPath, projectRoot)
+  if (!paths) return []
+
+  return paths.filter((p) => {
+    const full = join(projectRoot, p)
+    try {
+      return statSync(full).isFile()
+    } catch {
+      return false
+    }
+  })
 }
 
 export const ALL_WORKSPACES_MACRO = '<allWorkspaceDirs>'

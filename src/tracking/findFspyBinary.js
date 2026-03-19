@@ -1,30 +1,40 @@
 import { execFileSync } from 'child_process'
+import { fileURLToPath } from 'url'
 import { existsSync } from '../fs.js'
-import { join } from '../path.js'
+import { dirname, join } from '../path.js'
+
+const suffix = process.platform === 'win32' ? '.exe' : ''
+const binaryName = `fspy-trace${suffix}`
+const packageRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
+const bundledPath = join(packageRoot, 'assets', binaryName)
+const devBuildPath = join(packageRoot, 'fspy-trace', 'target', 'release', binaryName)
 
 /**
  * Locate the fspy-trace binary.
  *
  * Search order:
  *   1. FSPY_TRACE_BIN environment variable
- *   2. Local build at <projectRoot>/fspy-trace/target/release/fspy-trace
- *   3. On PATH via `which`
+ *   2. Bundled binary shipped with the lazyrepo package
+ *   3. Local dev build (relative to the lazyrepo package root)
+ *   4. On PATH via `which`/`where`
  *
- * @param {string} projectRoot
- * @returns {string | null}
+ * @returns {string}
  */
-export function findFspyBinary(projectRoot) {
+export function findFspyBinary() {
   if (process.env.FSPY_TRACE_BIN) {
     const envPath = process.env.FSPY_TRACE_BIN
     if (existsSync(envPath)) {
       return envPath
     }
+    throw new Error(`FSPY_TRACE_BIN is set to '${envPath}' but the file does not exist.`)
   }
 
-  const suffix = process.platform === 'win32' ? '.exe' : ''
-  const localBuildPath = join(projectRoot, 'fspy-trace', 'target', 'release', `fspy-trace${suffix}`)
-  if (existsSync(localBuildPath)) {
-    return localBuildPath
+  if (existsSync(bundledPath)) {
+    return bundledPath
+  }
+
+  if (existsSync(devBuildPath)) {
+    return devBuildPath
   }
 
   try {
@@ -37,5 +47,7 @@ export function findFspyBinary(projectRoot) {
     // not on PATH
   }
 
-  return null
+  throw new Error(
+    'Could not find fspy-trace binary. Install it or set the FSPY_TRACE_BIN environment variable.',
+  )
 }

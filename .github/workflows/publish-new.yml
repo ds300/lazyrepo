@@ -18,6 +18,9 @@ jobs:
         # Fetch full git history and tags for auto
         run: git fetch --unshallow --tags
 
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
       - uses: ./.github/actions/setup
 
       - name: Publish New Version

@@ -11,11 +11,9 @@ import {
 } from '../fs.js'
 import { logger } from '../logger/logger.js'
 import { computeManifest } from '../manifest/computeManifest.js'
-import { getInputFiles } from '../manifest/getInputFiles.js'
 import { cacheOutputs } from '../outputs/cacheOutputs.js'
 import { restoreOutputs } from '../outputs/restoreOutputs.js'
 import { dirname, relative } from '../path.js'
-import { compareTrackedInputs } from '../tracking/compareTrackedInputs.js'
 import { isCi } from '../utils/isCi.js'
 import { runTask } from './runTask.js'
 
@@ -41,21 +39,17 @@ export async function runTaskIfNeeded(task, tasks) {
 
   let didRunTask = false
   let didSucceed = false
-  /** @type {string | null} */
-  let trackingOutputPath = null
 
   if (task.force) {
     task.logger.log('cache miss, --force flag used')
 
     const result = await runTask(task, tasks)
     didSucceed = result.didSucceed
-    trackingOutputPath = result.trackingOutputPath
     didRunTask = true
   } else if (manifestResult === null) {
     task.logger.log('cache disabled')
     const result = await runTask(task, tasks)
     didSucceed = result.didSucceed
-    trackingOutputPath = result.trackingOutputPath
     didRunTask = true
   } else if (manifestResult.didChange) {
     const diffPath = taskConfig.getDiffPath()
@@ -80,7 +74,6 @@ export async function runTaskIfNeeded(task, tasks) {
     }
     const result = await runTask(task, tasks)
     didSucceed = result.didSucceed
-    trackingOutputPath = result.trackingOutputPath
     didRunTask = true
   } else {
     // cache hit
@@ -107,42 +100,6 @@ export async function runTaskIfNeeded(task, tasks) {
         task.logger.log('output log: ' + relative(cwd, taskConfig.getLogPath()))
       }
       await cacheOutputs(tasks, task)
-
-      if (trackingOutputPath) {
-        const globFiles = getInputFiles(tasks, task, [])
-        if (globFiles) {
-          const comparison = compareTrackedInputs(
-            trackingOutputPath,
-            globFiles,
-            tasks.config.project.root.dir,
-          )
-          if (comparison) {
-            if (comparison.underSpecified.length > 0) {
-              task.logger.warn(
-                pc.yellow('Input tracking: task read files not covered by cache.inputs:'),
-              )
-              const toShow = comparison.underSpecified.slice(0, 10)
-              for (const p of toShow) {
-                task.logger.warn(pc.yellow(`  + ${p}`))
-              }
-              if (comparison.underSpecified.length > 10) {
-                task.logger.warn(
-                  pc.yellow(
-                    `  ... and ${
-                      comparison.underSpecified.length - 10
-                    } more (see ${trackingOutputPath})`,
-                  ),
-                )
-              }
-            }
-            if (comparison.overSpecified.length > 0 && tasks.config.isVerbose) {
-              task.logger.note(
-                `Input tracking: ${comparison.overSpecified.length} files in cache.inputs were never read by the task`,
-              )
-            }
-          }
-        }
-      }
 
       task.logger.success('done')
     } else {

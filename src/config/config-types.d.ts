@@ -25,7 +25,7 @@ export interface CacheConfig {
   /**
    * Whether to automatically detect input files by tracking file system access.
    * When true (default), lazyrepo monitors which files the task actually reads
-   * and warns if the configured inputs don't match. Requires the fspy-trace binary.
+   * and warns if the configured inputs don't match.
    *
    * Set to false to rely only on configured glob patterns.
    *

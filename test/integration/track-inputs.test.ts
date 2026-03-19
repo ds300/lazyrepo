@@ -3,12 +3,9 @@ import { join } from '../../src/path.js'
 import { findFspyBinary } from '../../src/tracking/findFspyBinary.js'
 import { Dir, makeConfigFile, runIntegrationTest } from './runIntegrationTests.js'
 
-const projectRoot = join(cwd)
-const fspyBinary = findFspyBinary(projectRoot)
+const fspyBinary = findFspyBinary()
 
-const describeIfFspy = fspyBinary ? describe : describe.skip
-
-describeIfFspy('automatic input tracking', () => {
+describe('automatic input tracking', () => {
   const makeDir = (): Dir => ({
     'lazy.config.js': makeConfigFile({
       scripts: {
@@ -27,44 +24,45 @@ describeIfFspy('automatic input tracking', () => {
     'untracked-file.txt': 'this file is not in cache.inputs but will not be read',
   })
 
-  test(
-    'reports under-specified inputs when task reads files outside cache.inputs',
-    { retry: 2 },
-    async () => {
-      await runIntegrationTest(
-        {
-          packageManager: 'pnpm',
-          structure: {
-            ...makeDir(),
-            'lazy.config.js': makeConfigFile({
-              scripts: {
-                build: {
-                  execution: 'top-level',
-                  baseCommand: 'cat extra.txt',
-                  cache: {
-                    inputs: ['src/**/*'],
-                  },
+  test('tracked reads from run N appear in the manifest on run N+1', { retry: 2 }, async () => {
+    await runIntegrationTest(
+      {
+        packageManager: 'pnpm',
+        structure: {
+          ...makeDir(),
+          'lazy.config.js': makeConfigFile({
+            scripts: {
+              build: {
+                execution: 'top-level',
+                baseCommand: 'cat extra.txt',
+                cache: {
+                  inputs: ['src/**/*'],
                 },
               },
-            }),
-            'extra.txt': 'this file is read but not in inputs',
-          },
-          workspaceGlobs: ['packages/*'],
-        },
-        async (t) => {
-          const result = await t.exec(['build'], {
-            env: {
-              FSPY_TRACE_BIN: fspyBinary!,
             },
-          })
-
-          expect(result.status).toBe(0)
-          expect(result.output).toContain('Input tracking')
-          expect(result.output).toContain('extra.txt')
+          }),
+          'extra.txt': 'this file is read but not in inputs',
         },
-      )
-    },
-  )
+        workspaceGlobs: ['packages/*'],
+      },
+      async (t) => {
+        const run1 = await t.exec(['build'], {
+          env: {
+            FSPY_TRACE_BIN: fspyBinary!,
+          },
+        })
+        expect(run1.status).toBe(0)
+
+        const run2 = await t.exec(['build', '--force'], {
+          env: {
+            FSPY_TRACE_BIN: fspyBinary!,
+          },
+        })
+        expect(run2.status).toBe(0)
+        expect(run2.output).toContain('extra.txt')
+      },
+    )
+  })
 
   test('tracks inputs automatically when fspy binary is available', { retry: 2 }, async () => {
     await runIntegrationTest(
@@ -140,21 +138,28 @@ describeIfFspy('automatic input tracking', () => {
         workspaceGlobs: ['packages/*'],
       },
       async (t) => {
-        const result = await t.exec(['build'], {
+        const run1 = await t.exec(['build'], {
           env: {
             FSPY_TRACE_BIN: fspyBinary!,
           },
         })
+        expect(run1.status).toBe(0)
+        expect(run1.output).toContain('done')
 
-        expect(result.status).toBe(0)
-        expect(result.output).not.toContain('Input tracking')
-        expect(result.output).toContain('done')
+        const run2 = await t.exec(['build', '--force'], {
+          env: {
+            FSPY_TRACE_BIN: fspyBinary!,
+          },
+        })
+        expect(run2.status).toBe(0)
+        const manifest = t.read('.lazy/build/manifest.tsv')
+        expect(manifest).not.toContain('extra.txt')
       },
     )
   })
 })
 
-describeIfFspy('compareTrackedInputs', () => {
+describe('compareTrackedInputs', () => {
   test('identifies under-specified files', { retry: 2 }, async () => {
     const { compareTrackedInputs } = await import('../../src/tracking/compareTrackedInputs.js')
     const { writeFileSync, mkdirSync } = await import('fs')

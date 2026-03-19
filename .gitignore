@@ -5,12 +5,11 @@ node_modules
 *.tgz
 
 !.gitignore
-!.prettierrc
-!.prettierignore
-!.eslintrc.cjs
 !.husky
 !.github
 
+assets/fspy-trace
+assets/fspy-trace.exe
 
 coverage
 package
