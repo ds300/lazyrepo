@@ -34,7 +34,7 @@ const makeDir = (
         }),
       },
     },
-  } satisfies Dir)
+  }) satisfies Dir
 
 test('log outputs are stored on disk', async () => {
   await runIntegrationTest(

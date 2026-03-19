@@ -8,8 +8,6 @@ const fspyBinary = findFspyBinary(projectRoot)
 
 const describeIfFspy = fspyBinary ? describe : describe.skip
 
-jest.retryTimes(2)
-
 describeIfFspy('automatic input tracking', () => {
   const makeDir = (): Dir => ({
     'lazy.config.js': makeConfigFile({
@@ -29,42 +27,46 @@ describeIfFspy('automatic input tracking', () => {
     'untracked-file.txt': 'this file is not in cache.inputs but will not be read',
   })
 
-  test('reports under-specified inputs when task reads files outside cache.inputs', async () => {
-    await runIntegrationTest(
-      {
-        packageManager: 'pnpm',
-        structure: {
-          ...makeDir(),
-          'lazy.config.js': makeConfigFile({
-            scripts: {
-              build: {
-                execution: 'top-level',
-                baseCommand: 'cat extra.txt',
-                cache: {
-                  inputs: ['src/**/*'],
+  test(
+    'reports under-specified inputs when task reads files outside cache.inputs',
+    { retry: 2 },
+    async () => {
+      await runIntegrationTest(
+        {
+          packageManager: 'pnpm',
+          structure: {
+            ...makeDir(),
+            'lazy.config.js': makeConfigFile({
+              scripts: {
+                build: {
+                  execution: 'top-level',
+                  baseCommand: 'cat extra.txt',
+                  cache: {
+                    inputs: ['src/**/*'],
+                  },
                 },
               },
-            },
-          }),
-          'extra.txt': 'this file is read but not in inputs',
-        },
-        workspaceGlobs: ['packages/*'],
-      },
-      async (t) => {
-        const result = await t.exec(['build'], {
-          env: {
-            FSPY_TRACE_BIN: fspyBinary!,
+            }),
+            'extra.txt': 'this file is read but not in inputs',
           },
-        })
+          workspaceGlobs: ['packages/*'],
+        },
+        async (t) => {
+          const result = await t.exec(['build'], {
+            env: {
+              FSPY_TRACE_BIN: fspyBinary!,
+            },
+          })
 
-        expect(result.status).toBe(0)
-        expect(result.output).toContain('Input tracking')
-        expect(result.output).toContain('extra.txt')
-      },
-    )
-  })
+          expect(result.status).toBe(0)
+          expect(result.output).toContain('Input tracking')
+          expect(result.output).toContain('extra.txt')
+        },
+      )
+    },
+  )
 
-  test('tracks inputs automatically when fspy binary is available', async () => {
+  test('tracks inputs automatically when fspy binary is available', { retry: 2 }, async () => {
     await runIntegrationTest(
       {
         packageManager: 'pnpm',
@@ -84,7 +86,7 @@ describeIfFspy('automatic input tracking', () => {
     )
   })
 
-  test('exits with correct code when task fails', async () => {
+  test('exits with correct code when task fails', { retry: 2 }, async () => {
     await runIntegrationTest(
       {
         packageManager: 'pnpm',
@@ -113,7 +115,7 @@ describeIfFspy('automatic input tracking', () => {
     )
   })
 
-  test('skips tracking when cache.auto is false', async () => {
+  test('skips tracking when cache.auto is false', { retry: 2 }, async () => {
     await runIntegrationTest(
       {
         packageManager: 'pnpm',
@@ -153,7 +155,7 @@ describeIfFspy('automatic input tracking', () => {
 })
 
 describeIfFspy('compareTrackedInputs', () => {
-  test('identifies under-specified files', async () => {
+  test('identifies under-specified files', { retry: 2 }, async () => {
     const { compareTrackedInputs } = await import('../../src/tracking/compareTrackedInputs.js')
     const { writeFileSync, mkdirSync } = await import('fs')
     const tmpDir = join(cwd, '.test', `tracking-test-${Date.now()}`)
@@ -184,7 +186,7 @@ describeIfFspy('compareTrackedInputs', () => {
     expect(result!.trackedReads).not.toContain('/usr/lib/something')
   })
 
-  test('identifies over-specified files', async () => {
+  test('identifies over-specified files', { retry: 2 }, async () => {
     const { compareTrackedInputs } = await import('../../src/tracking/compareTrackedInputs.js')
     const { writeFileSync, mkdirSync } = await import('fs')
     const tmpDir = join(cwd, '.test', `tracking-test-${Date.now()}`)
@@ -205,7 +207,7 @@ describeIfFspy('compareTrackedInputs', () => {
     expect(result!.overSpecified).not.toContain('src/index.ts')
   })
 
-  test('returns null for missing tracking file', async () => {
+  test('returns null for missing tracking file', { retry: 2 }, async () => {
     const { compareTrackedInputs } = await import('../../src/tracking/compareTrackedInputs.js')
 
     const result = compareTrackedInputs('/nonexistent/path.json', [], '/')

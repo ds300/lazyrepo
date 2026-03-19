@@ -4,7 +4,6 @@ import { expandBraces } from '../../src/glob/compile/expandBraces.js'
 
 const tabs = (n: number) => ' '.repeat(n * 2)
 const jsonify = (obj: any) => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const { type, start, end, ...others } = obj
   return JSON.stringify(others)
 }
@@ -539,20 +538,20 @@ describe('compileMatcher', () => {
       types: 'all',
     }
     expect(() => compileMatcher(env, ['*/../jeff/**'], '/')).toThrowErrorMatchingInlineSnapshot(`
-      "hyper-glob cannot resolve ".." path segments used in non-deterministic expressions. Consider using the standard "glob" library instead.
+      [Error: hyper-glob cannot resolve ".." path segments used in non-deterministic expressions. Consider using the standard "glob" library instead.
 
       */../jeff/**
         ^^
-      "
+      ]
     `)
 
     expect(() => compileMatcher(env, ['[[:alpha:]]/../*'], '/'))
       .toThrowErrorMatchingInlineSnapshot(`
-      "hyper-glob cannot resolve ".." path segments used in non-deterministic expressions. Consider using the standard "glob" library instead.
+        [Error: hyper-glob cannot resolve ".." path segments used in non-deterministic expressions. Consider using the standard "glob" library instead.
 
-      [[:alpha:]]/../*
-                  ^^
-      "
-    `)
+        [[:alpha:]]/../*
+                    ^^
+        ]
+      `)
   })
 })

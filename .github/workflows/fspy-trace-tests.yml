@@ -70,6 +70,6 @@ jobs:
         run: pnpm install --no-frozen-lockfile
 
       - name: Run JS tracking tests
-        run: npx jest test/integration/track-inputs.test.ts --no-coverage
+        run: npx vitest run test/integration/track-inputs.test.ts
         env:
           FSPY_TRACE_BIN: ${{ github.workspace }}/fspy-trace/target/release/fspy-trace${{ runner.os == 'Windows' && '.exe' || '' }}

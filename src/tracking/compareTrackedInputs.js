@@ -57,7 +57,6 @@ export function compareTrackedInputs(trackingJsonPath, globInputFiles, projectRo
   let accesses
   try {
     const raw = readFileSync(trackingJsonPath, 'utf-8')
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     accesses = /** @type {FileAccess[]} */ (JSON.parse(raw))
   } catch {
     return null

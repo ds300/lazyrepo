@@ -68,7 +68,7 @@ const makeDir = ({
       type: 'module',
       workspaces: ['packages/*'],
     }),
-  } satisfies Dir)
+  }) satisfies Dir
 
 const cleanup = (s: string) => {
   return s.replaceAll(/\t\d+(\.\d+)?\n/g, '\tTIMESTAMP\n')

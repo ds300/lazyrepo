@@ -62,7 +62,6 @@ async function loadConfig(file) {
   if (file.endsWith('.js') || file.endsWith('.cjs') || file.endsWith('.mjs')) {
     // windows prefers a file:/// url here
     const url = pathToFileURL(file).toString()
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
     return (await import(url)).default
   }
 
@@ -90,6 +89,5 @@ async function loadConfig(file) {
     // @ts-expect-error
     await import('source-map-support/register.js')
   }
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
   return (await import(pathToFileURL(outFile).toString())).default
 }

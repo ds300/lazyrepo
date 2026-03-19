@@ -1,4 +1,0 @@
-pnpm-lock.yaml
-.*
-!.eslintrc.cjs
-!.prettierrc

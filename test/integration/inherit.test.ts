@@ -43,7 +43,7 @@ const makeDir = ({
         }),
       },
     },
-  } satisfies Dir)
+  }) satisfies Dir
 
 test('lazy inherit looks up the command in the config file', async () => {
   await runIntegrationTest(

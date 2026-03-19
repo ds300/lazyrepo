@@ -76,7 +76,6 @@ function matchDirEntry(entry, options, children, result) {
   let i = 0
   /** @type {Matcher | null} */
   let stashedMatcher = null
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     const matcher = stashedMatcher ?? children[i++]
     if (!matcher) break

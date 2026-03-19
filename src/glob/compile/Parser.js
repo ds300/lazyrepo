@@ -515,5 +515,5 @@ function stripLeadingZeroes(str) {
  * @param {string | symbol} value
  */
 function asString(value) {
-  return typeof value === 'string' ? value : value.description ?? ''
+  return typeof value === 'string' ? value : (value.description ?? '')
 }

@@ -7,7 +7,6 @@ import { exec } from './lib/exec.js'
 import { getCurrentVersion } from './lib/getCurrentVersion.js'
 
 const currentVersion = getCurrentVersion()
-// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
 const version = '0.0.0-test.' + Date.now()
 exec(`npm version ${version} --no-git-tag-version`)
 const bin = readFileSync('./bin.js')

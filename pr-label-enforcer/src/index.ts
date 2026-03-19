@@ -114,7 +114,6 @@ async function checkPrLabels(prEvent: PullRequestEvent, env: Env) {
 
 export default {
   async fetch(request: Request, env: Env) {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const data = (await request.json()) as PullRequestEvent
     await checkPrLabels(data, env)
     return new Response('Hello world')

@@ -14,11 +14,12 @@ class LazyWriteStream {
     this.stream.write(data)
   }
 
+  /** @returns {Promise<void>} */
   close() {
     return new Promise((res) => {
       this.stream.end()
       this.stream.close(() => {
-        res(null)
+        res()
       })
     })
   }

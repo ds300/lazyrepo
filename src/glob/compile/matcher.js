@@ -72,8 +72,8 @@ export const recursiveWildcardMatchFn = (entry, options, matcher) => {
     return ignore
       ? 'none'
       : options.expandDirectories || entry instanceof LazyFile
-      ? 'terminal'
-      : 'recur'
+        ? 'terminal'
+        : 'recur'
   } else {
     // If this entry is a dotfile and we're not matching dotfiles, then
     // a child matcher might still match the dotfile, so we don't want to ignore

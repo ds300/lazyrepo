@@ -8,7 +8,7 @@ import { join } from '../../src/path.js'
 import { PackageJson } from '../../src/types.js'
 import { rimraf } from '../../src/utils/rimraf.js'
 
-jest.setTimeout(30 * 1000)
+vi.setConfig({ testTimeout: 30_000 })
 
 const cleanup = ({ text, rootDir }: { text: string; rootDir: string }) =>
   stripAnsi(text)
@@ -43,13 +43,10 @@ class TestHarness {
   }
 
   read(path: string) {
-    return (
-      readFileSync(join(this.config.dir, path), 'utf-8')
-        // eslint-disable-next-line no-control-regex
-        .replace(/\x1b\[[0-9;]*m/g, '')
-        .replace(/.*\(node:\d+\).*(?:Warning|DeprecationWarning).*\n/g, '')
-        .replace(/.*\(Use `node --trace-(?:warnings|deprecation) \.\.\.`.*\n/g, '')
-    )
+    return readFileSync(join(this.config.dir, path), 'utf-8')
+      .replace(/\x1b\[[0-9;]*m/g, '')
+      .replace(/.*\(node:\d+\).*(?:Warning|DeprecationWarning).*\n/g, '')
+      .replace(/.*\(Use `node --trace-(?:warnings|deprecation) \.\.\.`.*\n/g, '')
   }
 
   exists(path: string) {
@@ -92,19 +89,19 @@ class TestHarness {
   //   options?: { packageDir?: string; env?: NodeJS.ProcessEnv; expectError?: boolean },
   // ) {
   //   const expectError = options?.expectError ?? false
-  //   const cwd = jest.spyOn(process, 'cwd').mockImplementation(() => this.config.dir)
+  //   const cwd = vi.spyOn(process, 'cwd').mockImplementation(() => this.config.dir)
   //   let output = ''
-  //   const outWrite = jest.spyOn(process.stdout, 'write').mockImplementation((data) => {
+  //   const outWrite = vi.spyOn(process.stdout, 'write').mockImplementation((data) => {
   //     output += data
   //     return true
   //   })
 
-  //   const errWrite = jest.spyOn(process.stderr, 'write').mockImplementation((data) => {
+  //   const errWrite = vi.spyOn(process.stderr, 'write').mockImplementation((data) => {
   //     output += data
   //     return true
   //   })
   //   let status = 0
-  //   const exit = jest.spyOn(process, 'exit').mockImplementation((code) => {
+  //   const exit = vi.spyOn(process, 'exit').mockImplementation((code) => {
   //     status = code ?? 0
   //     return undefined as never
   //   })

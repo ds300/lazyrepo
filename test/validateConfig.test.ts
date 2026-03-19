@@ -85,7 +85,7 @@ describe('validateConfig', () => {
           draft.extraRootKey = 'extra'
         }),
       ),
-    ).toThrowErrorMatchingInlineSnapshot(`"Unrecognized key(s) in object: 'extraRootKey'"`)
+    ).toThrowErrorMatchingInlineSnapshot(`[Error: Unrecognized key(s) in object: 'extraRootKey']`)
     // add an extra key to the base cache config
     expect(() =>
       validateConfig(
@@ -95,7 +95,7 @@ describe('validateConfig', () => {
         }),
       ),
     ).toThrowErrorMatchingInlineSnapshot(
-      `"Unrecognized key(s) in object: 'extraBaseCacheKey' at "baseCacheConfig""`,
+      `[Error: Unrecognized key(s) in object: 'extraBaseCacheKey' at "baseCacheConfig"]`,
     )
 
     // add an extra key to the script
@@ -107,7 +107,7 @@ describe('validateConfig', () => {
         }),
       ),
     ).toThrowErrorMatchingInlineSnapshot(
-      `"Unrecognized key(s) in object: 'extraScriptKey' at "scripts.build""`,
+      `[Error: Unrecognized key(s) in object: 'extraScriptKey' at "scripts.build"]`,
     )
 
     // add an extra key to the workspace override
@@ -119,7 +119,7 @@ describe('validateConfig', () => {
         }),
       ),
     ).toThrowErrorMatchingInlineSnapshot(
-      `"Unrecognized key(s) in object: 'extraOverrideKey' at "scripts.build.workspaceOverrides.packages/workspace-1""`,
+      `[Error: Unrecognized key(s) in object: 'extraOverrideKey' at "scripts.build.workspaceOverrides.packages/workspace-1"]`,
     )
   })
 
@@ -132,7 +132,7 @@ describe('validateConfig', () => {
         }),
       ),
     ).toThrowErrorMatchingInlineSnapshot(
-      `"Unrecognized key(s) in object: 'inheritsInputFromDependencies' at "scripts.test.cache""`,
+      `[Error: Unrecognized key(s) in object: 'inheritsInputFromDependencies' at "scripts.test.cache"]`,
     )
 
     expect(() =>
@@ -143,7 +143,7 @@ describe('validateConfig', () => {
         }),
       ),
     ).toThrowErrorMatchingInlineSnapshot(
-      `"Unrecognized key(s) in object: 'usesOutputFromDependencies' at "scripts.test.cache""`,
+      `[Error: Unrecognized key(s) in object: 'usesOutputFromDependencies' at "scripts.test.cache"]`,
     )
   })
 

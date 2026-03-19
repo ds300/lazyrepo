@@ -20,8 +20,8 @@ const numCpus = cpus().length
 const maxConcurrentTasks = process.env.__test__FORCE_PARALLEL
   ? 2
   : isTest
-  ? 1
-  : Math.max(1, numCpus - 1)
+    ? 1
+    : Math.max(1, numCpus - 1)
 
 /**
  * @typedef {Object} TaskGraphProps
@@ -250,7 +250,6 @@ export class TaskGraph {
       const readyTasks = this.allReadyTaskKeys()
 
       if (runningTasks.length === 0 && readyTasks.length === 0) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return resolve(null)
       }
 
@@ -270,7 +269,6 @@ export class TaskGraph {
       for (let i = 0; i < numTasksToStart; i++) {
         const taskKey = readyTasks[i]
         this.allTasks[taskKey].status = 'running'
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         runTask(readyTasks[i])
       }
 
@@ -291,7 +289,6 @@ export class TaskGraph {
 
     tick()
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return await promise
   }
 }

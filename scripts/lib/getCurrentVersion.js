@@ -1,4 +1,4 @@
-import manifest from '../../package.json' assert { type: 'json' }
+import manifest from '../../package.json' with { type: 'json' }
 
 /**
  * @returns {string}

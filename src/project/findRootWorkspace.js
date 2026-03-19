@@ -11,7 +11,6 @@ import { loadWorkspace } from './loadWorkspace.js'
 function findContainingPackage(dir) {
   assert(dir && isAbsolute(dir), 'findContainingPackage: dir must be absolute')
   let currentDir = dir
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     if (existsSync(join(currentDir, 'package.json'))) {
       return loadWorkspace(currentDir)
@@ -49,7 +48,6 @@ export function findRootWorkspace(dir) {
     return null
   }
   let childDir = rootWorkspace.dir
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     const parent = findContainingPackage(dirname(childDir))
     if (!parent) {
