@@ -32,7 +32,7 @@
     "lint": "oxlint",
     "typecheck": "tsgo",
     "pack-test-version": "node scripts/pack-test-version.js",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "dependencies": {
     "@sindresorhus/slugify": "^2.2.0",
@@ -65,7 +65,7 @@
     "@types/source-map-support": "^0.5.6",
     "@typescript/native-preview": "7.0.0-dev.20260319.1",
     "auto": "^10.44.0",
-    "husky": "^8.0.0",
+    "husky": "^9.1.7",
     "immer": "^10.0.1",
     "memfs": "^3.5.1",
     "minimatch": "^9.0.0",

@@ -22,7 +22,8 @@ writeFileSync('./index.d.ts', `export * from "${cwd}/src/config/config-types.js"
 
 let outPath
 try {
-  outPath = exec(`npm pack`)
+  const packOutput = exec(`npm pack --json`)
+  outPath = JSON.parse(packOutput)[0].filename
 } finally {
   writeFileSync('./bin.js', bin, {
     // make executable
