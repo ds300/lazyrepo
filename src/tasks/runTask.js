@@ -6,7 +6,6 @@ import { createLazyWriteStream } from '../manifest/createLazyWriteStream.js'
 import { dirname, join, relative } from '../path.js'
 import { spawn } from './spawn.js'
 
-const SHELL_METACHARACTERS = /[|&;<>()$`*?#~!{}[\]\n]/
 const SHELL_BUILTINS = new Set([
   'exit',
   'cd',
@@ -86,7 +85,7 @@ const WINDOWS_SHELL_BUILTINS = new Set([
  * @param {string} command
  */
 function commandNeedsShell(command) {
-  if (SHELL_METACHARACTERS.test(command)) return true
+  if (hasUnquotedShellMetacharacters(command)) return true
   const parts = splitCommandArgs(command)
   if (!parts || parts.length === 0) return true
   const [firstWord] = parts
@@ -94,6 +93,67 @@ function commandNeedsShell(command) {
     SHELL_BUILTINS.has(firstWord) ||
     (process.platform === 'win32' && WINDOWS_SHELL_BUILTINS.has(firstWord.toLowerCase()))
   )
+}
+
+/**
+ * Detect shell metacharacters that appear outside quoted strings.
+ * Characters inside quotes should be treated as plain argv content.
+ * @param {string} command
+ * @returns {boolean}
+ */
+function hasUnquotedShellMetacharacters(command) {
+  /** @type {"'" | '"' | null} */
+  let quote = null
+
+  for (let i = 0; i < command.length; i++) {
+    const ch = command[i]
+
+    if (quote === "'") {
+      if (ch === "'") quote = null
+      continue
+    }
+
+    if (quote === '"') {
+      if (ch === '"') {
+        quote = null
+      } else if (ch === '\\' && i + 1 < command.length) {
+        const next = command[i + 1]
+        if (next === '"' || next === '\\') i++
+      }
+      continue
+    }
+
+    if (ch === "'" || ch === '"') {
+      quote = ch
+      continue
+    }
+
+    if (
+      ch === '|' ||
+      ch === '&' ||
+      ch === ';' ||
+      ch === '<' ||
+      ch === '>' ||
+      ch === '(' ||
+      ch === ')' ||
+      ch === '$' ||
+      ch === '`' ||
+      ch === '*' ||
+      ch === '?' ||
+      ch === '#' ||
+      ch === '~' ||
+      ch === '!' ||
+      ch === '{' ||
+      ch === '}' ||
+      ch === '[' ||
+      ch === ']' ||
+      ch === '\n'
+    ) {
+      return true
+    }
+  }
+
+  return false
 }
 
 /**

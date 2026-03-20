@@ -23,10 +23,9 @@ fn shell_command(command: impl Into<String>) -> Vec<String> {
     #[cfg(windows)]
     {
         vec![
-            "cmd".to_string(),
-            "/d".to_string(),
-            "/s".to_string(),
-            "/c".to_string(),
+            "powershell".to_string(),
+            "-NoProfile".to_string(),
+            "-Command".to_string(),
             command,
         ]
     }
@@ -45,7 +44,7 @@ fn test_read_tracking() {
 
     let mut args = vec!["--output".to_string(), output_path.to_string(), "--".to_string()];
     #[cfg(windows)]
-    args.extend(shell_command(format!(r#"type "{fixture_str}""#)));
+    args.extend(shell_command(format!(r#"Get-Content -LiteralPath '{fixture_str}'"#)));
     #[cfg(not(windows))]
     {
         args.push("cat".to_string());
@@ -77,7 +76,9 @@ fn test_write_tracking() {
 
     let mut args = vec!["--output".to_string(), output_path.to_string(), "--".to_string()];
     #[cfg(windows)]
-    args.extend(shell_command(format!(r#"echo test > "{write_target_path}""#)));
+    args.extend(shell_command(format!(
+        r#"Set-Content -LiteralPath '{write_target_path}' -Value 'test'"#
+    )));
     #[cfg(not(windows))]
     args.extend(shell_command(format!("echo test > {write_target_path}")));
 
@@ -120,7 +121,9 @@ fn test_stdio_passthrough() {
 
     let mut args = vec!["--output".to_string(), output_path.to_string(), "--".to_string()];
     #[cfg(windows)]
-    args.extend(shell_command("echo stdout_marker && echo stderr_marker 1>&2"));
+    args.extend(shell_command(
+        "[Console]::Out.WriteLine('stdout_marker'); [Console]::Error.WriteLine('stderr_marker')",
+    ));
     #[cfg(not(windows))]
     args.extend(shell_command(r#"echo "stdout_marker" && echo "stderr_marker" >&2"#));
 
@@ -142,7 +145,7 @@ fn test_child_process_inheritance() {
     let mut args = vec!["--output".to_string(), output_path.to_string(), "--".to_string()];
     #[cfg(windows)]
     args.extend(shell_command(format!(
-        r#"cmd /d /s /c "type ""{fixture_str}"" > nul""#
+        r#"powershell -NoProfile -Command "Get-Content -LiteralPath '{fixture_str}' | Out-Null""#
     )));
     #[cfg(not(windows))]
     args.extend(shell_command(format!("bash -c 'cat {fixture_str} > /dev/null'")));
@@ -176,7 +179,7 @@ fn test_missing_file_probe() {
     let mut args = vec!["--output".to_string(), output_path.to_string(), "--".to_string()];
     #[cfg(windows)]
     args.extend(shell_command(format!(
-        r#"type "{nonexistent_str}" 2>nul & exit /b 0"#
+        r#"try {{ Get-Content -LiteralPath '{nonexistent_str}' | Out-Null }} catch {{}}"#
     )));
     #[cfg(not(windows))]
     args.extend(shell_command(format!("cat {nonexistent_str} 2>/dev/null; true")));
