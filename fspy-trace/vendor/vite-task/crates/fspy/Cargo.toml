@@ -41,23 +41,6 @@ fspy_preload_windows = { workspace = true }
 winapi = { workspace = true, features = ["winbase", "securitybaseapi", "handleapi"] }
 winsafe = { workspace = true }
 
-[target.'cfg(target_os = "macos")'.dev-dependencies]
-tempfile = { workspace = true }
-
-[dev-dependencies]
-anyhow = { workspace = true }
-csv-async = { workspace = true }
-ctor = { workspace = true }
-subprocess_test = { workspace = true, features = ["fspy"] }
-test-log = { workspace = true }
-tokio = { workspace = true, features = ["rt-multi-thread", "macros", "fs", "io-std"] }
-
-[target.'cfg(all(target_os = "linux", target_arch = "aarch64"))'.dev-dependencies]
-fspy_test_bin = { path = "../fspy_test_bin", artifact = "bin", target = "aarch64-unknown-linux-musl" }
-
-[target.'cfg(all(target_os = "linux", target_arch = "x86_64"))'.dev-dependencies]
-fspy_test_bin = { path = "../fspy_test_bin", artifact = "bin", target = "x86_64-unknown-linux-musl" }
-
 [build-dependencies]
 anyhow = { workspace = true }
 flate2 = { workspace = true }
@@ -71,4 +54,4 @@ workspace = true
 doctest = false
 
 [package.metadata.cargo-shear]
-ignored = ["ctor", "fspy_test_bin"]
+ignored = []
