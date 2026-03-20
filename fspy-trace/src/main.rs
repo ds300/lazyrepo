@@ -65,15 +65,21 @@ fn sanitize_windows_path_prefix(path: String) -> String {
     path
 }
 
+fn sanitize_path_buf(path: PathBuf) -> PathBuf {
+    PathBuf::from(sanitize_windows_path_prefix(
+        path.to_string_lossy().into_owned(),
+    ))
+}
+
 fn normalize_access_path(path: &NativePath, cwd: &Path) -> String {
     let relative_to_cwd = path.strip_path_prefix(cwd, |result| result.ok().map(Path::to_path_buf));
     if let Some(relative_to_cwd) = relative_to_cwd {
-        return cwd.join(relative_to_cwd).to_string_lossy().into_owned();
+        return sanitize_windows_path_prefix(cwd.join(relative_to_cwd).to_string_lossy().into_owned());
     }
 
     let raw = sanitize_windows_path_prefix(native_path_to_string(path));
     if let Ok(canonical) = std::fs::canonicalize(&raw) {
-        return canonical.to_string_lossy().into_owned();
+        return sanitize_windows_path_prefix(canonical.to_string_lossy().into_owned());
     }
 
     #[cfg(windows)]
@@ -135,6 +141,8 @@ async fn main() -> ExitCode {
     let serialization_cwd = std::env::current_dir()
         .ok()
         .and_then(|cwd| std::fs::canonicalize(cwd).ok())
+        .map(sanitize_path_buf)
+        .or_else(|| std::env::current_dir().ok())
         .unwrap_or_else(|| PathBuf::from("."));
     let accesses: Vec<FileAccess> = termination
         .path_accesses
