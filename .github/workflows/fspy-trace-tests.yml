@@ -36,10 +36,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Rust nightly
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: nightly-2026-03-05
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Cache Cargo registry and build
         uses: actions/cache@v4
