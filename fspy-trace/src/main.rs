@@ -1,6 +1,9 @@
 #![feature(once_cell_try)]
 
-use std::{path::PathBuf, process::ExitCode};
+use std::{
+    path::{Path, PathBuf},
+    process::ExitCode,
+};
 
 use clap::Parser;
 use fspy::PathAccess;
@@ -52,9 +55,25 @@ fn native_path_to_string(path: &NativePath) -> String {
     native_str.to_cow_os_str().to_string_lossy().into_owned()
 }
 
-fn path_access_to_file_access(pa: &PathAccess<'_>) -> FileAccess {
+fn normalize_access_path(path: &NativePath, cwd: &Path) -> String {
+    let relative_to_cwd = path.strip_path_prefix(cwd, |result| result.ok().map(Path::to_path_buf));
+    if let Some(relative_to_cwd) = relative_to_cwd {
+        return cwd.join(relative_to_cwd).to_string_lossy().into_owned();
+    }
+
+    let raw = native_path_to_string(path);
+    #[cfg(windows)]
+    for prefix in [r"\\?\", r"\\.\", r"\??\"] {
+        if let Some(stripped) = raw.strip_prefix(prefix) {
+            return stripped.to_string();
+        }
+    }
+    raw
+}
+
+fn path_access_to_file_access(pa: &PathAccess<'_>, cwd: &Path) -> FileAccess {
     FileAccess {
-        path: native_path_to_string(pa.path),
+        path: normalize_access_path(pa.path, cwd),
         mode: access_mode_to_string(pa.mode),
     }
 }
@@ -97,10 +116,11 @@ async fn main() -> ExitCode {
         }
     };
 
+    let serialization_cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
     let accesses: Vec<FileAccess> = termination
         .path_accesses
         .iter()
-        .map(|pa| path_access_to_file_access(&pa))
+        .map(|pa| path_access_to_file_access(&pa, &serialization_cwd))
         .collect();
 
     match serde_json::to_string_pretty(&accesses) {

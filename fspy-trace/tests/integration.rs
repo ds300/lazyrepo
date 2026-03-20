@@ -18,6 +18,13 @@ fn fixtures_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures")
 }
 
+fn temp_path_in_cwd(name: &str) -> PathBuf {
+    let dir = tempfile::tempdir_in(std::env::current_dir().unwrap()).unwrap();
+    let path = dir.path().join(name);
+    std::mem::forget(dir);
+    path
+}
+
 #[cfg(windows)]
 const WINDOWS_FIXTURE_PATH: &str = r"tests\fixtures\hello.txt";
 #[cfg(windows)]
@@ -75,8 +82,8 @@ fn test_read_tracking() {
 fn test_write_tracking() {
     let output_file = tempfile::NamedTempFile::new().unwrap();
     let output_path = output_file.path().to_str().unwrap();
-    let write_target = tempfile::NamedTempFile::new().unwrap();
-    let write_target_path = write_target.path().to_str().unwrap();
+    let write_target = temp_path_in_cwd("write-target.txt");
+    let write_target_path = write_target.to_str().unwrap();
 
     let mut args = vec!["--output".to_string(), output_path.to_string(), "--".to_string()];
     #[cfg(windows)]
@@ -144,7 +151,11 @@ fn test_child_process_inheritance() {
 
     let mut args = vec!["--output".to_string(), output_path.to_string(), "--".to_string()];
     #[cfg(windows)]
-    args.extend(shell_command(format!(r#"cmd /c "type {WINDOWS_FIXTURE_PATH} > nul""#)));
+    {
+        args.push("cmd".to_string());
+        args.push("/c".to_string());
+        args.push(format!(r#"type {WINDOWS_FIXTURE_PATH} > nul"#));
+    }
     #[cfg(not(windows))]
     args.extend(shell_command(format!("bash -c 'cat {fixture_str} > /dev/null'")));
 
