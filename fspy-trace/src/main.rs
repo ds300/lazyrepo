@@ -55,17 +55,33 @@ fn native_path_to_string(path: &NativePath) -> String {
     native_str.to_cow_os_str().to_string_lossy().into_owned()
 }
 
+fn sanitize_windows_path_prefix(path: String) -> String {
+    #[cfg(windows)]
+    for prefix in [r"\\?\", r"\\.\", r"\??\"] {
+        if let Some(stripped) = path.strip_prefix(prefix) {
+            return stripped.to_string();
+        }
+    }
+    path
+}
+
 fn normalize_access_path(path: &NativePath, cwd: &Path) -> String {
     let relative_to_cwd = path.strip_path_prefix(cwd, |result| result.ok().map(Path::to_path_buf));
     if let Some(relative_to_cwd) = relative_to_cwd {
         return cwd.join(relative_to_cwd).to_string_lossy().into_owned();
     }
 
-    let raw = native_path_to_string(path);
+    let raw = sanitize_windows_path_prefix(native_path_to_string(path));
+    if let Ok(canonical) = std::fs::canonicalize(&raw) {
+        return canonical.to_string_lossy().into_owned();
+    }
+
     #[cfg(windows)]
-    for prefix in [r"\\?\", r"\\.\", r"\??\"] {
-        if let Some(stripped) = raw.strip_prefix(prefix) {
-            return stripped.to_string();
+    {
+        if let Ok(relative_to_cwd) =
+            std::path::Path::new(&raw).strip_prefix(cwd).map(Path::to_path_buf)
+        {
+            return cwd.join(relative_to_cwd).to_string_lossy().into_owned();
         }
     }
     raw
@@ -116,7 +132,10 @@ async fn main() -> ExitCode {
         }
     };
 
-    let serialization_cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+    let serialization_cwd = std::env::current_dir()
+        .ok()
+        .and_then(|cwd| std::fs::canonicalize(cwd).ok())
+        .unwrap_or_else(|| PathBuf::from("."));
     let accesses: Vec<FileAccess> = termination
         .path_accesses
         .iter()

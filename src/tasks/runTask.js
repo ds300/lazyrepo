@@ -77,6 +77,19 @@ const WINDOWS_SHELL_BUILTINS = new Set([
   'verify',
   'vol',
 ])
+const WINDOWS_TRACKING_RUNNER = `
+const { spawn } = require('node:child_process')
+const [, , mode, ...rest] = process.argv
+const child =
+  mode === 'shell'
+    ? spawn(rest[0], { shell: true, stdio: 'inherit', env: process.env })
+    : spawn(rest[0], rest.slice(1), { shell: false, stdio: 'inherit', env: process.env })
+child.on('exit', (code) => process.exit(code ?? 1))
+child.on('error', (err) => {
+  console.error(err.message)
+  process.exit(1)
+})
+`.trim()
 
 /**
  * Check whether a command string requires a shell to interpret it.
@@ -247,6 +260,20 @@ function getTrackingShellArgs(command) {
 }
 
 /**
+ * Route tracked Windows commands through Node's child_process so behavior matches
+ * the untracked execution path, including PATHEXT resolution and shell quoting.
+ * @param {string} command
+ * @param {string[] | null} parts
+ * @returns {string[]}
+ */
+function getWindowsTrackingRunnerArgs(command, parts) {
+  if (parts) {
+    return ['node', '-e', WINDOWS_TRACKING_RUNNER, 'direct', ...parts]
+  }
+  return ['node', '-e', WINDOWS_TRACKING_RUNNER, 'shell', command]
+}
+
+/**
  * @param {import('../types.js').ScheduledTask} task
  * @param {import('./TaskGraph.js').TaskGraph} tasks
  * @returns {Promise<{didSucceed: boolean, trackingOutputPath: string | null}>}
@@ -295,7 +322,19 @@ export async function runTask(task, tasks) {
 
       /** @type {string[]} */
       let fspyArgs
-      if (commandNeedsShell(fullCommand)) {
+      if (process.platform === 'win32') {
+        const needsShell = commandNeedsShell(fullCommand)
+        const parts = needsShell ? null : splitCommandArgs(fullCommand)
+        if (!needsShell && (!parts || parts.length === 0)) {
+          throw new Error(`Could not parse command: ${fullCommand}`)
+        }
+        fspyArgs = [
+          '--output',
+          trackingOutputPath,
+          '--',
+          ...getWindowsTrackingRunnerArgs(fullCommand, parts),
+        ]
+      } else if (commandNeedsShell(fullCommand)) {
         fspyArgs = ['--output', trackingOutputPath, '--', ...getTrackingShellArgs(fullCommand)]
       } else {
         const parts = splitCommandArgs(fullCommand)

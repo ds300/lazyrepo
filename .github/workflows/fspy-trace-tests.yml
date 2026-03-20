@@ -56,15 +56,15 @@ jobs:
         working-directory: fspy-trace
         run: cargo build --release
 
-      - name: Run Rust tests
-        working-directory: fspy-trace
-        run: cargo test
-
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
 
       - uses: pnpm/action-setup@v4
+
+      - name: Run Rust tests
+        working-directory: fspy-trace
+        run: cargo test
 
       - name: Install JS dependencies
         run: pnpm install --no-frozen-lockfile
