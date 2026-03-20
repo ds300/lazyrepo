@@ -18,14 +18,18 @@ fn fixtures_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures")
 }
 
+#[cfg(windows)]
+const WINDOWS_FIXTURE_PATH: &str = r"tests\fixtures\hello.txt";
+#[cfg(windows)]
+const WINDOWS_MISSING_FIXTURE_PATH: &str = r"tests\fixtures\does_not_exist.txt";
+
 fn shell_command(command: impl Into<String>) -> Vec<String> {
     let command = command.into();
     #[cfg(windows)]
     {
         vec![
-            "powershell".to_string(),
-            "-NoProfile".to_string(),
-            "-Command".to_string(),
+            "cmd".to_string(),
+            "/c".to_string(),
             command,
         ]
     }
@@ -44,7 +48,7 @@ fn test_read_tracking() {
 
     let mut args = vec!["--output".to_string(), output_path.to_string(), "--".to_string()];
     #[cfg(windows)]
-    args.extend(shell_command(format!(r#"Get-Content -LiteralPath '{fixture_str}'"#)));
+    args.extend(shell_command(format!("type {WINDOWS_FIXTURE_PATH}")));
     #[cfg(not(windows))]
     {
         args.push("cat".to_string());
@@ -76,9 +80,7 @@ fn test_write_tracking() {
 
     let mut args = vec!["--output".to_string(), output_path.to_string(), "--".to_string()];
     #[cfg(windows)]
-    args.extend(shell_command(format!(
-        r#"Set-Content -LiteralPath '{write_target_path}' -Value 'test'"#
-    )));
+    args.extend(shell_command(format!("echo test>{write_target_path}")));
     #[cfg(not(windows))]
     args.extend(shell_command(format!("echo test > {write_target_path}")));
 
@@ -121,9 +123,7 @@ fn test_stdio_passthrough() {
 
     let mut args = vec!["--output".to_string(), output_path.to_string(), "--".to_string()];
     #[cfg(windows)]
-    args.extend(shell_command(
-        "[Console]::Out.WriteLine('stdout_marker'); [Console]::Error.WriteLine('stderr_marker')",
-    ));
+    args.extend(shell_command("echo stdout_marker && echo stderr_marker 1>&2"));
     #[cfg(not(windows))]
     args.extend(shell_command(r#"echo "stdout_marker" && echo "stderr_marker" >&2"#));
 
@@ -144,9 +144,7 @@ fn test_child_process_inheritance() {
 
     let mut args = vec!["--output".to_string(), output_path.to_string(), "--".to_string()];
     #[cfg(windows)]
-    args.extend(shell_command(format!(
-        r#"powershell -NoProfile -Command "Get-Content -LiteralPath '{fixture_str}' | Out-Null""#
-    )));
+    args.extend(shell_command(format!(r#"cmd /c "type {WINDOWS_FIXTURE_PATH} > nul""#)));
     #[cfg(not(windows))]
     args.extend(shell_command(format!("bash -c 'cat {fixture_str} > /dev/null'")));
 
@@ -179,7 +177,7 @@ fn test_missing_file_probe() {
     let mut args = vec!["--output".to_string(), output_path.to_string(), "--".to_string()];
     #[cfg(windows)]
     args.extend(shell_command(format!(
-        r#"try {{ Get-Content -LiteralPath '{nonexistent_str}' | Out-Null }} catch {{}}"#
+        "type {WINDOWS_MISSING_FIXTURE_PATH} 2>nul & exit /b 0"
     )));
     #[cfg(not(windows))]
     args.extend(shell_command(format!("cat {nonexistent_str} 2>/dev/null; true")));

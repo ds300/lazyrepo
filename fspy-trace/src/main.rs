@@ -77,8 +77,8 @@ async fn main() -> ExitCode {
     if let Ok(cwd) = std::env::current_dir() {
         cmd.current_dir(&cwd);
     }
-    cmd.stdout(std::process::Stdio::piped());
-    cmd.stderr(std::process::Stdio::piped());
+    cmd.stdout(std::process::Stdio::inherit());
+    cmd.stderr(std::process::Stdio::inherit());
     cmd.stdin(std::process::Stdio::inherit());
 
     let tracked_child = match cmd.spawn().await {
@@ -89,29 +89,6 @@ async fn main() -> ExitCode {
         }
     };
 
-    let stdout = tracked_child.stdout;
-    let stderr = tracked_child.stderr;
-
-    let stdout_handle = if let Some(stdout) = stdout {
-        Some(tokio::spawn(async move {
-            let mut stdout = stdout;
-            let mut out = tokio::io::stdout();
-            let _ = tokio::io::copy(&mut stdout, &mut out).await;
-        }))
-    } else {
-        None
-    };
-
-    let stderr_handle = if let Some(stderr) = stderr {
-        Some(tokio::spawn(async move {
-            let mut stderr = stderr;
-            let mut err = tokio::io::stderr();
-            let _ = tokio::io::copy(&mut stderr, &mut err).await;
-        }))
-    } else {
-        None
-    };
-
     let termination = match tracked_child.wait_handle.await {
         Ok(t) => t,
         Err(err) => {
@@ -119,13 +96,6 @@ async fn main() -> ExitCode {
             return ExitCode::from(1);
         }
     };
-
-    if let Some(h) = stdout_handle {
-        let _ = h.await;
-    }
-    if let Some(h) = stderr_handle {
-        let _ = h.await;
-    }
 
     let accesses: Vec<FileAccess> = termination
         .path_accesses
