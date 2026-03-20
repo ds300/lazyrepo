@@ -1,0 +1,10 @@
+{
+  "cache": true,
+  "tasks": {
+    "hello": {
+      "command": "print-env FOO",
+      "env": ["FOO"],
+      "cache": true
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "tasks": {
+    "build": {
+      "command": "echo build lib"
+    }
+  }
+}

@@ -1,0 +1,85 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: task_graph_json
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/cycle-dependency
+---
+[
+  {
+    "key": [
+      "<workspace>/",
+      "task-a"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "cycle-dependency-test",
+        "task_name": "task-a",
+        "package_path": "<workspace>/"
+      },
+      "resolved_config": {
+        "command": "echo a",
+        "resolved_options": {
+          "cwd": "<workspace>/",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "TaskConfig"
+    },
+    "neighbors": [
+      [
+        "<workspace>/",
+        "task-b"
+      ]
+    ]
+  },
+  {
+    "key": [
+      "<workspace>/",
+      "task-b"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "cycle-dependency-test",
+        "task_name": "task-b",
+        "package_path": "<workspace>/"
+      },
+      "resolved_config": {
+        "command": "echo b",
+        "resolved_options": {
+          "cwd": "<workspace>/",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "TaskConfig"
+    },
+    "neighbors": [
+      [
+        "<workspace>/",
+        "task-a"
+      ]
+    ]
+  }
+]

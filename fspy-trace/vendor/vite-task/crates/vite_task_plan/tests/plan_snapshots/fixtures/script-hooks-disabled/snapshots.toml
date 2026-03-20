@@ -1,0 +1,5 @@
+# Tests that pre/post hooks are NOT expanded when enablePrePostScripts is false.
+
+[[plan]]
+name = "test runs without hooks when disabled"
+args = ["run", "test"]

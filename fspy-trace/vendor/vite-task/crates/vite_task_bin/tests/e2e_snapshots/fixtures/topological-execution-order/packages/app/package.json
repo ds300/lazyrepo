@@ -1,0 +1,9 @@
+{
+  "name": "@topo/app",
+  "scripts": {
+    "build": "echo 'Building app'"
+  },
+  "dependencies": {
+    "@topo/lib": "workspace:*"
+  }
+}

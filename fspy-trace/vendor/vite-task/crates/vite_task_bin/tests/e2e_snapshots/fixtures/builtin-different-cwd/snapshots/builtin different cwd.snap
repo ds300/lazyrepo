@@ -1,0 +1,74 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+> cd folder1 && vt run lint # cache miss in folder1
+$ vt lint
+
+  ! eslint-plugin-unicorn(no-empty-file): Empty files are not allowed.
+   ,-[folder1/a.js:1:1]
+ 1 | // Empty JS file for oxlint
+   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   `----
+  help: Delete this file or add some code to it.
+
+  ! eslint-plugin-unicorn(no-empty-file): Empty files are not allowed.
+   ,-[folder2/a.js:1:1]
+ 1 | // Empty JS file for oxlint
+   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   `----
+  help: Delete this file or add some code to it.
+
+Found 2 warnings and 0 errors.
+Finished in <duration> on 2 files with 93 rules using <n> threads.
+> cd folder2 && vt run lint # cache miss in folder2
+$ vt lint ◉ cache hit, replaying
+
+  ! eslint-plugin-unicorn(no-empty-file): Empty files are not allowed.
+   ,-[folder1/a.js:1:1]
+ 1 | // Empty JS file for oxlint
+   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   `----
+  help: Delete this file or add some code to it.
+
+  ! eslint-plugin-unicorn(no-empty-file): Empty files are not allowed.
+   ,-[folder2/a.js:1:1]
+ 1 | // Empty JS file for oxlint
+   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   `----
+  help: Delete this file or add some code to it.
+
+Found 2 warnings and 0 errors.
+Finished in <duration> on 2 files with 93 rules using <n> threads.
+
+---
+vt run: cache hit, <duration> saved.
+> echo 'console.log(1);' > folder2/a.js # modify folder2
+
+> cd folder1 && vt run lint # cache hit
+$ vt lint ○ cache miss: 'folder2/a.js' modified, executing
+
+  ! eslint-plugin-unicorn(no-empty-file): Empty files are not allowed.
+   ,-[folder1/a.js:1:1]
+ 1 | // Empty JS file for oxlint
+   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   `----
+  help: Delete this file or add some code to it.
+
+Found 1 warning and 0 errors.
+Finished in <duration> on 2 files with 93 rules using <n> threads.
+> cd folder2 && vt run lint # cache miss
+$ vt lint ◉ cache hit, replaying
+
+  ! eslint-plugin-unicorn(no-empty-file): Empty files are not allowed.
+   ,-[folder1/a.js:1:1]
+ 1 | // Empty JS file for oxlint
+   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   `----
+  help: Delete this file or add some code to it.
+
+Found 1 warning and 0 errors.
+Finished in <duration> on 2 files with 93 rules using <n> threads.
+
+---
+vt run: cache hit, <duration> saved.

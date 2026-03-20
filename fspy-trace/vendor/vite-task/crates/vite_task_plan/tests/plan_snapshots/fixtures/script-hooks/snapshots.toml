@@ -1,0 +1,17 @@
+# Tests pre/post lifecycle hooks for package.json scripts.
+
+[[plan]]
+name = "test runs with pre and post hooks"
+args = ["run", "test"]
+
+[[plan]]
+name = "build runs with pre hook only"
+args = ["run", "build"]
+
+[[plan]]
+name = "pretest directly expands prepretest but not when called as hook"
+args = ["run", "pretest"]
+
+[[plan]]
+name = "extra args not passed to hooks"
+args = ["run", "test", "--coverage"]

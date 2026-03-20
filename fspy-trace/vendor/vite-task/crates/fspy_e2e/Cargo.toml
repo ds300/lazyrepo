@@ -1,0 +1,15 @@
+[package]
+name = "fspy_e2e"
+version = "0.0.0"
+edition.workspace = true
+publish = false
+
+[dependencies]
+fspy = { workspace = true }
+rustc-hash = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+tokio = { workspace = true, features = ["full"] }
+toml = { workspace = true }
+
+[lints]
+workspace = true

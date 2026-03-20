@@ -1,0 +1,17 @@
+# Tests that running pkg#task errors when multiple packages share the same name,
+# while --filter with the same name still matches all packages.
+
+[[plan]]
+compact = true
+name = "ambiguous package name"
+args = ["run", "@test/duplicate#build"]
+
+[[plan]]
+compact = true
+name = "ambiguous package name with transitive"
+args = ["run", "-t", "@test/duplicate#build"]
+
+[[plan]]
+compact = true
+name = "filter matches both duplicates"
+args = ["run", "--filter", "@test/duplicate", "build"]

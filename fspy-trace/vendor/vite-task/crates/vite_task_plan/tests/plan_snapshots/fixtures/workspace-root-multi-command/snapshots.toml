@@ -1,0 +1,7 @@
+# Tests multi-command with self-referencing: root build = "echo pre && vt run -r build"
+# The skip rule skips the recursive `vt run -r build` part, echo pre still runs.
+
+[[plan]]
+name = "multi command skips recursive part"
+args = ["run", "-r", "build"]
+compact = true

@@ -1,0 +1,7 @@
+{
+  "name": "@test/cache-cli-override",
+  "scripts": {
+    "test": "print-file package.json",
+    "lint": "print-file vite-task.json"
+  }
+}

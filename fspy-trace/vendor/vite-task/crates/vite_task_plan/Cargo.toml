@@ -1,0 +1,52 @@
+[package]
+name = "vite_task_plan"
+version = "0.1.0"
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+rust-version.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+bincode = { workspace = true }
+futures-util = { workspace = true }
+petgraph = { workspace = true }
+rustc-hash = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+sha2 = { workspace = true }
+shell-escape = { workspace = true }
+supports-color = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+vite_glob = { workspace = true }
+vite_graph_ser = { workspace = true }
+vite_path = { workspace = true }
+vite_shell = { workspace = true }
+vite_str = { workspace = true }
+vite_task_graph = { workspace = true }
+which = { workspace = true }
+
+[dev-dependencies]
+clap = { workspace = true, features = ["derive"] }
+copy_dir = { workspace = true }
+cow-utils = { workspace = true }
+insta = { workspace = true, features = ["glob", "json", "redactions", "filters", "ron"] }
+serde_json = { workspace = true }
+tempfile = { workspace = true }
+tokio = { workspace = true, features = ["rt", "macros"] }
+toml = { workspace = true }
+vite_task = { workspace = true }
+vite_task_bin = { workspace = true }
+vite_workspace = { workspace = true }
+
+[[test]]
+name = "plan_snapshots"
+harness = false
+
+[lib]
+doctest = false

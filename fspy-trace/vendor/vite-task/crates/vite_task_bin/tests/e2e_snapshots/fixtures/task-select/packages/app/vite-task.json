@@ -1,0 +1,13 @@
+{
+  "tasks": {
+    "build": {
+      "command": "echo build app"
+    },
+    "lint": {
+      "command": "echo lint app"
+    },
+    "test": {
+      "command": "echo test app"
+    }
+  }
+}

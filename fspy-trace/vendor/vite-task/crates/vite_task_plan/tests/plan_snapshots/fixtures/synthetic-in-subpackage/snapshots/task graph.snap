@@ -1,0 +1,75 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: task_graph_json
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/synthetic-in-subpackage
+---
+[
+  {
+    "key": [
+      "<workspace>/",
+      "lint"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "",
+        "task_name": "lint",
+        "package_path": "<workspace>/"
+      },
+      "resolved_config": {
+        "command": "vt run a#lint",
+        "resolved_options": {
+          "cwd": "<workspace>/",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "PackageJsonScript"
+    },
+    "neighbors": []
+  },
+  {
+    "key": [
+      "<workspace>/packages/a",
+      "lint"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "a",
+        "task_name": "lint",
+        "package_path": "<workspace>/packages/a"
+      },
+      "resolved_config": {
+        "command": "vt lint",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/a",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "PackageJsonScript"
+    },
+    "neighbors": []
+  }
+]

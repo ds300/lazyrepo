@@ -1,0 +1,16 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: err
+info:
+  args:
+    - run
+    - "--cache"
+    - "--no-cache"
+    - build
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/cache-cli-override
+---
+error: the argument '--cache' cannot be used with '--no-cache'
+
+Usage: vt run --cache <TASK_SPECIFIER> [ADDITIONAL_ARGS]...
+
+For more information, try '--help'.

@@ -1,0 +1,10 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: err_str.as_ref()
+info:
+  args:
+    - run
+    - "@test/duplicate#build"
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/duplicate-package-names
+---
+Package name '@test/duplicate' is ambiguous; found in multiple locations: <workspace>/packages/pkg-a, <workspace>/packages/pkg-b

@@ -1,0 +1,9 @@
+# Tests lint caching with file changes
+
+[[e2e]]
+name = "direct lint"
+steps = [
+  "vt run lint # cache miss",
+  "echo debugger > main.js # add lint error",
+  "vt run lint # cache miss, lint fails",
+]

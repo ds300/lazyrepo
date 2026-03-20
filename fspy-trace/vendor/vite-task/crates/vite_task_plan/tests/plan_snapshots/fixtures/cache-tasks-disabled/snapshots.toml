@@ -1,0 +1,16 @@
+# Verifies cache.tasks: false disables caching at plan time
+
+# Task without per-task cache override should not be cached
+[[plan]]
+name = "task not cached when cache.tasks is false"
+args = ["run", "build"]
+
+# Task with per-task cache: true is still disabled by cache.tasks: false
+[[plan]]
+name = "per-task cache true still disabled by cache.tasks false"
+args = ["run", "deploy"]
+
+# Script should not be cached (scripts default to false)
+[[plan]]
+name = "script not cached"
+args = ["run", "test"]

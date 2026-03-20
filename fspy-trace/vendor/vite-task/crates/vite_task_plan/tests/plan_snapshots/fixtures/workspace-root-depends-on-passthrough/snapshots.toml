@@ -1,0 +1,8 @@
+# Tests that dependsOn works through a passthrough root task.
+# Root build = "vt run -r build", with dependsOn: ["lint"].
+# The skip rule skips the recursive part, but the dependsOn lint tasks still run.
+
+[[plan]]
+name = "depends on through passthrough"
+args = ["run", "-r", "build"]
+compact = true

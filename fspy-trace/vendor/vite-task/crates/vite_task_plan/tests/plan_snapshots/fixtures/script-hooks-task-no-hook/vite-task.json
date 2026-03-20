@@ -1,0 +1,10 @@
+{
+  "tasks": {
+    // `test` is a TaskConfig — pre/post hooks must NOT apply to it.
+    // `pretest` is a package.json script, but since `test` is a TaskConfig,
+    // `pretest` must not be expanded as a hook when running `test`.
+    "test": {
+      "command": "echo test-task"
+    }
+  }
+}

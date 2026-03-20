@@ -1,0 +1,16 @@
+{
+  "tasks": {
+    "build": {
+      "command": "echo build lib"
+    },
+    "lint": {
+      "command": "echo lint lib"
+    },
+    "test": {
+      "command": "echo test lib"
+    },
+    "typecheck": {
+      "command": "echo typecheck lib"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+> json-edit vite-task.json "_.tasks.test.untrackedEnv = ['MY_UNTRACKED']" # setup
+
+> vt run test # cache miss
+$ print-file test.txt
+initial content
+> json-edit vite-task.json "delete _.tasks.test.untrackedEnv" # remove untracked env
+
+> vt run test # cache miss: untracked env removed
+$ print-file test.txt ○ cache miss: untracked env config changed, executing
+initial content

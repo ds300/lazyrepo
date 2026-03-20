@@ -1,0 +1,17 @@
+[[e2e]]
+name = "list tasks from package dir"
+cwd = "packages/app"
+steps = ["echo '' | vt run"]
+
+[[e2e]]
+name = "list tasks from workspace root"
+steps = ["echo '' | vt run"]
+
+[[e2e]]
+name = "vt run in script"
+steps = [
+  { command = "vt run list-tasks", interactions = [
+    { "expect-milestone" = "task-select::0" },
+    { "write-key" = "enter" },
+  ] },
+]

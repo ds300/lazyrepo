@@ -1,0 +1,16 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+info:
+  cwd: packages/touch-pkg
+---
+> vt run task
+~/packages/touch-pkg$ touch-file src/data.txt
+
+---
+vt run: @test/touch-pkg#task not cached because it modified its input. (Run `vt run --last-details` for full details)
+> vt run task
+~/packages/touch-pkg$ touch-file src/data.txt
+
+---
+vt run: @test/touch-pkg#task not cached because it modified its input. (Run `vt run --last-details` for full details)

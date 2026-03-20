@@ -1,0 +1,6 @@
+# Verifies default behavior: scripts are not cached without explicit cache.scripts
+
+# Script should not be cached by default
+[[plan]]
+name = "script not cached by default"
+args = ["run", "build"]

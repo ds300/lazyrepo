@@ -1,0 +1,9 @@
+{
+  "cache": true,
+  "tasks": {
+    "cached-task": {
+      "command": "print-file test.txt",
+      "cache": true
+    }
+  }
+}

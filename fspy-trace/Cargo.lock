@@ -426,7 +426,6 @@ checksum = "d9c4f5dac5e15c24eb999c26181a6ca40b39fe946cbe4c263c7209467bc83af2"
 [[package]]
 name = "fspy"
 version = "0.1.0"
-source = "git+https://github.com/voidzero-dev/vite-task?rev=4a5c9bcd#4a5c9bcdba1fe090d6f274b37963851e940dbb20"
 dependencies = [
  "allocator-api2",
  "anyhow",
@@ -477,7 +476,6 @@ dependencies = [
 [[package]]
 name = "fspy_detours_sys"
 version = "0.0.0"
-source = "git+https://github.com/voidzero-dev/vite-task?rev=4a5c9bcd#4a5c9bcdba1fe090d6f274b37963851e940dbb20"
 dependencies = [
  "cc",
  "winapi",
@@ -486,7 +484,6 @@ dependencies = [
 [[package]]
 name = "fspy_preload_unix"
 version = "0.0.0"
-source = "git+https://github.com/voidzero-dev/vite-task?rev=4a5c9bcd#4a5c9bcdba1fe090d6f274b37963851e940dbb20"
 dependencies = [
  "anyhow",
  "bincode",
@@ -501,7 +498,6 @@ dependencies = [
 [[package]]
 name = "fspy_preload_windows"
 version = "0.1.0"
-source = "git+https://github.com/voidzero-dev/vite-task?rev=4a5c9bcd#4a5c9bcdba1fe090d6f274b37963851e940dbb20"
 dependencies = [
  "bincode",
  "constcat",
@@ -517,7 +513,6 @@ dependencies = [
 [[package]]
 name = "fspy_seccomp_unotify"
 version = "0.1.0"
-source = "git+https://github.com/voidzero-dev/vite-task?rev=4a5c9bcd#4a5c9bcdba1fe090d6f274b37963851e940dbb20"
 dependencies = [
  "bincode",
  "futures-util",
@@ -534,7 +529,6 @@ dependencies = [
 [[package]]
 name = "fspy_shared"
 version = "0.0.0"
-source = "git+https://github.com/voidzero-dev/vite-task?rev=4a5c9bcd#4a5c9bcdba1fe090d6f274b37963851e940dbb20"
 dependencies = [
  "allocator-api2",
  "bincode",
@@ -552,7 +546,6 @@ dependencies = [
 [[package]]
 name = "fspy_shared_unix"
 version = "0.0.0"
-source = "git+https://github.com/voidzero-dev/vite-task?rev=4a5c9bcd#4a5c9bcdba1fe090d6f274b37963851e940dbb20"
 dependencies = [
  "anyhow",
  "base64",

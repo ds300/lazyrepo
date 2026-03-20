@@ -1,0 +1,10 @@
+{
+  "name": "self-dep",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "echo building"
+  },
+  "dependencies": {
+    "self-dep": "workspace:*"
+  }
+}

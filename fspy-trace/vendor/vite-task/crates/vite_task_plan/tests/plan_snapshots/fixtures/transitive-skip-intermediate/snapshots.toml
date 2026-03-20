@@ -1,0 +1,42 @@
+# Tests skip-intermediate reconnection when a package lacks the requested task.
+# Topology: top → middle → bottom
+# top and bottom have `build`; middle does NOT.
+
+# pnpm Example 1: top... selects {top, middle, bottom}.
+# middle lacks build — reconnected (top→bottom). Result: bottom#build → top#build.
+[[plan]]
+compact = true
+name = "filter intermediate lacks task is skipped"
+args = ["run", "--filter", "@test/top...", "build"]
+
+# Same scenario via -t flag (ContainingPackage traversal).
+[[plan]]
+compact = true
+name = "transitive build skips intermediate without task"
+args = ["run", "-t", "build"]
+cwd = "packages/top"
+
+# pnpm Example 2: middle... selects {middle, bottom}. middle lacks build.
+# middle is reconnected (no preds → bottom runs independently).
+# Result: bottom#build only.
+[[plan]]
+compact = true
+name = "filter entry lacks task dependency has it"
+args = ["run", "--filter", "@test/middle...", "build"]
+
+# Same as above but via -t flag from the package that lacks the task.
+# middle has no build, but its dependency bottom does.
+# Result: bottom#build only.
+[[plan]]
+compact = true
+name = "transitive from package without task"
+args = ["run", "-t", "build"]
+cwd = "packages/middle"
+
+# -t with package#task: middle has no build, but its dep bottom does.
+# Equivalent to --filter @test/middle... build.
+# Result: bottom#build only.
+[[plan]]
+compact = true
+name = "transitive with package specifier lacking task"
+args = ["run", "-t", "@test/middle#build"]

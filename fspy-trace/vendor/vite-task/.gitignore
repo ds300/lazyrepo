@@ -1,0 +1,8 @@
+/target
+node_modules
+dist
+.claude/settings.local.json
+*.tsbuildinfo
+.DS_Store
+/.vscode/settings.json
+*.snap.new

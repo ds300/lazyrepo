@@ -1,0 +1,12 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: "&compact_plan"
+info:
+  args:
+    - run
+    - hello
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/pnpm-workspace-packages-optional
+---
+{
+  "#hello": []
+}

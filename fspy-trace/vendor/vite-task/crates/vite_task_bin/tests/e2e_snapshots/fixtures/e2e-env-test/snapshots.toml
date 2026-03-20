@@ -1,0 +1,9 @@
+# Tests env-test synthetic command
+
+[[e2e]]
+name = "env-test prints value from additional_envs"
+steps = ["vt run env-test -- SYNTHETIC_ENV_VAR test_value_from_synthesizer # prints env value"]
+
+[[e2e]]
+name = "env-test with different values"
+steps = ["vt run env-test -- FOO bar # sets FOO=bar", "vt run env-test -- BAZ qux # sets BAZ=qux"]

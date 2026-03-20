@@ -1,0 +1,22 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+> FOO=1 vt run hello # cache miss
+$ print-env FOO
+1
+> FOO=2 vt run hello # cache miss, different env
+$ print-env FOO ○ cache miss: envs changed, executing
+2
+> FOO=1 vt run hello # cache hit
+$ print-env FOO ◉ cache hit, replaying
+1
+
+---
+vt run: cache hit, <duration> saved.
+> FOO=2 vt run hello # cache hit
+$ print-env FOO ◉ cache hit, replaying
+2
+
+---
+vt run: cache hit, <duration> saved.

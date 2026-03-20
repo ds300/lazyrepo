@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "build": "echo building",
+    "all": "vpr build"
+  }
+}

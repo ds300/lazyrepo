@@ -1,0 +1,8 @@
+{
+  "name": "test-workspace",
+  "private": true,
+  "scripts": {
+    "build": "vt run -r test",
+    "test": "vt run -r build"
+  }
+}

@@ -1,0 +1,116 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: "&plan_json"
+info:
+  args:
+    - run
+    - lint
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/synthetic-in-subpackage
+---
+[
+  {
+    "key": [
+      "<workspace>/",
+      "lint"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "",
+        "task_name": "lint",
+        "package_path": "<workspace>/"
+      },
+      "items": [
+        {
+          "execution_item_display": {
+            "task_display": {
+              "package_name": "",
+              "task_name": "lint",
+              "package_path": "<workspace>/"
+            },
+            "command": "vt run a#lint",
+            "and_item_index": null,
+            "cwd": "<workspace>/"
+          },
+          "kind": {
+            "Expanded": [
+              {
+                "key": [
+                  "<workspace>/packages/a",
+                  "lint"
+                ],
+                "node": {
+                  "task_display": {
+                    "package_name": "a",
+                    "task_name": "lint",
+                    "package_path": "<workspace>/packages/a"
+                  },
+                  "items": [
+                    {
+                      "execution_item_display": {
+                        "task_display": {
+                          "package_name": "a",
+                          "task_name": "lint",
+                          "package_path": "<workspace>/packages/a"
+                        },
+                        "command": "vt lint",
+                        "and_item_index": null,
+                        "cwd": "<workspace>/packages/a"
+                      },
+                      "kind": {
+                        "Leaf": {
+                          "Spawn": {
+                            "cache_metadata": {
+                              "spawn_fingerprint": {
+                                "cwd": "packages/a",
+                                "program_fingerprint": {
+                                  "OutsideWorkspace": {
+                                    "program_name": "oxlint"
+                                  }
+                                },
+                                "args": [],
+                                "env_fingerprints": {
+                                  "fingerprinted_envs": {},
+                                  "untracked_env_config": [
+                                    "<default untracked envs>"
+                                  ]
+                                }
+                              },
+                              "execution_cache_key": {
+                                "UserTask": {
+                                  "task_name": "lint",
+                                  "and_item_index": 0,
+                                  "extra_args": [],
+                                  "package_path": "packages/a"
+                                }
+                              },
+                              "input_config": {
+                                "includes_auto": true,
+                                "positive_globs": [],
+                                "negative_globs": []
+                              }
+                            },
+                            "spawn_command": {
+                              "program_path": "<tools>/node_modules/.bin/oxlint",
+                              "args": [],
+                              "all_envs": {
+                                "NO_COLOR": "1",
+                                "PATH": "<workspace>/packages/a/node_modules/.bin:<workspace>/node_modules/.bin:<tools>/node_modules/.bin"
+                              },
+                              "cwd": "<workspace>/packages/a"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "neighbors": []
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "neighbors": []
+  }
+]

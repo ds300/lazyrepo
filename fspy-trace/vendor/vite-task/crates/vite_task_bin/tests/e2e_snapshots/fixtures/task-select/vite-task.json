@@ -1,0 +1,28 @@
+{
+  "tasks": {
+    "check": {
+      "command": "echo check root"
+    },
+    "clean": {
+      "command": "echo clean root"
+    },
+    "deploy": {
+      "command": "echo deploy root"
+    },
+    "docs": {
+      "command": "echo docs root"
+    },
+    "format": {
+      "command": "echo format root"
+    },
+    "hello": {
+      "command": "echo hello from root"
+    },
+    "run-typo-task": {
+      "command": "vt run nonexistent-xyz"
+    },
+    "validate": {
+      "command": "echo validate root"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+# Tests that tasks with identical commands share cache
+
+[[e2e]]
+name = "associate existing cache"
+steps = [
+  "vt run script1 # cache miss",
+  "vt run script2 # cache hit, same command as script1",
+  "json-edit package.json '_.scripts.script2 = \"print world\"' # change script2",
+  "vt run script2 # cache miss",
+]

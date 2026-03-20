@@ -1,0 +1,8 @@
+# Tests that TaskConfig tasks do NOT get pre/post hooks expanded,
+# even if matching pre/post package.json scripts exist.
+# `test` is a TaskConfig; `pretest` is a PackageJsonScript.
+# Running `test` must NOT expand `pretest` as a hook.
+
+[[plan]]
+name = "task config test does not expand pretest hook"
+args = ["run", "test"]

@@ -1,0 +1,22 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+> vt run test # cache miss
+$ print-file test.txt
+initial content
+> replace-file-content test.txt initial modified # modify input
+
+> vt run test # cache miss: input modified
+$ print-file test.txt ○ cache miss: 'test.txt' modified, executing
+modified content
+> rm test.txt # remove tracked input
+
+> vt run test # cache miss: input removed
+$ print-file test.txt ○ cache miss: 'test.txt' removed from workspace root, executing
+test.txt: not found
+> echo new content > test.txt # recreate previously removed file
+
+> vt run test # cache miss: input added
+$ print-file test.txt ○ cache miss: 'test.txt' added in workspace root, executing
+new content

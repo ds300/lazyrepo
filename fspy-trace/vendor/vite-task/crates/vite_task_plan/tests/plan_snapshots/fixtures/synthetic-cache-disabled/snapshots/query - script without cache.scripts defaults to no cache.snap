@@ -1,0 +1,55 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: "&plan_json"
+info:
+  args:
+    - run
+    - lint
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/synthetic-cache-disabled
+---
+[
+  {
+    "key": [
+      "<workspace>/",
+      "lint"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/synthetic-cache-disabled",
+        "task_name": "lint",
+        "package_path": "<workspace>/"
+      },
+      "items": [
+        {
+          "execution_item_display": {
+            "task_display": {
+              "package_name": "@test/synthetic-cache-disabled",
+              "task_name": "lint",
+              "package_path": "<workspace>/"
+            },
+            "command": "vt lint",
+            "and_item_index": null,
+            "cwd": "<workspace>/"
+          },
+          "kind": {
+            "Leaf": {
+              "Spawn": {
+                "cache_metadata": null,
+                "spawn_command": {
+                  "program_path": "<tools>/node_modules/.bin/oxlint",
+                  "args": [],
+                  "all_envs": {
+                    "NO_COLOR": "1",
+                    "PATH": "<workspace>/node_modules/.bin:<tools>/node_modules/.bin"
+                  },
+                  "cwd": "<workspace>/"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "neighbors": []
+  }
+]

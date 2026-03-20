@@ -1,0 +1,30 @@
+[package]
+name = "vite_path"
+version = "0.1.0"
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+bincode = { workspace = true }
+diff-struct = { workspace = true }
+path-clean = { workspace = true }
+ref-cast = { workspace = true }
+serde = { workspace = true, features = ["derive", "rc"] }
+thiserror = { workspace = true }
+ts-rs = { workspace = true, optional = true }
+vite_str = { workspace = true }
+
+[features]
+absolute-redaction = []
+ts-rs = ["dep:ts-rs", "vite_str/ts-rs"]
+
+[lints]
+workspace = true
+
+[dev-dependencies]
+assert2 = { workspace = true }
+
+[lib]
+doctest = false

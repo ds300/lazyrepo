@@ -1,0 +1,109 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: task_graph_json
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/cd-in-scripts
+---
+[
+  {
+    "key": [
+      "<workspace>/",
+      "build"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "",
+        "task_name": "build",
+        "package_path": "<workspace>/"
+      },
+      "resolved_config": {
+        "command": "print-file package.json",
+        "resolved_options": {
+          "cwd": "<workspace>/",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "PackageJsonScript"
+    },
+    "neighbors": []
+  },
+  {
+    "key": [
+      "<workspace>/",
+      "cd-build"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "",
+        "task_name": "cd-build",
+        "package_path": "<workspace>/"
+      },
+      "resolved_config": {
+        "command": "cd src && vt run build",
+        "resolved_options": {
+          "cwd": "<workspace>/",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "PackageJsonScript"
+    },
+    "neighbors": []
+  },
+  {
+    "key": [
+      "<workspace>/",
+      "cd-lint"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "",
+        "task_name": "cd-lint",
+        "package_path": "<workspace>/"
+      },
+      "resolved_config": {
+        "command": "cd src && vt lint",
+        "resolved_options": {
+          "cwd": "<workspace>/",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "PackageJsonScript"
+    },
+    "neighbors": []
+  }
+]

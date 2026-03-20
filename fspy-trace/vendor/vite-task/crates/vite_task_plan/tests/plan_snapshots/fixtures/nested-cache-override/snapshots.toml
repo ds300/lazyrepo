@@ -1,0 +1,31 @@
+# Tests scope of --cache/--no-cache in nested vt run commands
+
+# Nested vt run --no-cache disables caching for inner task
+[[plan]]
+name = "nested --no-cache disables inner task caching"
+args = ["run", "outer-no-cache"]
+
+# Nested vt run --cache enables caching for inner task
+[[plan]]
+name = "nested --cache enables inner task caching"
+args = ["run", "outer-cache"]
+
+# Nested vt run without flags inherits parent resolved cache
+[[plan]]
+name = "nested run without flags inherits parent cache"
+args = ["run", "outer-inherit"]
+
+# Outer --cache propagates to nested run without flags
+[[plan]]
+name = "outer --cache propagates to nested run without flags"
+args = ["run", "--cache", "outer-inherit"]
+
+# Outer --no-cache with nested --cache: inner overrides outer
+[[plan]]
+name = "outer --no-cache does not propagate into nested --cache"
+args = ["run", "--no-cache", "outer-cache"]
+
+# Outer --no-cache with nested run (no flags): inner inherits outer
+[[plan]]
+name = "outer --no-cache propagates to nested run without flags"
+args = ["run", "--no-cache", "outer-inherit"]

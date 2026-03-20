@@ -1,0 +1,79 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: "&plan_json"
+info:
+  args:
+    - run
+    - pretest
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/script-hooks
+---
+[
+  {
+    "key": [
+      "<workspace>/",
+      "pretest"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/script-hooks",
+        "task_name": "pretest",
+        "package_path": "<workspace>/"
+      },
+      "items": [
+        {
+          "execution_item_display": {
+            "task_display": {
+              "package_name": "@test/script-hooks",
+              "task_name": "prepretest",
+              "package_path": "<workspace>/"
+            },
+            "command": "echo prepretest",
+            "and_item_index": null,
+            "cwd": "<workspace>/"
+          },
+          "kind": {
+            "Leaf": {
+              "InProcess": {
+                "kind": {
+                  "Echo": {
+                    "strings": [
+                      "prepretest"
+                    ],
+                    "trailing_newline": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "execution_item_display": {
+            "task_display": {
+              "package_name": "@test/script-hooks",
+              "task_name": "pretest",
+              "package_path": "<workspace>/"
+            },
+            "command": "echo pretest",
+            "and_item_index": null,
+            "cwd": "<workspace>/"
+          },
+          "kind": {
+            "Leaf": {
+              "InProcess": {
+                "kind": {
+                  "Echo": {
+                    "strings": [
+                      "pretest"
+                    ],
+                    "trailing_newline": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "neighbors": []
+  }
+]

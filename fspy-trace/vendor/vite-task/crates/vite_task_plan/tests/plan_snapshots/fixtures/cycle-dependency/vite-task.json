@@ -1,0 +1,12 @@
+{
+  "tasks": {
+    "task-a": {
+      "command": "echo a",
+      "dependsOn": ["task-b"]
+    },
+    "task-b": {
+      "command": "echo b",
+      "dependsOn": ["task-a"]
+    }
+  }
+}

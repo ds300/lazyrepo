@@ -1,0 +1,5 @@
+# Tests that cycle dependencies are detected at plan time
+
+[[plan]]
+name = "cycle dependency error"
+args = ["run", "task-a"]

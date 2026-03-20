@@ -1,0 +1,84 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: "&plan_json"
+info:
+  args:
+    - run
+    - cd-lint
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/cd-in-scripts
+---
+[
+  {
+    "key": [
+      "<workspace>/",
+      "cd-lint"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "",
+        "task_name": "cd-lint",
+        "package_path": "<workspace>/"
+      },
+      "items": [
+        {
+          "execution_item_display": {
+            "task_display": {
+              "package_name": "",
+              "task_name": "cd-lint",
+              "package_path": "<workspace>/"
+            },
+            "command": "vt lint",
+            "and_item_index": 1,
+            "cwd": "<workspace>/src"
+          },
+          "kind": {
+            "Leaf": {
+              "Spawn": {
+                "cache_metadata": {
+                  "spawn_fingerprint": {
+                    "cwd": "src",
+                    "program_fingerprint": {
+                      "OutsideWorkspace": {
+                        "program_name": "oxlint"
+                      }
+                    },
+                    "args": [],
+                    "env_fingerprints": {
+                      "fingerprinted_envs": {},
+                      "untracked_env_config": [
+                        "<default untracked envs>"
+                      ]
+                    }
+                  },
+                  "execution_cache_key": {
+                    "UserTask": {
+                      "task_name": "cd-lint",
+                      "and_item_index": 1,
+                      "extra_args": [],
+                      "package_path": ""
+                    }
+                  },
+                  "input_config": {
+                    "includes_auto": true,
+                    "positive_globs": [],
+                    "negative_globs": []
+                  }
+                },
+                "spawn_command": {
+                  "program_path": "<tools>/node_modules/.bin/oxlint",
+                  "args": [],
+                  "all_envs": {
+                    "NO_COLOR": "1",
+                    "PATH": "<workspace>/node_modules/.bin:<tools>/node_modules/.bin"
+                  },
+                  "cwd": "<workspace>/src"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "neighbors": []
+  }
+]

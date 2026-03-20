@@ -1,0 +1,14 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+> vt run sub-pkg#auto-with-negative
+~/packages/sub-pkg$ print-file src/main.ts dist/output.js
+export const main = 'initial';
+// initial output
+> replace-file-content packages/sub-pkg/src/main.ts initial modified
+
+> vt run sub-pkg#auto-with-negative
+~/packages/sub-pkg$ print-file src/main.ts dist/output.js ○ cache miss: 'packages/sub-pkg/src/main.ts' modified, executing
+export const main = 'modified';
+// initial output

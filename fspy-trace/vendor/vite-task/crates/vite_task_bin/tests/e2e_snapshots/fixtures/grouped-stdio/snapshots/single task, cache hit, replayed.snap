@@ -1,0 +1,19 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+> vt run --log=grouped check-tty-cached
+[grouped-stdio-test#check-tty-cached] $ check-tty
+── [grouped-stdio-test#check-tty-cached] ──
+stdin:not-tty
+stdout:not-tty
+stderr:not-tty
+> vt run --log=grouped check-tty-cached
+[grouped-stdio-test#check-tty-cached] $ check-tty ◉ cache hit, replaying
+── [grouped-stdio-test#check-tty-cached] ──
+stdin:not-tty
+stdout:not-tty
+stderr:not-tty
+
+---
+vt run: cache hit, <duration> saved.

@@ -1,0 +1,6 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+[42]> vt run -r fail # pkg-a fails, pkg-b is skipped
+~/packages/pkg-a$ node -e "process.exit(42)"

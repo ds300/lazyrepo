@@ -1,0 +1,10 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: err_str.as_ref()
+info:
+  args:
+    - run
+    - task-a
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/cycle-dependency
+---
+Cycle dependency detected: cycle-dependency-test#task-a -> cycle-dependency-test#task-b -> cycle-dependency-test#task-a

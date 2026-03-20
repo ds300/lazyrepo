@@ -1,0 +1,5 @@
+# Tests synthetic task in subpackage
+
+[[plan]]
+name = "synthetic-in-subpackage"
+args = ["run", "lint"]

@@ -1,0 +1,7 @@
+{
+  "name": "vite-task-smoke",
+  "private": true,
+  "scripts": {
+    "test-task": "echo hello && print-file main.js"
+  }
+}

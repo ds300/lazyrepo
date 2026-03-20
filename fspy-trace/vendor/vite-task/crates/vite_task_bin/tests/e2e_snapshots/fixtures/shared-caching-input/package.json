@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "script1": "print-file foo.txt",
+    "script2": "print-file foo.txt"
+  }
+}

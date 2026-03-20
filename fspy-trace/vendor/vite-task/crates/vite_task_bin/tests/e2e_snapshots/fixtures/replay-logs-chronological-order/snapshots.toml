@@ -1,0 +1,5 @@
+# Tests that replayed logs maintain chronological order
+
+[[e2e]]
+name = "replay logs chronological order"
+steps = ["vt run build # cache miss", "vt run build # cache hit", "vt run build # cache hit"]

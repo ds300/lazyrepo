@@ -1,0 +1,9 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+[1]> vt run run-typo-task
+Error: Failed to plan tasks from `vt run nonexistent-xyz` in task task-select-test#run-typo-task
+
+Caused by:
+    Task "nonexistent-xyz" not found

@@ -1,0 +1,57 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: "&plan_json"
+info:
+  args:
+    - run
+    - build
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/cache-tasks-disabled
+---
+[
+  {
+    "key": [
+      "<workspace>/",
+      "build"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/cache-tasks-disabled",
+        "task_name": "build",
+        "package_path": "<workspace>/"
+      },
+      "items": [
+        {
+          "execution_item_display": {
+            "task_display": {
+              "package_name": "@test/cache-tasks-disabled",
+              "task_name": "build",
+              "package_path": "<workspace>/"
+            },
+            "command": "print-file package.json",
+            "and_item_index": null,
+            "cwd": "<workspace>/"
+          },
+          "kind": {
+            "Leaf": {
+              "Spawn": {
+                "cache_metadata": null,
+                "spawn_command": {
+                  "program_path": "<tools>/node_modules/.bin/print-file",
+                  "args": [
+                    "package.json"
+                  ],
+                  "all_envs": {
+                    "NO_COLOR": "1",
+                    "PATH": "<workspace>/node_modules/.bin:<tools>/node_modules/.bin"
+                  },
+                  "cwd": "<workspace>/"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "neighbors": []
+  }
+]

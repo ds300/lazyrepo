@@ -1,0 +1,7 @@
+{
+  "name": "@test/a",
+  "version": "1.0.0",
+  "scripts": {
+    "deploy": "echo deploying-a"
+  }
+}

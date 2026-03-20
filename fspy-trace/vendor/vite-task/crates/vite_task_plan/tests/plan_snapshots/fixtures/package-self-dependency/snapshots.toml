@@ -1,0 +1,13 @@
+# Tests that a package with a self-referential workspace dependency (e.g. for
+# testing purposes) does not produce a false cycle-dependency error.
+
+[[plan]]
+name = "build in self-referential package"
+args = ["run", "build"]
+cwd = "packages/self-dep"
+compact = true
+
+[[plan]]
+name = "recursive build across workspace"
+args = ["run", "-r", "build"]
+compact = true

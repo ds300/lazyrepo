@@ -1,0 +1,5 @@
+# Tests error message for cyclic task dependencies
+
+[[e2e]]
+name = "cycle dependency error"
+steps = ["vt run task-a # task-a -> task-b -> task-a cycle"]

@@ -1,0 +1,10 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+> vt run --log=grouped check-tty
+[grouped-stdio-test#check-tty] $ check-tty ⊘ cache disabled
+── [grouped-stdio-test#check-tty] ──
+stdin:not-tty
+stdout:not-tty
+stderr:not-tty

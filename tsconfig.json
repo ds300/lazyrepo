@@ -1,6 +1,6 @@
 {
   "include": ["**/*"],
-  "exclude": ["node_modules", "coverage"],
+  "exclude": ["node_modules", "coverage", "fspy-trace/vendor"],
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig to read more about this file */
 

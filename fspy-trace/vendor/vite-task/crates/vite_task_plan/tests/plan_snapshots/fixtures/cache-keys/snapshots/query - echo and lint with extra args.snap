@@ -1,0 +1,117 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: "&plan_json"
+info:
+  args:
+    - run
+    - echo-and-lint
+    - "--fix"
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/cache-keys
+---
+[
+  {
+    "key": [
+      "<workspace>/",
+      "echo-and-lint"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "",
+        "task_name": "echo-and-lint",
+        "package_path": "<workspace>/"
+      },
+      "items": [
+        {
+          "execution_item_display": {
+            "task_display": {
+              "package_name": "",
+              "task_name": "echo-and-lint",
+              "package_path": "<workspace>/"
+            },
+            "command": "echo Linting",
+            "and_item_index": 0,
+            "cwd": "<workspace>/"
+          },
+          "kind": {
+            "Leaf": {
+              "InProcess": {
+                "kind": {
+                  "Echo": {
+                    "strings": [
+                      "Linting"
+                    ],
+                    "trailing_newline": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "execution_item_display": {
+            "task_display": {
+              "package_name": "",
+              "task_name": "echo-and-lint",
+              "package_path": "<workspace>/"
+            },
+            "command": "vt lint --fix",
+            "and_item_index": 1,
+            "cwd": "<workspace>/"
+          },
+          "kind": {
+            "Leaf": {
+              "Spawn": {
+                "cache_metadata": {
+                  "spawn_fingerprint": {
+                    "cwd": "",
+                    "program_fingerprint": {
+                      "OutsideWorkspace": {
+                        "program_name": "oxlint"
+                      }
+                    },
+                    "args": [
+                      "--fix"
+                    ],
+                    "env_fingerprints": {
+                      "fingerprinted_envs": {},
+                      "untracked_env_config": [
+                        "<default untracked envs>"
+                      ]
+                    }
+                  },
+                  "execution_cache_key": {
+                    "UserTask": {
+                      "task_name": "echo-and-lint",
+                      "and_item_index": 1,
+                      "extra_args": [
+                        "--fix"
+                      ],
+                      "package_path": ""
+                    }
+                  },
+                  "input_config": {
+                    "includes_auto": true,
+                    "positive_globs": [],
+                    "negative_globs": []
+                  }
+                },
+                "spawn_command": {
+                  "program_path": "<tools>/node_modules/.bin/oxlint",
+                  "args": [
+                    "--fix"
+                  ],
+                  "all_envs": {
+                    "NO_COLOR": "1",
+                    "PATH": "<workspace>/node_modules/.bin:<tools>/node_modules/.bin"
+                  },
+                  "cwd": "<workspace>/"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "neighbors": []
+  }
+]

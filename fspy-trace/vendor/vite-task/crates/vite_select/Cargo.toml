@@ -1,0 +1,23 @@
+[package]
+name = "vite_select"
+version = "0.0.0"
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+rust-version.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+anyhow = { workspace = true }
+crossterm = { workspace = true }
+nucleo-matcher = { workspace = true }
+vite_str = { path = "../vite_str" }
+
+[dev-dependencies]
+assert2 = { workspace = true }
+
+[lib]
+doctest = false

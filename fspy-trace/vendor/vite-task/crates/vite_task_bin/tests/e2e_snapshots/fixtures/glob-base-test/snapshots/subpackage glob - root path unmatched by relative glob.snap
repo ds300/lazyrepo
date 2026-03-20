@@ -1,0 +1,15 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+> vt run sub-pkg#sub-glob-test
+~/packages/sub-pkg$ print-file src/sub.ts
+export const sub = 'initial';
+> replace-file-content src/root.ts initial modified
+
+> vt run sub-pkg#sub-glob-test
+~/packages/sub-pkg$ print-file src/sub.ts ◉ cache hit, replaying
+export const sub = 'initial';
+
+---
+vt run: cache hit, <duration> saved.

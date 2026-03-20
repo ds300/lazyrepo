@@ -1,0 +1,97 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: task_graph_json
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/cache-true-no-force-enable
+---
+[
+  {
+    "key": [
+      "<workspace>/",
+      "build"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/cache-true-no-force-enable",
+        "task_name": "build",
+        "package_path": "<workspace>/"
+      },
+      "resolved_config": {
+        "command": "print-file package.json",
+        "resolved_options": {
+          "cwd": "<workspace>/",
+          "cache_config": null
+        }
+      },
+      "source": "TaskConfig"
+    },
+    "neighbors": []
+  },
+  {
+    "key": [
+      "<workspace>/",
+      "deploy"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/cache-true-no-force-enable",
+        "task_name": "deploy",
+        "package_path": "<workspace>/"
+      },
+      "resolved_config": {
+        "command": "print-file package.json",
+        "resolved_options": {
+          "cwd": "<workspace>/",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "TaskConfig"
+    },
+    "neighbors": []
+  },
+  {
+    "key": [
+      "<workspace>/",
+      "test"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/cache-true-no-force-enable",
+        "task_name": "test",
+        "package_path": "<workspace>/"
+      },
+      "resolved_config": {
+        "command": "print-file package.json",
+        "resolved_options": {
+          "cwd": "<workspace>/",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "PackageJsonScript"
+    },
+    "neighbors": []
+  }
+]

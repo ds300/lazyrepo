@@ -1,0 +1,18 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+> vt run [lib]#build
+~/packages/[lib]$ print-file src/main.ts
+export const lib = 'initial';
+> vt run [lib]#build
+~/packages/[lib]$ print-file src/main.ts ◉ cache hit, replaying
+export const lib = 'initial';
+
+---
+vt run: cache hit, <duration> saved.
+> replace-file-content packages/[lib]/src/main.ts initial modified
+
+> vt run [lib]#build
+~/packages/[lib]$ print-file src/main.ts ○ cache miss: 'packages/[lib]/src/main.ts' modified, executing
+export const lib = 'modified';

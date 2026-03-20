@@ -1,0 +1,17 @@
+{
+  "tasks": {
+    "build": {
+      "command": "echo 'Building empty-name package'",
+      "cache": true,
+      "dependsOn": ["test"]
+    },
+    "test": {
+      "command": "echo 'Testing empty-name package'",
+      "cache": true
+    },
+    "lint": {
+      "command": "echo 'Linting empty-name package'",
+      "cache": true
+    }
+  }
+}

@@ -1,0 +1,10 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+> vt run no-cache-task # cache miss
+$ print-file test.txt ⊘ cache disabled
+test content
+> vt run no-cache-task # cache disabled, runs again
+$ print-file test.txt ⊘ cache disabled
+test content

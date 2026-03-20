@@ -1,0 +1,6 @@
+{
+  "name": "@topo/core",
+  "scripts": {
+    "build": "echo 'Building core'"
+  }
+}

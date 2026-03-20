@@ -1,0 +1,24 @@
+{
+  "tasks": {
+    "auto-with-negative": {
+      "command": "print-file src/main.ts dist/output.js",
+      "input": [{ "auto": true }, "!dist/**"],
+      "cache": true
+    },
+    "dotdot-positive": {
+      "command": "print-file ../shared/src/utils.ts",
+      "input": ["../shared/src/**"],
+      "cache": true
+    },
+    "dotdot-positive-negative": {
+      "command": "print-file ../shared/src/utils.ts ../shared/dist/output.js",
+      "input": ["../shared/**", "!../shared/dist/**"],
+      "cache": true
+    },
+    "dotdot-auto-negative": {
+      "command": "print-file ../shared/src/utils.ts ../shared/dist/output.js",
+      "input": [{ "auto": true }, "!../shared/dist/**"],
+      "cache": true
+    }
+  }
+}

@@ -10,8 +10,8 @@ name = "fspy-trace"
 path = "src/main.rs"
 
 [dependencies]
-fspy = { git = "https://github.com/voidzero-dev/vite-task", rev = "4a5c9bcd" }
-fspy_shared = { git = "https://github.com/voidzero-dev/vite-task", rev = "4a5c9bcd" }
+fspy = { path = "vendor/vite-task/crates/fspy" }
+fspy_shared = { path = "vendor/vite-task/crates/fspy_shared" }
 bytemuck = { version = "1", features = ["extern_crate_alloc"] }
 clap = { version = "4", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }

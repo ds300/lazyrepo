@@ -1,0 +1,6 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+[1]> vt run --last-details
+No previous run summary found. Run a task first to generate a summary.

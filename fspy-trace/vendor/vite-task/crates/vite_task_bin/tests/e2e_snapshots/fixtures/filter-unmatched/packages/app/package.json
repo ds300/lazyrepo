@@ -1,0 +1,9 @@
+{
+  "name": "@test/app",
+  "scripts": {
+    "build": "print built-app"
+  },
+  "dependencies": {
+    "@test/lib": "workspace:*"
+  }
+}

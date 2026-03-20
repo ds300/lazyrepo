@@ -1,0 +1,22 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+> vt run glob-test # cache miss
+$ print glob-test
+glob-test
+> replace-file-content test.txt initial modified # modify glob input
+
+> vt run glob-test # cache miss: input modified
+$ print glob-test ○ cache miss: 'test.txt' modified, executing
+glob-test
+> echo new content > new.txt # add a new .txt file
+
+> vt run glob-test # cache miss: input added
+$ print glob-test ○ cache miss: 'new.txt' added in workspace root, executing
+glob-test
+> rm extra.txt # remove a .txt file
+
+> vt run glob-test # cache miss: input removed
+$ print glob-test ○ cache miss: 'extra.txt' removed from workspace root, executing
+glob-test

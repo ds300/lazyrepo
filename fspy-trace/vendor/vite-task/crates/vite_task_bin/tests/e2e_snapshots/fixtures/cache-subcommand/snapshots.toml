@@ -1,0 +1,8 @@
+[[e2e]]
+name = "cache clean"
+steps = [
+  "vt run cached-task # cache miss",
+  "vt run cached-task # cache hit",
+  "vt cache clean",
+  "vt run cached-task # cache miss after clean",
+]

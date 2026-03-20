@@ -1,0 +1,6 @@
+{
+  "name": "@test/script-hooks-task-no-hook",
+  "scripts": {
+    "pretest": "echo pretest-script"
+  }
+}

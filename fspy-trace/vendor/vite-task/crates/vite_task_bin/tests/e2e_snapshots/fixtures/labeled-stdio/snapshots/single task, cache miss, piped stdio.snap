@@ -1,0 +1,9 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+> vt run --log=labeled check-tty-cached
+[labeled-stdio-test#check-tty-cached] $ check-tty
+[labeled-stdio-test#check-tty-cached] stdin:not-tty
+[labeled-stdio-test#check-tty-cached] stdout:not-tty
+[labeled-stdio-test#check-tty-cached] stderr:not-tty

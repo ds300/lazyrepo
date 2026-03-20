@@ -1,0 +1,5 @@
+# Tests env-test synthetic command with additional_envs
+
+[[plan]]
+name = "env-test synthetic task in user task"
+args = ["run", "env-test"]

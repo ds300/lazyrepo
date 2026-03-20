@@ -1,0 +1,49 @@
+[package]
+name = "vite_task_bin"
+version = "0.1.0"
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "vt"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+clap = { workspace = true, features = ["derive"] }
+jsonc-parser = { workspace = true }
+rustc-hash = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
+vite_path = { workspace = true }
+vite_str = { workspace = true }
+vite_task = { workspace = true }
+which = { workspace = true }
+
+[dev-dependencies]
+cow-utils = { workspace = true }
+cp_r = { workspace = true }
+insta = { workspace = true, features = ["glob", "json", "redactions", "filters", "ron"] }
+pathdiff = { workspace = true }
+pty_terminal = { workspace = true }
+pty_terminal_test = { workspace = true }
+regex = { workspace = true }
+serde = { workspace = true, features = ["derive", "rc"] }
+tempfile = { workspace = true }
+toml = { workspace = true }
+vite_path = { workspace = true, features = ["absolute-redaction"] }
+vite_workspace = { workspace = true }
+
+[lints]
+workspace = true
+
+[[test]]
+name = "e2e_snapshots"
+harness = false
+
+[lib]
+test = false
+doctest = false

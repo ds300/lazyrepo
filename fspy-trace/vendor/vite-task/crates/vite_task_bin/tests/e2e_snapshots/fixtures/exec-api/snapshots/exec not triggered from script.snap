@@ -1,0 +1,8 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+> FOO=bar vt run lint-task # no print-env FOO output
+$ vt lint
+Found 0 warnings and 0 errors.
+Finished in <duration> on 0 files with 93 rules using <n> threads.

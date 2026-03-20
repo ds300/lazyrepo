@@ -1,0 +1,16 @@
+# Verifies cache: true enables caching but does not override per-task cache: false
+
+# Task with per-task cache: false should not be cached
+[[plan]]
+name = "task with cache false not cached despite global cache true"
+args = ["run", "build"]
+
+# Task without per-task override should be cached
+[[plan]]
+name = "task cached when global cache true"
+args = ["run", "deploy"]
+
+# Script should be cached (cache: true enables scripts too)
+[[plan]]
+name = "script cached when global cache true"
+args = ["run", "test"]

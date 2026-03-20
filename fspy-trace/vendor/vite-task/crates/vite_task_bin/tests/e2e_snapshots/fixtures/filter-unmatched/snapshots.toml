@@ -1,0 +1,31 @@
+# Tests for unmatched --filter warnings on stderr
+
+# One filter matches, one doesn't → warning for the unmatched one, task still runs
+[[e2e]]
+name = "partial match warns for unmatched filter"
+steps = ["vt run --filter @test/app --filter nonexistent build"]
+
+# Multiple unmatched alongside a match → one warning per unmatched filter
+[[e2e]]
+name = "multiple unmatched filters warn individually"
+steps = ["vt run --filter @test/app --filter nope1 --filter nope2 build"]
+
+# Whitespace-split filter with one unmatched token
+[[e2e]]
+name = "whitespace split filter warns for unmatched token"
+steps = ["vt run --filter '@test/app nope' build"]
+
+# Exclusion filter that matches nothing does NOT warn (only inclusions warn)
+[[e2e]]
+name = "unmatched exclusion filter does not warn"
+steps = ["vt run --filter @test/app --filter '!nonexistent' build"]
+
+# Glob filter that matches nothing alongside a match
+[[e2e]]
+name = "unmatched glob filter warns"
+steps = ["vt run --filter @test/app --filter @nope/* build"]
+
+# Directory filter that matches nothing
+[[e2e]]
+name = "unmatched directory filter warns"
+steps = ["vt run --filter @test/app --filter ./packages/nope build"]

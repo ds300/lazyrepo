@@ -1,0 +1,324 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: task_graph_json
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/empty-package-test
+---
+[
+  {
+    "key": [
+      "<workspace>/packages/another-empty",
+      "build"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "",
+        "task_name": "build",
+        "package_path": "<workspace>/packages/another-empty"
+      },
+      "resolved_config": {
+        "command": "echo 'Building another-empty package'",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/another-empty",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "TaskConfig"
+    },
+    "neighbors": [
+      [
+        "<workspace>/packages/another-empty",
+        "lint"
+      ],
+      [
+        "<workspace>/packages/normal-package",
+        "test"
+      ]
+    ]
+  },
+  {
+    "key": [
+      "<workspace>/packages/another-empty",
+      "deploy"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "",
+        "task_name": "deploy",
+        "package_path": "<workspace>/packages/another-empty"
+      },
+      "resolved_config": {
+        "command": "echo 'Deploying another-empty package'",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/another-empty",
+          "cache_config": null
+        }
+      },
+      "source": "TaskConfig"
+    },
+    "neighbors": [
+      [
+        "<workspace>/packages/another-empty",
+        "build"
+      ],
+      [
+        "<workspace>/packages/another-empty",
+        "test"
+      ]
+    ]
+  },
+  {
+    "key": [
+      "<workspace>/packages/another-empty",
+      "lint"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "",
+        "task_name": "lint",
+        "package_path": "<workspace>/packages/another-empty"
+      },
+      "resolved_config": {
+        "command": "echo 'Linting another-empty package'",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/another-empty",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "TaskConfig"
+    },
+    "neighbors": []
+  },
+  {
+    "key": [
+      "<workspace>/packages/another-empty",
+      "test"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "",
+        "task_name": "test",
+        "package_path": "<workspace>/packages/another-empty"
+      },
+      "resolved_config": {
+        "command": "echo 'Testing another-empty package'",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/another-empty",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "TaskConfig"
+    },
+    "neighbors": []
+  },
+  {
+    "key": [
+      "<workspace>/packages/empty-name",
+      "build"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "",
+        "task_name": "build",
+        "package_path": "<workspace>/packages/empty-name"
+      },
+      "resolved_config": {
+        "command": "echo 'Building empty-name package'",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/empty-name",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "TaskConfig"
+    },
+    "neighbors": [
+      [
+        "<workspace>/packages/empty-name",
+        "test"
+      ]
+    ]
+  },
+  {
+    "key": [
+      "<workspace>/packages/empty-name",
+      "lint"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "",
+        "task_name": "lint",
+        "package_path": "<workspace>/packages/empty-name"
+      },
+      "resolved_config": {
+        "command": "echo 'Linting empty-name package'",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/empty-name",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "TaskConfig"
+    },
+    "neighbors": []
+  },
+  {
+    "key": [
+      "<workspace>/packages/empty-name",
+      "test"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "",
+        "task_name": "test",
+        "package_path": "<workspace>/packages/empty-name"
+      },
+      "resolved_config": {
+        "command": "echo 'Testing empty-name package'",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/empty-name",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "TaskConfig"
+    },
+    "neighbors": []
+  },
+  {
+    "key": [
+      "<workspace>/packages/normal-package",
+      "build"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "normal-package",
+        "task_name": "build",
+        "package_path": "<workspace>/packages/normal-package"
+      },
+      "resolved_config": {
+        "command": "echo 'Building normal-package'",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/normal-package",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "TaskConfig"
+    },
+    "neighbors": []
+  },
+  {
+    "key": [
+      "<workspace>/packages/normal-package",
+      "test"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "normal-package",
+        "task_name": "test",
+        "package_path": "<workspace>/packages/normal-package"
+      },
+      "resolved_config": {
+        "command": "echo 'Testing normal-package'",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/normal-package",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "TaskConfig"
+    },
+    "neighbors": []
+  }
+]

@@ -1,0 +1,34 @@
+# Tests cache key generation for various task configurations
+
+[[plan]]
+name = "synthetic task in user task"
+args = ["run", "lint"]
+
+[[plan]]
+name = "synthetic task with extra args in user task"
+args = ["run", "lint", "--fix"]
+
+[[plan]]
+name = "normal task with extra args"
+args = ["run", "hello", "a.txt"]
+
+[[plan]]
+name = "synthetic task in user task with cwd"
+cwd = "subdir"
+args = ["run", "lint"]
+
+[[plan]]
+name = "lint and echo with extra args"
+args = ["run", "lint-and-echo", "Linting complete"]
+
+[[plan]]
+name = "echo and lint with extra args"
+args = ["run", "echo-and-lint", "--fix"]
+
+[[e2e]]
+name = "direct lint"
+steps = [
+  "vt run lint # cache miss",
+  "echo debugger > main.js # add lint error",
+  "vt run lint # cache miss, lint fails",
+]

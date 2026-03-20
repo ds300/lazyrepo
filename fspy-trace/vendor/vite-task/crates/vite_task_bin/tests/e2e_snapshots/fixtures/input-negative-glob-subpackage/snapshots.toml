@@ -1,0 +1,98 @@
+# Test that negative input globs work correctly for subpackages.
+# Bug: negative globs were matched against workspace-relative paths
+# instead of package-relative paths, so exclusions like !dist/**
+# failed for subpackages.
+
+# Auto + negative in subpackage: input: [{ "auto": true }, "!dist/**"]
+# - dist/ should be excluded even though the package is a subpackage
+# - Modifying dist/output.js should be a cache hit
+[[e2e]]
+name = "subpackage auto with negative - hit on excluded inferred file"
+steps = [
+  # First run - reads both src/main.ts and dist/output.js
+  "vt run sub-pkg#auto-with-negative",
+  # Modify file in excluded directory (dist/)
+  "replace-file-content packages/sub-pkg/dist/output.js initial modified",
+  # Cache hit: dist/ is excluded by negative glob
+  "vt run sub-pkg#auto-with-negative",
+]
+
+[[e2e]]
+name = "subpackage auto with negative - miss on non-excluded inferred file"
+steps = [
+  # First run
+  "vt run sub-pkg#auto-with-negative",
+  # Modify file NOT in excluded directory
+  "replace-file-content packages/sub-pkg/src/main.ts initial modified",
+  # Cache miss: inferred input changed
+  "vt run sub-pkg#auto-with-negative",
+]
+
+# .. prefix positive globs: input: ["../shared/src/**"]
+# - Should find files in sibling package via ..
+# - Cache miss when sibling file changes, hit when unrelated file changes
+[[e2e]]
+name = "dotdot positive glob - miss on sibling file change"
+steps = [
+  "vt run sub-pkg#dotdot-positive",
+  # Modify a file that matches ../shared/src/**
+  "replace-file-content packages/shared/src/utils.ts initial modified",
+  # Cache miss: matched file changed
+  "vt run sub-pkg#dotdot-positive",
+]
+
+[[e2e]]
+name = "dotdot positive glob - hit on unmatched file change"
+steps = [
+  "vt run sub-pkg#dotdot-positive",
+  # Modify a file NOT matched by ../shared/src/**
+  "replace-file-content packages/shared/dist/output.js initial modified",
+  # Cache hit: file not in input
+  "vt run sub-pkg#dotdot-positive",
+]
+
+# .. prefix positive + negative globs: input: ["../shared/**", "!../shared/dist/**"]
+# - Positive glob matches sibling package files via ..
+# - Negative glob excludes sibling dist/ via ..
+[[e2e]]
+name = "dotdot positive negative - miss on non-excluded sibling file"
+steps = [
+  "vt run sub-pkg#dotdot-positive-negative",
+  # Modify file matching positive but NOT negative
+  "replace-file-content packages/shared/src/utils.ts initial modified",
+  # Cache miss: file changed
+  "vt run sub-pkg#dotdot-positive-negative",
+]
+
+[[e2e]]
+name = "dotdot positive negative - hit on excluded sibling file"
+steps = [
+  "vt run sub-pkg#dotdot-positive-negative",
+  # Modify file in excluded sibling dist/
+  "replace-file-content packages/shared/dist/output.js initial modified",
+  # Cache hit: excluded by !../shared/dist/**
+  "vt run sub-pkg#dotdot-positive-negative",
+]
+
+# .. prefix auto + negative: input: [{ "auto": true }, "!../shared/dist/**"]
+# - Auto-inferred files from sibling package are tracked
+# - Negative glob excludes sibling dist/ from inferred input
+[[e2e]]
+name = "dotdot auto negative - hit on excluded sibling inferred file"
+steps = [
+  "vt run sub-pkg#dotdot-auto-negative",
+  # Modify file in excluded sibling dist/
+  "replace-file-content packages/shared/dist/output.js initial modified",
+  # Cache hit: excluded by !../shared/dist/**
+  "vt run sub-pkg#dotdot-auto-negative",
+]
+
+[[e2e]]
+name = "dotdot auto negative - miss on non-excluded sibling inferred file"
+steps = [
+  "vt run sub-pkg#dotdot-auto-negative",
+  # Modify non-excluded sibling file
+  "replace-file-content packages/shared/src/utils.ts initial modified",
+  # Cache miss: inferred input changed
+  "vt run sub-pkg#dotdot-auto-negative",
+]

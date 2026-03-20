@@ -1,0 +1,23 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+info:
+  cwd: packages/a
+---
+> vt run build # populate summary file
+~/packages/a$ print built-a
+built-a
+> vt run --last-details # display saved summary
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    Vite+ Task Runner • Execution Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Statistics:   1 tasks • 0 cache hits • 1 cache misses
+Performance:  0% cache hit rate
+
+Task Details:
+────────────────────────────────────────────────
+  [1] @summary/a#build: ~/packages/a$ print built-a ✓
+      → Cache miss: no previous cache entry found
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

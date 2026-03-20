@@ -1,0 +1,15 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+> vt run root-glob-test
+$ print-file src/root.ts
+export const root = 'initial';
+> replace-file-content other/other.ts initial modified
+
+> vt run root-glob-test
+$ print-file src/root.ts ◉ cache hit, replaying
+export const root = 'initial';
+
+---
+vt run: cache hit, <duration> saved.

@@ -1,0 +1,6 @@
+{
+  "name": "@test/normal-pkg",
+  "scripts": {
+    "task": "print hello"
+  }
+}

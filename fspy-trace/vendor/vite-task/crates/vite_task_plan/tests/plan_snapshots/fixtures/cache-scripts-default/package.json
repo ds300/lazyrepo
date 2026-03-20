@@ -1,0 +1,7 @@
+{
+  "name": "@test/cache-scripts-default",
+  "scripts": {
+    "build": "print-file package.json",
+    "test": "print-file package.json"
+  }
+}

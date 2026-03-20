@@ -1,0 +1,20 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: "&compact_plan"
+info:
+  args:
+    - run
+    - "-w"
+    - "-r"
+    - check
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/filter-workspace
+---
+{
+  "#check": [
+    "packages/core#check"
+  ],
+  "packages/app#check": [
+    "packages/core#check"
+  ],
+  "packages/core#check": []
+}

@@ -1,0 +1,22 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+info:
+  cwd: packages/rw-pkg
+---
+> vt run -v task
+~/packages/rw-pkg$ replace-file-content src/data.txt original modified
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    Vite+ Task Runner • Execution Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Statistics:   1 tasks • 0 cache hits • 1 cache misses
+Performance:  0% cache hit rate
+
+Task Details:
+────────────────────────────────────────────────
+  [1] @test/rw-pkg#task: ~/packages/rw-pkg$ replace-file-content src/data.txt original modified ✓
+      → Not cached: read and wrote 'packages/rw-pkg/src/data.txt'
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

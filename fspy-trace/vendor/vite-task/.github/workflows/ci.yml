@@ -1,0 +1,220 @@
+name: CI
+
+permissions:
+  # Doing it explicitly because the default permission only includes metadata: read.
+  contents: read
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize]
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**/*.md'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.ref_name != 'main' }}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      code-changed: ${{ steps.filter.outputs.code }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        id: filter
+        with:
+          filters: |
+            code:
+              - '!**/*.md'
+
+  clippy:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.code-changed == 'true'
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          submodules: true
+
+      - uses: oxc-project/setup-rust@d286d43bc1f606abbd98096666ff8be68c8d5f57 # v1.0.0
+        with:
+          save-cache: ${{ github.ref_name == 'main' }}
+          cache-key: clippy
+          components: clippy
+
+      - run: rustup target add x86_64-unknown-linux-musl
+      - run: pip install cargo-zigbuild
+
+      # --locked: verify Cargo.lock is up to date (replaces the removed `cargo check --locked`)
+      - run: cargo clippy --locked --all-targets --all-features -- -D warnings
+
+  test:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.code-changed == 'true'
+    name: Test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+          - os: macos-latest
+            target: aarch64-apple-darwin
+          - os: macos-latest
+            target: x86_64-apple-darwin
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          submodules: true
+
+      - name: Setup Dev Drive
+        uses: samypr100/setup-dev-drive@30f0f98ae5636b2b6501e181dfb3631b9974818d # v4.0.0
+        if: runner.os == 'Windows'
+        with:
+          drive-size: 10GB
+          env-mapping: |
+            CARGO_HOME,{{ DEV_DRIVE }}/.cargo
+            RUSTUP_HOME,{{ DEV_DRIVE }}/.rustup
+
+      - uses: oxc-project/setup-rust@d286d43bc1f606abbd98096666ff8be68c8d5f57 # v1.0.0
+        with:
+          save-cache: ${{ github.ref_name == 'main' }}
+          cache-key: test
+
+      - run: rustup target add ${{ matrix.target }}
+
+      - run: rustup target add x86_64-unknown-linux-musl
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+
+      - run: pip install cargo-zigbuild
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+
+      # For x86_64-apple-darwin on arm64 runner, install x64 node so fspy preload dylib
+      # (compiled for x86_64) can be injected into node processes running under Rosetta.
+      # oxc-project/setup-node doesn't support the architecture input, so use
+      # pnpm/action-setup + actions/setup-node directly.
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        if: ${{ matrix.target == 'x86_64-apple-darwin' }}
+
+      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version-file: .node-version
+          architecture: x64
+        if: ${{ matrix.target == 'x86_64-apple-darwin' }}
+
+      - uses: oxc-project/setup-node@fdbf0dfd334c4e6d56ceeb77d91c76339c2a0885 # v1.0.4
+        if: ${{ matrix.target != 'x86_64-apple-darwin' }}
+
+      # `pnpm install` prepares test bins used in snapshot tests
+      # Must run after setup-node so correct native binaries are installed
+      - run: pnpm install
+
+      - run: cargo test --target ${{ matrix.target }}
+        if: ${{ matrix.os != 'ubuntu-latest' }}
+
+      - run: cargo-zigbuild test --target x86_64-unknown-linux-gnu.2.17
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+
+  test-musl:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.code-changed == 'true'
+    name: Test (musl)
+    runs-on: ubuntu-latest
+    container:
+      image: node:22-alpine3.21
+      options: --shm-size=256m # shm_io tests need bigger shared memory
+    env:
+      # Override all rustflags to skip the zig cross-linker from .cargo/config.toml.
+      # Alpine's cc is already musl-native, so no custom linker is needed.
+      # Must mirror [build].rustflags and target rustflags from .cargo/config.toml
+      # (RUSTFLAGS env var overrides both levels).
+      # -crt-static: vite-task is shipped as a NAPI module in vite+, and musl Node
+      # with native modules links to musl libc dynamically, so we must do the same.
+      RUSTFLAGS: --cfg tokio_unstable -D warnings -C target-feature=-crt-static
+      # On musl, concurrent PTY operations can trigger SIGSEGV in musl internals.
+      # Run test threads sequentially to avoid the race.
+      RUST_TEST_THREADS: 1
+    steps:
+      - name: Install Alpine dependencies
+        shell: sh {0}
+        run: apk add --no-cache bash curl git musl-dev gcc g++ python3
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          submodules: true
+
+      - name: Install rustup
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain none
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+
+      - name: Install Rust toolchain
+        run: rustup show
+
+      - name: Install pnpm and Node tools
+        run: |
+          corepack enable
+          pnpm install
+
+      - run: cargo test
+
+  fmt:
+    name: Format and Check Deps
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          submodules: true
+
+      - uses: oxc-project/setup-rust@d286d43bc1f606abbd98096666ff8be68c8d5f57 # v1.0.0
+        with:
+          save-cache: ${{ github.ref_name == 'main' }}
+          cache-key: fmt
+          tools: cargo-shear@1.11.1
+          components: clippy rust-docs rustfmt
+
+      - uses: oxc-project/setup-node@fdbf0dfd334c4e6d56ceeb77d91c76339c2a0885 # v1.0.4
+      - run: pnpm oxfmt --check
+      - run: cargo shear --deny-warnings
+      - run: cargo fmt --check
+      - run: RUSTDOCFLAGS='-D warnings' cargo doc --no-deps --document-private-items
+
+      - uses: crate-ci/typos@631208b7aac2daa8b707f55e7331f9112b0e062d # v1.44.0
+        with:
+          files: .
+
+      - name: Deduplicate dependencies
+        run: pnpm dedupe --check
+
+  done:
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - clippy
+      - test
+      - test-musl
+      - fmt
+    steps:
+      - run: exit 1
+        # Thank you, next https://github.com/vercel/next.js/blob/canary/.github/workflows/build_and_test.yml#L379
+        if: ${{ always() && (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')) }}

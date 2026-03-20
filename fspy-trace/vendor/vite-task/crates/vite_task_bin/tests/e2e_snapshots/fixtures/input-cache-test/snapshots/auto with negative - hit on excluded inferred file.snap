@@ -1,0 +1,17 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+> vt run auto-with-negative
+$ print-file src/main.ts dist/output.js
+export const main = 'initial';
+// initial output
+> replace-file-content dist/output.js initial modified
+
+> vt run auto-with-negative
+$ print-file src/main.ts dist/output.js ◉ cache hit, replaying
+export const main = 'initial';
+// initial output
+
+---
+vt run: cache hit, <duration> saved.

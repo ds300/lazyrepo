@@ -1,0 +1,3 @@
+[[plan]]
+name = "cache clean in script"
+args = ["run", "clean-cache"]

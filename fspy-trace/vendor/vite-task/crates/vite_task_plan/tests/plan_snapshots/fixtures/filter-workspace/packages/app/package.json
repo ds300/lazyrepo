@@ -1,0 +1,16 @@
+{
+  "name": "@test/app",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "echo 'Building @test/app'",
+    "check": "echo 'Checking @test/app'",
+    "test": "echo 'Testing @test/app'",
+    "deploy": "vt run --filter .... build"
+  },
+  "dependencies": {
+    "@test/lib": "workspace:*"
+  },
+  "devDependencies": {
+    "@test/utils": "workspace:*"
+  }
+}

@@ -1,0 +1,6 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+[3]> vt run pkg-a#chained # first fails with exit code 3, second should not run
+~/packages/pkg-a$ node -e "process.exit(3)"
