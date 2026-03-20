@@ -6,7 +6,7 @@ import { createLazyWriteStream } from '../manifest/createLazyWriteStream.js'
 import { dirname, join, relative } from '../path.js'
 import { spawn } from './spawn.js'
 
-const SHELL_METACHARACTERS = /[|&;<>()$`\\"'*?#~!{}[\]\n]/
+const SHELL_METACHARACTERS = /[|&;<>()$`*?#~!{}[\]\n]/
 const SHELL_BUILTINS = new Set([
   'exit',
   'cd',
@@ -87,11 +87,89 @@ const WINDOWS_SHELL_BUILTINS = new Set([
  */
 function commandNeedsShell(command) {
   if (SHELL_METACHARACTERS.test(command)) return true
-  const firstWord = command.trim().split(/\s+/)[0]
+  const parts = splitCommandArgs(command)
+  if (!parts || parts.length === 0) return true
+  const [firstWord] = parts
   return (
     SHELL_BUILTINS.has(firstWord) ||
     (process.platform === 'win32' && WINDOWS_SHELL_BUILTINS.has(firstWord.toLowerCase()))
   )
+}
+
+/**
+ * Split a simple shell command string into argv while preserving quoted arguments.
+ * Returns `null` for unterminated quotes so callers can fall back to shell execution.
+ * @param {string} command
+ * @returns {string[] | null}
+ */
+function splitCommandArgs(command) {
+  /** @type {string[]} */
+  const parts = []
+  let current = ''
+  /** @type {"'" | '"' | null} */
+  let quote = null
+
+  const pushCurrent = () => {
+    if (current) {
+      parts.push(current)
+      current = ''
+    }
+  }
+
+  for (let i = 0; i < command.length; i++) {
+    const ch = command[i]
+
+    if (quote === "'") {
+      if (ch === "'") {
+        quote = null
+      } else {
+        current += ch
+      }
+      continue
+    }
+
+    if (quote === '"') {
+      if (ch === '"') {
+        quote = null
+      } else if (ch === '\\') {
+        const next = command[i + 1]
+        if (next === '"' || next === '\\') {
+          current += next
+          i++
+        } else {
+          current += ch
+        }
+      } else {
+        current += ch
+      }
+      continue
+    }
+
+    if (/\s/.test(ch)) {
+      pushCurrent()
+      continue
+    }
+
+    if (ch === "'" || ch === '"') {
+      quote = ch
+      continue
+    }
+
+    if (ch === '\\') {
+      const next = command[i + 1]
+      if (next && (/\s/.test(next) || next === '"' || next === "'" || next === '\\')) {
+        current += next
+        i++
+        continue
+      }
+    }
+
+    current += ch
+  }
+
+  if (quote) return null
+  pushCurrent()
+  return parts
 }
 
 /**
@@ -160,7 +238,10 @@ export async function runTask(task, tasks) {
       if (commandNeedsShell(fullCommand)) {
         fspyArgs = ['--output', trackingOutputPath, '--', ...getTrackingShellArgs(fullCommand)]
       } else {
-        const parts = fullCommand.trim().split(/\s+/)
+        const parts = splitCommandArgs(fullCommand)
+        if (!parts || parts.length === 0) {
+          throw new Error(`Could not parse command: ${fullCommand}`)
+        }
         fspyArgs = ['--output', trackingOutputPath, '--', ...parts]
       }
 
