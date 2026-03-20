@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from '../fs.js'
-import { relative } from '../path.js'
+import { normalize, relative } from '../path.js'
 
 /**
  * @typedef {Object} FileAccess
@@ -54,6 +54,10 @@ export function getTrackedReadPaths(trackingJsonPath, projectRoot) {
     return null
   }
 
+  const normalizedProjectRoot = normalize(projectRoot)
+  const comparableProjectRoot =
+    process.platform === 'win32' ? normalizedProjectRoot.toLowerCase() : normalizedProjectRoot
+
   /** @type {Set<string>} */
   const trackedReadPaths = new Set()
   for (const access of accesses) {
@@ -63,13 +67,17 @@ export function getTrackedReadPaths(trackingJsonPath, projectRoot) {
     if (access.mode !== 'read' && !access.mode.includes('read')) {
       continue
     }
-    if (!access.path.startsWith(projectRoot)) {
+    const normalizedAccessPath = normalize(access.path)
+    const comparableAccessPath =
+      process.platform === 'win32' ? normalizedAccessPath.toLowerCase() : normalizedAccessPath
+
+    if (!comparableAccessPath.startsWith(comparableProjectRoot)) {
       continue
     }
-    if (shouldIgnorePath(access.path)) {
+    if (shouldIgnorePath(normalizedAccessPath)) {
       continue
     }
-    const relativePath = relative(projectRoot, access.path)
+    const relativePath = relative(normalizedProjectRoot, normalizedAccessPath)
     if (!relativePath || relativePath.startsWith('..')) {
       continue
     }

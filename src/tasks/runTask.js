@@ -1,5 +1,6 @@
 import pc from 'picocolors'
 import stripAnsi from 'strip-ansi'
+import { delimiter as pathDelimiter } from 'node:path'
 import { cwd } from '../cwd.js'
 import { mkdirSync } from '../fs.js'
 import { createLazyWriteStream } from '../manifest/createLazyWriteStream.js'
@@ -300,9 +301,11 @@ export async function runTask(task, tasks) {
 
     const taskEnv = {
       ...process.env,
-      PATH: `./node_modules/.bin:${join(tasks.config.project.root.dir, 'node_modules/.bin')}:${
-        process.env.PATH ?? ''
-      }`,
+      PATH: [
+        './node_modules/.bin',
+        join(tasks.config.project.root.dir, 'node_modules/.bin'),
+        process.env.PATH ?? '',
+      ].join(pathDelimiter),
       FORCE_COLOR: '1',
       npm_lifecycle_event: task.scriptName,
       __LAZY_WORKFLOW__: 'true',
