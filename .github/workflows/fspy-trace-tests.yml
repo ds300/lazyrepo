@@ -3,7 +3,9 @@ name: fspy-trace tests
 on:
   push:
     paths:
+      - '.github/workflows/fspy-trace-tests.yml'
       - 'fspy-trace/**'
+      - 'src/manifest/**'
       - 'src/tracking/**'
       - 'src/config/**'
       - 'src/tasks/runTask.js'
@@ -11,7 +13,9 @@ on:
       - 'test/integration/track-inputs.test.ts'
   pull_request:
     paths:
+      - '.github/workflows/fspy-trace-tests.yml'
       - 'fspy-trace/**'
+      - 'src/manifest/**'
       - 'src/tracking/**'
       - 'src/config/**'
       - 'src/tasks/runTask.js'
