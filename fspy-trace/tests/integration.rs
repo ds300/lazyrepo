@@ -36,6 +36,14 @@ fn node_command(script: &str, args: &[&str]) -> Vec<String> {
     command
 }
 
+fn tracked_path_matches(access: &FileAccess, expected: &std::path::Path) -> bool {
+    access.mode.contains("read") && PathBuf::from(&access.path) == expected
+}
+
+fn tracked_write_path_matches(access: &FileAccess, expected: &std::path::Path) -> bool {
+    access.mode.contains("write") && PathBuf::from(&access.path) == expected
+}
+
 fn shell_command(command: impl Into<String>) -> Vec<String> {
     let command = command.into();
     #[cfg(windows)]
@@ -81,7 +89,7 @@ fn test_read_tracking() {
 
     let reads: Vec<_> = accesses
         .iter()
-        .filter(|a| a.path == fixture_str && a.mode.contains("read"))
+        .filter(|a| tracked_path_matches(a, &fixture_path))
         .collect();
     assert!(
         !reads.is_empty(),
@@ -112,7 +120,7 @@ fn test_write_tracking() {
 
     let writes: Vec<_> = accesses
         .iter()
-        .filter(|a| a.path == write_target_path && a.mode.contains("write"))
+        .filter(|a| tracked_write_path_matches(a, &write_target))
         .collect();
     assert!(
         !writes.is_empty(),
@@ -182,7 +190,7 @@ fn test_child_process_inheritance() {
 
     let reads: Vec<_> = accesses
         .iter()
-        .filter(|a| a.path == fixture_str && a.mode.contains("read"))
+        .filter(|a| tracked_path_matches(a, &fixture_path))
         .collect();
     assert!(
         !reads.is_empty(),
@@ -220,7 +228,7 @@ fn test_missing_file_probe() {
 
     let probes: Vec<_> = accesses
         .iter()
-        .filter(|a| a.path == nonexistent_str)
+        .filter(|a| PathBuf::from(&a.path) == nonexistent)
         .collect();
     assert!(
         !probes.is_empty(),

@@ -79,7 +79,7 @@ const WINDOWS_SHELL_BUILTINS = new Set([
 ])
 const WINDOWS_TRACKING_RUNNER = `
 const { spawn } = require('node:child_process')
-const [, , mode, ...rest] = process.argv
+const [, mode, ...rest] = process.argv
 const child =
   mode === 'shell'
     ? spawn(rest[0], { shell: true, stdio: 'inherit', env: process.env })
