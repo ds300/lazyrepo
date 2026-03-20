@@ -40,6 +40,44 @@ const SHELL_BUILTINS = new Set([
   'getopts',
   'times',
 ])
+const WINDOWS_SHELL_BUILTINS = new Set([
+  'assoc',
+  'break',
+  'call',
+  'chdir',
+  'cls',
+  'copy',
+  'date',
+  'del',
+  'dir',
+  'echo',
+  'erase',
+  'for',
+  'ftype',
+  'if',
+  'md',
+  'mkdir',
+  'mklink',
+  'move',
+  'path',
+  'pause',
+  'popd',
+  'prompt',
+  'pushd',
+  'rd',
+  'ren',
+  'rename',
+  'rmdir',
+  'set',
+  'shift',
+  'start',
+  'time',
+  'title',
+  'type',
+  'ver',
+  'verify',
+  'vol',
+])
 
 /**
  * Check whether a command string requires a shell to interpret it.
@@ -50,7 +88,24 @@ const SHELL_BUILTINS = new Set([
 function commandNeedsShell(command) {
   if (SHELL_METACHARACTERS.test(command)) return true
   const firstWord = command.trim().split(/\s+/)[0]
-  return SHELL_BUILTINS.has(firstWord)
+  return (
+    SHELL_BUILTINS.has(firstWord) ||
+    (process.platform === 'win32' && WINDOWS_SHELL_BUILTINS.has(firstWord.toLowerCase()))
+  )
+}
+
+/**
+ * Build the explicit shell invocation for tracked commands.
+ * On Windows, mirror `child_process.spawn({ shell: true })` by using `cmd.exe`
+ * instead of forcing Git Bash, which changes runtime behavior and can crash.
+ * @param {string} command
+ * @returns {string[]}
+ */
+function getTrackingShellArgs(command) {
+  if (process.platform === 'win32') {
+    return [process.env.ComSpec || 'cmd.exe', '/d', '/s', '/c', command]
+  }
+  return ['bash', '-c', command]
 }
 
 /**
@@ -103,7 +158,7 @@ export async function runTask(task, tasks) {
       /** @type {string[]} */
       let fspyArgs
       if (commandNeedsShell(fullCommand)) {
-        fspyArgs = ['--output', trackingOutputPath, '--', 'bash', '-c', fullCommand]
+        fspyArgs = ['--output', trackingOutputPath, '--', ...getTrackingShellArgs(fullCommand)]
       } else {
         const parts = fullCommand.trim().split(/\s+/)
         fspyArgs = ['--output', trackingOutputPath, '--', ...parts]

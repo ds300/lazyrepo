@@ -18,15 +18,42 @@ fn fixtures_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures")
 }
 
+fn shell_command(command: impl Into<String>) -> Vec<String> {
+    let command = command.into();
+    #[cfg(windows)]
+    {
+        vec![
+            "cmd".to_string(),
+            "/d".to_string(),
+            "/s".to_string(),
+            "/c".to_string(),
+            command,
+        ]
+    }
+    #[cfg(not(windows))]
+    {
+        vec!["bash".to_string(), "-c".to_string(), command]
+    }
+}
+
 #[test]
 fn test_read_tracking() {
     let output_file = tempfile::NamedTempFile::new().unwrap();
     let output_path = output_file.path().to_str().unwrap();
     let fixture_path = fixtures_dir().join("hello.txt");
+    let fixture_str = fixture_path.to_str().unwrap();
+
+    let mut args = vec!["--output".to_string(), output_path.to_string(), "--".to_string()];
+    #[cfg(windows)]
+    args.extend(shell_command(format!(r#"type "{fixture_str}""#)));
+    #[cfg(not(windows))]
+    {
+        args.push("cat".to_string());
+        args.push(fixture_str.to_string());
+    }
 
     fspy_trace()
-        .args(["--output", output_path, "--", "cat"])
-        .arg(&fixture_path)
+        .args(&args)
         .assert()
         .success()
         .stdout(predicate::str::contains("hello from test fixture"));
@@ -34,7 +61,6 @@ fn test_read_tracking() {
     let json = std::fs::read_to_string(output_path).unwrap();
     let accesses: Vec<FileAccess> = serde_json::from_str(&json).unwrap();
 
-    let fixture_str = fixture_path.to_str().unwrap();
     let reads: Vec<_> = accesses
         .iter()
         .filter(|a| a.path == fixture_str && a.mode.contains("read"))
@@ -49,15 +75,14 @@ fn test_write_tracking() {
     let write_target = tempfile::NamedTempFile::new().unwrap();
     let write_target_path = write_target.path().to_str().unwrap();
 
+    let mut args = vec!["--output".to_string(), output_path.to_string(), "--".to_string()];
+    #[cfg(windows)]
+    args.extend(shell_command(format!(r#"echo test > "{write_target_path}""#)));
+    #[cfg(not(windows))]
+    args.extend(shell_command(format!("echo test > {write_target_path}")));
+
     fspy_trace()
-        .args([
-            "--output",
-            output_path,
-            "--",
-            "bash",
-            "-c",
-            &format!("echo test > {write_target_path}"),
-        ])
+        .args(&args)
         .assert()
         .success();
 
@@ -79,8 +104,11 @@ fn test_exit_code_forwarding() {
     let output_file = tempfile::NamedTempFile::new().unwrap();
     let output_path = output_file.path().to_str().unwrap();
 
+    let mut args = vec!["--output".to_string(), output_path.to_string(), "--".to_string()];
+    args.extend(shell_command("exit 42"));
+
     fspy_trace()
-        .args(["--output", output_path, "--", "bash", "-c", "exit 42"])
+        .args(&args)
         .assert()
         .code(42);
 }
@@ -90,15 +118,14 @@ fn test_stdio_passthrough() {
     let output_file = tempfile::NamedTempFile::new().unwrap();
     let output_path = output_file.path().to_str().unwrap();
 
+    let mut args = vec!["--output".to_string(), output_path.to_string(), "--".to_string()];
+    #[cfg(windows)]
+    args.extend(shell_command("echo stdout_marker && echo stderr_marker 1>&2"));
+    #[cfg(not(windows))]
+    args.extend(shell_command(r#"echo "stdout_marker" && echo "stderr_marker" >&2"#));
+
     fspy_trace()
-        .args([
-            "--output",
-            output_path,
-            "--",
-            "bash",
-            "-c",
-            r#"echo "stdout_marker" && echo "stderr_marker" >&2"#,
-        ])
+        .args(&args)
         .assert()
         .success()
         .stdout(predicate::str::contains("stdout_marker"))
@@ -112,15 +139,16 @@ fn test_child_process_inheritance() {
     let fixture_path = fixtures_dir().join("hello.txt");
     let fixture_str = fixture_path.to_str().unwrap();
 
+    let mut args = vec!["--output".to_string(), output_path.to_string(), "--".to_string()];
+    #[cfg(windows)]
+    args.extend(shell_command(format!(
+        r#"cmd /d /s /c "type ""{fixture_str}"" > nul""#
+    )));
+    #[cfg(not(windows))]
+    args.extend(shell_command(format!("bash -c 'cat {fixture_str} > /dev/null'")));
+
     fspy_trace()
-        .args([
-            "--output",
-            output_path,
-            "--",
-            "bash",
-            "-c",
-            &format!("bash -c 'cat {fixture_str} > /dev/null'"),
-        ])
+        .args(&args)
         .assert()
         .success();
 
@@ -145,15 +173,16 @@ fn test_missing_file_probe() {
     let nonexistent = fixtures_dir().join("does_not_exist.txt");
     let nonexistent_str = nonexistent.to_str().unwrap();
 
+    let mut args = vec!["--output".to_string(), output_path.to_string(), "--".to_string()];
+    #[cfg(windows)]
+    args.extend(shell_command(format!(
+        r#"type "{nonexistent_str}" 2>nul & exit /b 0"#
+    )));
+    #[cfg(not(windows))]
+    args.extend(shell_command(format!("cat {nonexistent_str} 2>/dev/null; true")));
+
     fspy_trace()
-        .args([
-            "--output",
-            output_path,
-            "--",
-            "bash",
-            "-c",
-            &format!("cat {nonexistent_str} 2>/dev/null; true"),
-        ])
+        .args(&args)
         .assert()
         .success();
 
