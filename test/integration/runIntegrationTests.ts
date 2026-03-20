@@ -134,13 +134,26 @@ class TestHarness {
   ): Promise<{ output: string; status: number }> {
     const expectError = options?.expectError ?? false
     return new Promise((resolve, reject) => {
+      // On Windows, env vars are case-insensitive at the OS level but JS objects
+      // are case-sensitive. Remove any process.env keys that will be overridden
+      // by options.env to avoid duplicate entries with different casing.
+      const baseEnv: Record<string, string | undefined> = { ...process.env }
+      if (process.platform === 'win32' && options?.env) {
+        const overrideKeys = new Set(Object.keys(options.env).map((k) => k.toLowerCase()))
+        for (const key of Object.keys(baseEnv)) {
+          if (overrideKeys.has(key.toLowerCase())) {
+            delete baseEnv[key]
+          }
+        }
+      }
+
       const proc = spawn(
         'node',
         [...(options?.inspect ? ['--inspect'] : []), join(cwd, 'bin.js'), ...args],
         {
           cwd: options?.packageDir ? join(this.config.dir, options.packageDir) : this.config.dir,
           env: {
-            ...process.env,
+            ...baseEnv,
             __test__IS_CI_OVERRIDE: 'false',
             ...options?.env,
           },
