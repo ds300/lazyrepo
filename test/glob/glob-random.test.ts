@@ -762,3 +762,36 @@ test('regression 27', () => {
     ]
   `)
 })
+
+test('regression 28', () => {
+  expect(
+    doComparison({
+      patterns: [
+        '!{dist*}/node_modules_src/+(bulb-banana.md|bulb-stick|*stove.md)',
+        '!/**/node_modules*',
+      ],
+      cwd: '/.node_modules-src/dist',
+      paths: {
+        'bulb.ts': 'ok',
+        lib_lib: {
+          node_modules: {
+            node_modules_lib: {
+              'stick-stove.ts': 'ok',
+            },
+          },
+        },
+        '.node_modules-src': {
+          dist: {
+            node_modules: {
+              'banana-stick': 'ok',
+            },
+          },
+        },
+        'bulb.json': 'ok',
+      },
+      expandDirectories: false,
+      dot: false,
+      types: 'files',
+    }),
+  ).toMatchInlineSnapshot(`[]`)
+})

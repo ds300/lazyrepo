@@ -65,7 +65,7 @@ export const oneCharMatchFn = (entry, _options, matcher) => {
 
 /** @type {MatchFn} */
 export const recursiveWildcardMatchFn = (entry, options, matcher) => {
-  const ignore = entry.name[0] === '.' && !options.dot
+  const ignore = entry.name[0] === '.' && !options.dot && !matcher.negating
   if (!matcher.next) {
     // negative wildcards always match dotfiles
     if (matcher.negating) return 'terminal'
