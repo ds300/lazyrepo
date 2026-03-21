@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "script1": "print hello",
+    "script2": "print hello"
+  }
+}

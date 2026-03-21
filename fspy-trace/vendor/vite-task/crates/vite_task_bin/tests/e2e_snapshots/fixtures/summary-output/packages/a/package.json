@@ -1,0 +1,6 @@
+{
+  "name": "@summary/a",
+  "scripts": {
+    "build": "print built-a"
+  }
+}

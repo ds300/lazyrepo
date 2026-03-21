@@ -15,6 +15,7 @@ export const globConfigSchema = z.union([
 
 export const _cacheConfigSchema = z
   .object({
+    auto: z.boolean().optional(),
     inputs: globConfigSchema.optional(),
     outputs: globConfigSchema.optional(),
     envInputs: z.array(z.string()).optional(),

@@ -1,0 +1,22 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+> vt run folder-slash-input
+$ print-file src/main.ts
+export const main = 'initial';
+> replace-file-content src/main.ts initial modified
+
+> vt run folder-slash-input
+$ print-file src/main.ts ○ cache miss: 'src/main.ts' modified, executing
+export const main = 'modified';
+> replace-file-content src/main.ts modified initial
+
+> vt run folder-slash-input
+$ print-file src/main.ts ○ cache miss: 'src/main.ts' modified, executing
+export const main = 'initial';
+> replace-file-content src/sub/nested.ts initial modified
+
+> vt run folder-slash-input
+$ print-file src/main.ts ○ cache miss: 'src/sub/nested.ts' modified, executing
+export const main = 'initial';

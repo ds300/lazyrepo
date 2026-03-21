@@ -1,9 +1,7 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 /**
  * We want to always use posix-style forward slash paths
  */
 
-// eslint-disable-next-line no-restricted-imports
 import path from 'path'
 import slash from 'slash'
 export const isAbsolute = path.isAbsolute

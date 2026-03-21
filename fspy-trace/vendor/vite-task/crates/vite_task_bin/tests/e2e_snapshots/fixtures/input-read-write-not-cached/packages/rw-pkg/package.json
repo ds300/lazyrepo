@@ -1,0 +1,9 @@
+{
+  "name": "@test/rw-pkg",
+  "scripts": {
+    "task": "replace-file-content src/data.txt original modified"
+  },
+  "dependencies": {
+    "@test/normal-pkg": "workspace:*"
+  }
+}

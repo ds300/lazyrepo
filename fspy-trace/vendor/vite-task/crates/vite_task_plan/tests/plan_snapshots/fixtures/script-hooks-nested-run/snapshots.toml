@@ -1,0 +1,7 @@
+# Tests that hooks of scripts called via `vt run` within a hook are properly expanded.
+# When `pretest` (a hook of `test`) runs `vt run scriptInHook`, the `prescriptInHook`
+# hook of `scriptInHook` should still be found and executed.
+
+[[plan]]
+name = "prescriptInHook runs when scriptInHook is called from a hook"
+args = ["run", "test"]

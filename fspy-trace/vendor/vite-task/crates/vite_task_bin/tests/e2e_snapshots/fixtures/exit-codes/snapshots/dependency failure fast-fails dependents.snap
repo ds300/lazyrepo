@@ -1,0 +1,8 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+info:
+  cwd: packages/pkg-b
+---
+[1]> vt run -t check # pkg-a fails, pkg-b is skipped
+~/packages/pkg-a$ node -e "process.exit(1)"

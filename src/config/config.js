@@ -170,9 +170,12 @@ export class TaskConfig {
 
   /** @type {[string, RunsAfterConfig][]} */
   get runsAfterEntries() {
-    return Object.entries(this.scriptConfig.runsAfter ?? {}).map(([name, config]) => {
-      return [name, new RunsAfterConfig(config)]
-    })
+    return Object.entries(this.scriptConfig.runsAfter ?? {}).map(
+      /** @returns {[string, RunsAfterConfig]} */
+      ([name, config]) => {
+        return [name, new RunsAfterConfig(config)]
+      },
+    )
   }
 
   /** @type {boolean} */
@@ -186,14 +189,15 @@ export class TaskConfig {
       return this.scriptConfig.cache
     } else {
       const inheritsInputFromDependencies = isDependentScript(this.scriptConfig)
-        ? this.scriptConfig.cache?.inheritsInputFromDependencies ?? true
+        ? (this.scriptConfig.cache?.inheritsInputFromDependencies ?? true)
         : false
 
       const usesOutputFromDependencies = isDependentScript(this.scriptConfig)
-        ? this.scriptConfig.cache?.usesOutputFromDependencies ?? true
+        ? (this.scriptConfig.cache?.usesOutputFromDependencies ?? true)
         : false
 
       return {
+        auto: this.scriptConfig.cache?.auto ?? true,
         envInputs: this.scriptConfig.cache?.envInputs ?? [],
         inputs: extractGlobPattern(this.scriptConfig.cache?.inputs, ['**/*']),
         outputs: extractGlobPattern(this.scriptConfig.cache?.outputs, []),

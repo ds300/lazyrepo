@@ -1,0 +1,37 @@
+[package]
+name = "vite_task_graph"
+version = "0.1.0"
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+bincode = { workspace = true }
+monostate = { workspace = true }
+petgraph = { workspace = true }
+rustc-hash = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+vite_graph_ser = { workspace = true }
+vite_path = { workspace = true }
+vite_str = { workspace = true }
+vite_workspace = { workspace = true }
+wax = { workspace = true }
+
+[dev-dependencies]
+pretty_assertions = { workspace = true }
+ts-rs = { workspace = true, features = ["no-serde-warnings"] }
+vite_path = { workspace = true, features = ["ts-rs"] }
+vite_str = { workspace = true, features = ["ts-rs"] }
+which = { workspace = true }
+
+[lints]
+workspace = true
+
+[lib]
+doctest = false

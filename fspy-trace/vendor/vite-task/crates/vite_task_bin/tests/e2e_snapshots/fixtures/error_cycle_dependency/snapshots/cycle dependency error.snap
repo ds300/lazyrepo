@@ -1,0 +1,6 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+[1]> vt run task-a # task-a -> task-b -> task-a cycle
+Error: Cycle dependency detected: error-cycle-dependency-test#task-a -> error-cycle-dependency-test#task-b -> error-cycle-dependency-test#task-a

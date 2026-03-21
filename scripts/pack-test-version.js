@@ -1,4 +1,5 @@
-import { readFileSync, writeFileSync } from 'fs'
+import { execSync } from 'child_process'
+import { copyFileSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
 import pc from 'picocolors'
 import { dedent } from 'ts-dedent'
 import { cwd } from '../src/cwd.js'
@@ -6,8 +7,16 @@ import { join } from '../src/path.js'
 import { exec } from './lib/exec.js'
 import { getCurrentVersion } from './lib/getCurrentVersion.js'
 
+const suffix = process.platform === 'win32' ? '.exe' : ''
+const binaryName = `fspy-trace${suffix}`
+const builtBinary = join('fspy-trace', 'target', 'release', binaryName)
+const bundledBinary = join('assets', binaryName)
+
+console.log('building fspy-trace...')
+execSync('cargo build --release', { cwd: 'fspy-trace', stdio: 'inherit' })
+copyFileSync(builtBinary, bundledBinary)
+
 const currentVersion = getCurrentVersion()
-// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
 const version = '0.0.0-test.' + Date.now()
 exec(`npm version ${version} --no-git-tag-version`)
 const bin = readFileSync('./bin.js')
@@ -23,7 +32,8 @@ writeFileSync('./index.d.ts', `export * from "${cwd}/src/config/config-types.js"
 
 let outPath
 try {
-  outPath = exec(`npm pack`)
+  const packOutput = exec(`npm pack --json`)
+  outPath = JSON.parse(packOutput)[0].filename
 } finally {
   writeFileSync('./bin.js', bin, {
     // make executable
@@ -31,6 +41,7 @@ try {
   })
   writeFileSync('./src/cli.js', cli)
   writeFileSync('./index.d.ts', types)
+  unlinkSync(bundledBinary)
 }
 
 exec(`npm version ${currentVersion} --no-git-tag-version`)

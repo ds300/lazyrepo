@@ -3,8 +3,8 @@ import { makeFiles, testGlob } from './glob-test-utils.js'
 
 // * and ** are tested by glob-random.test.ts
 
-jest.mock('../../src/fs.js', () => {
-  return require('memfs')
+vi.mock('../../src/fs.js', async () => {
+  return await import('memfs')
 })
 
 beforeEach(() => {

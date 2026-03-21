@@ -8,11 +8,13 @@ import { join } from '../../src/path.js'
 import { PackageJson } from '../../src/types.js'
 import { rimraf } from '../../src/utils/rimraf.js'
 
-jest.setTimeout(30 * 1000)
+vi.setConfig({ testTimeout: 30_000 })
 
 const cleanup = ({ text, rootDir }: { text: string; rootDir: string }) =>
   stripAnsi(text)
     .replace(/DEBUG.*\n/g, '')
+    .replace(/.*\(node:\d+\).*(?:Warning|DeprecationWarning).*\n/g, '')
+    .replace(/.*\(Use `node --trace-(?:warnings|deprecation) \.\.\.`.*\n/g, '')
     .replaceAll(rootDir, '__ROOT_DIR__')
 
 class TestHarness {
@@ -42,6 +44,9 @@ class TestHarness {
 
   read(path: string) {
     return readFileSync(join(this.config.dir, path), 'utf-8')
+      .replace(/\x1b\[[0-9;]*m/g, '')
+      .replace(/.*\(node:\d+\).*(?:Warning|DeprecationWarning).*\n/g, '')
+      .replace(/.*\(Use `node --trace-(?:warnings|deprecation) \.\.\.`.*\n/g, '')
   }
 
   exists(path: string) {
@@ -84,19 +89,19 @@ class TestHarness {
   //   options?: { packageDir?: string; env?: NodeJS.ProcessEnv; expectError?: boolean },
   // ) {
   //   const expectError = options?.expectError ?? false
-  //   const cwd = jest.spyOn(process, 'cwd').mockImplementation(() => this.config.dir)
+  //   const cwd = vi.spyOn(process, 'cwd').mockImplementation(() => this.config.dir)
   //   let output = ''
-  //   const outWrite = jest.spyOn(process.stdout, 'write').mockImplementation((data) => {
+  //   const outWrite = vi.spyOn(process.stdout, 'write').mockImplementation((data) => {
   //     output += data
   //     return true
   //   })
 
-  //   const errWrite = jest.spyOn(process.stderr, 'write').mockImplementation((data) => {
+  //   const errWrite = vi.spyOn(process.stderr, 'write').mockImplementation((data) => {
   //     output += data
   //     return true
   //   })
   //   let status = 0
-  //   const exit = jest.spyOn(process, 'exit').mockImplementation((code) => {
+  //   const exit = vi.spyOn(process, 'exit').mockImplementation((code) => {
   //     status = code ?? 0
   //     return undefined as never
   //   })
@@ -129,13 +134,26 @@ class TestHarness {
   ): Promise<{ output: string; status: number }> {
     const expectError = options?.expectError ?? false
     return new Promise((resolve, reject) => {
+      // On Windows, env vars are case-insensitive at the OS level but JS objects
+      // are case-sensitive. Remove any process.env keys that will be overridden
+      // by options.env to avoid duplicate entries with different casing.
+      const baseEnv: Record<string, string | undefined> = { ...process.env }
+      if (process.platform === 'win32' && options?.env) {
+        const overrideKeys = new Set(Object.keys(options.env).map((k) => k.toLowerCase()))
+        for (const key of Object.keys(baseEnv)) {
+          if (overrideKeys.has(key.toLowerCase())) {
+            delete baseEnv[key]
+          }
+        }
+      }
+
       const proc = spawn(
         'node',
         [...(options?.inspect ? ['--inspect'] : []), join(cwd, 'bin.js'), ...args],
         {
           cwd: options?.packageDir ? join(this.config.dir, options.packageDir) : this.config.dir,
           env: {
-            ...process.env,
+            ...baseEnv,
             __test__IS_CI_OVERRIDE: 'false',
             ...options?.env,
           },

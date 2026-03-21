@@ -1,0 +1,17 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+> vt run --log=labeled -r check-tty
+[other#check-tty] ~/packages/other$ check-tty
+[other#check-tty] stdin:not-tty
+[other#check-tty] stdout:not-tty
+[other#check-tty] stderr:not-tty
+
+[labeled-stdio-test#check-tty] $ check-tty ⊘ cache disabled
+[labeled-stdio-test#check-tty] stdin:not-tty
+[labeled-stdio-test#check-tty] stdout:not-tty
+[labeled-stdio-test#check-tty] stderr:not-tty
+
+---
+vt run: 0/2 cache hit (0%). (Run `vt run --last-details` for full details)

@@ -43,6 +43,7 @@ describe('script overrides', () => {
     expect(getTaskConfig(config, 'packages/core', 'build').cache).toEqual('none')
     expect(getTaskConfig(config, 'packages/utils', 'build').cache).toMatchInlineSnapshot(`
       {
+        "auto": true,
         "envInputs": [],
         "inheritsInputFromDependencies": true,
         "inputs": {
@@ -132,22 +133,22 @@ describe('script overrides', () => {
     expect(() => {
       getTaskConfig(config, 'packages/core', 'build').baseCommand
     }).toThrowErrorMatchingInlineSnapshot(`
-      "Workspace 'packages/core' matched multiple overrides for script "build": ['@foo/core', 'packages/core']
-      Please make sure that the workspace only matches one override."
+      [Error: Workspace 'packages/core' matched multiple overrides for script "build": ['@foo/core', 'packages/core']
+      Please make sure that the workspace only matches one override.]
     `)
 
     expect(() => {
       getTaskConfig(config, 'packages/utils', 'build').baseCommand
     }).toThrowErrorMatchingInlineSnapshot(`
-      "Workspace 'packages/utils' matched multiple overrides for script "build": ['@foo/u*', '@foo/utils']
-      Please make sure that the workspace only matches one override."
+      [Error: Workspace 'packages/utils' matched multiple overrides for script "build": ['@foo/u*', '@foo/utils']
+      Please make sure that the workspace only matches one override.]
     `)
 
     expect(() => {
       getTaskConfig(config, 'packages/nothing', 'build').baseCommand
     }).toThrowErrorMatchingInlineSnapshot(`
-      "Workspace 'packages/nothing' matched multiple overrides for script "build": ['packages/n*', 'packages/nothing']
-      Please make sure that the workspace only matches one override."
+      [Error: Workspace 'packages/nothing' matched multiple overrides for script "build": ['packages/n*', 'packages/nothing']
+      Please make sure that the workspace only matches one override.]
     `)
   })
 })

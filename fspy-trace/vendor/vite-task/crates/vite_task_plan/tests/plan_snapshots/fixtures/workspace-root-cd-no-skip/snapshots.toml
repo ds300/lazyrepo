@@ -1,0 +1,13 @@
+# Tests that `cd` before `vt run` prevents the skip rule from firing.
+# Root deploy = `cd packages/a && vt run deploy`.
+#
+# The skip rule compares TaskQuery, which includes ContainingPackage(cwd).
+# After `cd packages/a`, the cwd changes, so the nested query resolves to
+# ContainingPackage(packages/a) — different from the parent's
+# ContainingPackage(root). The queries don't match and the skip rule
+# does NOT fire, allowing the nested expansion to proceed normally.
+
+[[plan]]
+name = "cd changes cwd so skip rule does not fire"
+args = ["run", "deploy"]
+compact = true

@@ -1,0 +1,9 @@
+{
+  "name": "@test/script-hooks-nested-run",
+  "scripts": {
+    "prescriptInHook": "echo prescriptInHook",
+    "scriptInHook": "echo scriptInHook",
+    "pretest": "vt run scriptInHook",
+    "test": "echo test"
+  }
+}

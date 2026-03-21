@@ -1,0 +1,9 @@
+# Tests cache miss when input file is modified
+
+[[e2e]]
+name = "cache hit after file modification"
+steps = [
+  "vt run test-task # cache miss",
+  "replace-file-content main.js foo bar # modify input file",
+  "vt run test-task # cache miss, main.js changed",
+]

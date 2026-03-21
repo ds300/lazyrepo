@@ -1,4 +1,1 @@
-pnpm-lock.yaml
-.*
-!.eslintrc.cjs
-!.prettierrc
+fspy-trace/vendor

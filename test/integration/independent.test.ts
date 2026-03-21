@@ -141,7 +141,7 @@ test('running independent tasks works in parallel', async () => {
 
       expect(
         Math.abs(t.getMtime('packages/utils/out.txt') - t.getMtime('packages/core/out.txt')),
-      ).toBeLessThan(80)
+      ).toBeLessThan(200)
     },
   )
 

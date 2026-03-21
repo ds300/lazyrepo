@@ -1,0 +1,109 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: task_graph_json
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/transitive-skip-intermediate
+---
+[
+  {
+    "key": [
+      "<workspace>/packages/bottom",
+      "build"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/bottom",
+        "task_name": "build",
+        "package_path": "<workspace>/packages/bottom"
+      },
+      "resolved_config": {
+        "command": "echo 'Building @test/bottom'",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/bottom",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "PackageJsonScript"
+    },
+    "neighbors": []
+  },
+  {
+    "key": [
+      "<workspace>/packages/middle",
+      "lint"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/middle",
+        "task_name": "lint",
+        "package_path": "<workspace>/packages/middle"
+      },
+      "resolved_config": {
+        "command": "echo 'Linting @test/middle'",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/middle",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "PackageJsonScript"
+    },
+    "neighbors": []
+  },
+  {
+    "key": [
+      "<workspace>/packages/top",
+      "build"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/top",
+        "task_name": "build",
+        "package_path": "<workspace>/packages/top"
+      },
+      "resolved_config": {
+        "command": "echo 'Building @test/top'",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/top",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "PackageJsonScript"
+    },
+    "neighbors": []
+  }
+]

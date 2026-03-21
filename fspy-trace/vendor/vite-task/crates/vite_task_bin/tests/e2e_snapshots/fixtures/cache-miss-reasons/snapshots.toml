@@ -1,0 +1,75 @@
+# Test all cache miss reason variants
+
+[[e2e]]
+name = "env value changed"
+steps = [
+  "cross-env MY_ENV=1 vt run test # cache miss",
+  "cross-env MY_ENV=2 vt run test # cache miss: env value changed",
+]
+
+[[e2e]]
+name = "env added"
+steps = ["vt run test # cache miss", "cross-env MY_ENV=1 vt run test # cache miss: env added"]
+
+[[e2e]]
+name = "env removed"
+steps = ["cross-env MY_ENV=1 vt run test # cache miss", "vt run test # cache miss: env removed"]
+
+[[e2e]]
+name = "untracked env added"
+steps = [
+  "vt run test # cache miss",
+  "json-edit vite-task.json \"_.tasks.test.untrackedEnv = ['MY_UNTRACKED']\" # add untracked env",
+  "vt run test # cache miss: untracked env added",
+]
+
+[[e2e]]
+name = "untracked env removed"
+steps = [
+  "json-edit vite-task.json \"_.tasks.test.untrackedEnv = ['MY_UNTRACKED']\" # setup",
+  "vt run test # cache miss",
+  "json-edit vite-task.json \"delete _.tasks.test.untrackedEnv\" # remove untracked env",
+  "vt run test # cache miss: untracked env removed",
+]
+
+[[e2e]]
+name = "cwd changed"
+steps = [
+  "vt run test # cache miss",
+  "mkdir -p subfolder",
+  "cp test.txt subfolder/test.txt",
+  "json-edit vite-task.json \"_.tasks.test.cwd = 'subfolder'\" # change cwd",
+  "vt run test # cache miss: cwd changed",
+]
+
+[[e2e]]
+name = "inferred input changes"
+steps = [
+  "vt run test # cache miss",
+  "replace-file-content test.txt initial modified # modify input",
+  "vt run test # cache miss: input modified",
+  "rm test.txt # remove tracked input",
+  "vt run test # cache miss: input removed",
+  "echo new content > test.txt # recreate previously removed file",
+  "vt run test # cache miss: input added",
+]
+
+[[e2e]]
+name = "input config changed"
+steps = [
+  "vt run test # cache miss",
+  "json-edit vite-task.json \"_.tasks.test.input = ['test.txt']\" # change input config",
+  "vt run test # cache miss: configuration changed",
+]
+
+[[e2e]]
+name = "glob input changes"
+steps = [
+  "vt run glob-test # cache miss",
+  "replace-file-content test.txt initial modified # modify glob input",
+  "vt run glob-test # cache miss: input modified",
+  "echo new content > new.txt # add a new .txt file",
+  "vt run glob-test # cache miss: input added",
+  "rm extra.txt # remove a .txt file",
+  "vt run glob-test # cache miss: input removed",
+]

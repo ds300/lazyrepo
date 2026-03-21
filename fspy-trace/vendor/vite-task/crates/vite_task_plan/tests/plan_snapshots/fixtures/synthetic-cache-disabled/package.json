@@ -1,0 +1,7 @@
+{
+  "name": "@test/synthetic-cache-disabled",
+  "scripts": {
+    "lint": "vt lint",
+    "run-build-cache-false": "vt run build"
+  }
+}

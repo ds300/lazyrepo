@@ -36,7 +36,7 @@ const makeDir = (workspaceOverrides: DependentScript['workspaceOverrides']) =>
         },
       },
     }),
-  } satisfies Dir)
+  }) satisfies Dir
 
 test('cache config can be overridden', async () => {
   await runIntegrationTest(

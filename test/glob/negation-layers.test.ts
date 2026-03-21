@@ -2,8 +2,8 @@ import { vol } from 'memfs'
 import { Dir } from '../integration/runIntegrationTests.js'
 import { globCheckingAgainstReference, writeDir } from './glob-test-utils.js'
 
-jest.mock('../../src/fs.js', () => {
-  return require('memfs')
+vi.mock('../../src/fs.js', async () => {
+  return await import('memfs')
 })
 
 beforeEach(() => {

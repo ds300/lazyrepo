@@ -7,7 +7,6 @@ export const exec = (/** @type {string} */ cmd) => {
     console.log('output: ' + output)
     return output
   } catch (/** @type {any} */ e) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     console.error(e.stderr?.toString())
     process.exit(1)
   }

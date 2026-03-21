@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-
 import { join } from '../src/path.js'
 import { findRootWorkspace } from '../src/project/findRootWorkspace.js'
 import { loadWorkspace } from '../src/project/loadWorkspace.js'
@@ -29,7 +26,7 @@ function getIn(obj: any, path: string): string | null {
   return current
 }
 
-jest.mock('../src/fs.js', () => {
+vi.mock('../src/fs.js', () => {
   return {
     existsSync(path: string) {
       const g = global as any
@@ -38,8 +35,8 @@ jest.mock('../src/fs.js', () => {
   }
 })
 
-jest.mock('../src/project/loadWorkspace.js', () => ({
-  loadWorkspace: jest.fn((path: string) => {
+vi.mock('../src/project/loadWorkspace.js', () => ({
+  loadWorkspace: vi.fn((path: string) => {
     const g = global as any
     const stringified = getIn(g.__existentPaths, join(path, 'package.json'))
     return JSON.parse(stringified!)
@@ -47,7 +44,7 @@ jest.mock('../src/project/loadWorkspace.js', () => ({
 }))
 
 beforeEach(() => {
-  ;(loadWorkspace as jest.Mock).mockClear()
+  vi.mocked(loadWorkspace).mockClear()
 })
 
 describe('findRootWorkspace', () => {

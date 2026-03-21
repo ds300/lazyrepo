@@ -1,0 +1,11 @@
+{
+  "name": "@test/lib",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "echo 'Building @test/lib'",
+    "test": "echo 'Testing @test/lib'"
+  },
+  "dependencies": {
+    "@test/core": "workspace:*"
+  }
+}

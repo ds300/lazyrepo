@@ -1,0 +1,7 @@
+# Tests exit code behavior for signal-terminated processes
+# Unix-only: Windows doesn't have Unix signals, so exit codes differ
+
+[[e2e]]
+name = "signal terminated task returns non-zero exit code"
+platform = "unix"
+steps = ["vt run abort # SIGABRT -> exit code 134"]

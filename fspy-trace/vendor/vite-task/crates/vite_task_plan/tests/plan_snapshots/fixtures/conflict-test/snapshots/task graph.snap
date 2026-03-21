@@ -1,0 +1,114 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: task_graph_json
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/conflict-test
+---
+[
+  {
+    "key": [
+      "<workspace>/packages/scope-a",
+      "b#c"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/scope-a",
+        "task_name": "b#c",
+        "package_path": "<workspace>/packages/scope-a"
+      },
+      "resolved_config": {
+        "command": "echo Task b#c in scope-a",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/scope-a",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "PackageJsonScript"
+    },
+    "neighbors": []
+  },
+  {
+    "key": [
+      "<workspace>/packages/scope-a-b",
+      "c"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/scope-a#b",
+        "task_name": "c",
+        "package_path": "<workspace>/packages/scope-a-b"
+      },
+      "resolved_config": {
+        "command": "echo Task c in scope-a#b",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/scope-a-b",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "PackageJsonScript"
+    },
+    "neighbors": []
+  },
+  {
+    "key": [
+      "<workspace>/packages/test-package",
+      "test"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/test-package",
+        "task_name": "test",
+        "package_path": "<workspace>/packages/test-package"
+      },
+      "resolved_config": {
+        "command": "echo Testing",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/test-package",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "TaskConfig"
+    },
+    "neighbors": [
+      [
+        "<workspace>/packages/scope-a-b",
+        "c"
+      ]
+    ]
+  }
+]

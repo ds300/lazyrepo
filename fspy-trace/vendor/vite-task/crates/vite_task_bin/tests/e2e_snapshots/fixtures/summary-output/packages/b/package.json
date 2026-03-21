@@ -1,0 +1,9 @@
+{
+  "name": "@summary/b",
+  "scripts": {
+    "build": "print built-b"
+  },
+  "dependencies": {
+    "@summary/a": "workspace:*"
+  }
+}

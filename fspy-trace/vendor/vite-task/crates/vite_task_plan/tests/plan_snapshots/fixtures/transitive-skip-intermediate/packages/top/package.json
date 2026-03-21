@@ -1,0 +1,10 @@
+{
+  "name": "@test/top",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "echo 'Building @test/top'"
+  },
+  "dependencies": {
+    "@test/middle": "workspace:*"
+  }
+}

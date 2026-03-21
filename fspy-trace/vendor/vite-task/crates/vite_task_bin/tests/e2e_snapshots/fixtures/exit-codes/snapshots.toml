@@ -1,0 +1,18 @@
+# Tests exit code behavior for task failures
+
+[[e2e]]
+name = "single task failure returns task exit code"
+steps = ["vt run pkg-a#fail # exits with code 42"]
+
+[[e2e]]
+name = "task failure fast-fails remaining tasks"
+steps = ["vt run -r fail # pkg-a fails, pkg-b is skipped"]
+
+[[e2e]]
+name = "dependency failure fast-fails dependents"
+cwd = "packages/pkg-b"
+steps = ["vt run -t check # pkg-a fails, pkg-b is skipped"]
+
+[[e2e]]
+name = "chained command with && stops at first failure"
+steps = ["vt run pkg-a#chained # first fails with exit code 3, second should not run"]

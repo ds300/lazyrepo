@@ -2,15 +2,15 @@ import { vol } from 'memfs'
 import { Dir } from '../integration/runIntegrationTests.js'
 import { testGlob, writeDir } from './glob-test-utils.js'
 
-jest.mock('../../src/fs.js', () => {
-  return require('memfs')
+vi.mock('../../src/fs.js', async () => {
+  return await import('memfs')
 })
 
 beforeEach(() => {
   vol.reset()
 })
 
-describe('the "types" option', () => {
+describe('the "symbolicLinks" option', () => {
   const dir: Dir = {
     src: {
       utils: {

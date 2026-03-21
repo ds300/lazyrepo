@@ -1,0 +1,12 @@
+{
+  "tasks": {
+    "build": {
+      "command": "echo 'Building normal-package'",
+      "cache": true
+    },
+    "test": {
+      "command": "echo 'Testing normal-package'",
+      "cache": true
+    }
+  }
+}

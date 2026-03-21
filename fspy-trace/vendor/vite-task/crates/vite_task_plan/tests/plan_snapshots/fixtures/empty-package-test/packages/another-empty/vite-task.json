@@ -1,0 +1,22 @@
+{
+  "tasks": {
+    "build": {
+      "command": "echo 'Building another-empty package'",
+      "cache": true,
+      "dependsOn": ["lint", "normal-package#test"]
+    },
+    "test": {
+      "command": "echo 'Testing another-empty package'",
+      "cache": true
+    },
+    "lint": {
+      "command": "echo 'Linting another-empty package'",
+      "cache": true
+    },
+    "deploy": {
+      "command": "echo 'Deploying another-empty package'",
+      "cache": false,
+      "dependsOn": ["build", "test"]
+    }
+  }
+}

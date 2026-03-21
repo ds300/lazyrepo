@@ -1,0 +1,6 @@
+{
+  "name": "@test/cache-scripts-error-non-root",
+  "scripts": {
+    "build": "echo building"
+  }
+}

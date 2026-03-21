@@ -1,0 +1,21 @@
+{
+  "cache": true,
+  "tasks": {
+    "check-tty": {
+      "command": "check-tty",
+      "cache": false
+    },
+    "check-tty-cached": {
+      "command": "check-tty",
+      "cache": true
+    },
+    "read-stdin": {
+      "command": "read-stdin",
+      "cache": false
+    },
+    "read-stdin-cached": {
+      "command": "read-stdin",
+      "cache": true
+    }
+  }
+}

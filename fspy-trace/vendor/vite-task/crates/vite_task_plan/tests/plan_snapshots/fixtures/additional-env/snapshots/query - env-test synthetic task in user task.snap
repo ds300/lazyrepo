@@ -1,0 +1,90 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: "&plan_json"
+info:
+  args:
+    - run
+    - env-test
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/additional-env
+---
+[
+  {
+    "key": [
+      "<workspace>/",
+      "env-test"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "additional-envs",
+        "task_name": "env-test",
+        "package_path": "<workspace>/"
+      },
+      "items": [
+        {
+          "execution_item_display": {
+            "task_display": {
+              "package_name": "additional-envs",
+              "task_name": "env-test",
+              "package_path": "<workspace>/"
+            },
+            "command": "vt env-test TEST_VAR hello_world",
+            "and_item_index": null,
+            "cwd": "<workspace>/"
+          },
+          "kind": {
+            "Leaf": {
+              "Spawn": {
+                "cache_metadata": {
+                  "spawn_fingerprint": {
+                    "cwd": "",
+                    "program_fingerprint": {
+                      "OutsideWorkspace": {
+                        "program_name": "print-env"
+                      }
+                    },
+                    "args": [
+                      "TEST_VAR"
+                    ],
+                    "env_fingerprints": {
+                      "fingerprinted_envs": {},
+                      "untracked_env_config": [
+                        "TEST_VAR",
+                        "<default untracked envs>"
+                      ]
+                    }
+                  },
+                  "execution_cache_key": {
+                    "UserTask": {
+                      "task_name": "env-test",
+                      "and_item_index": 0,
+                      "extra_args": [],
+                      "package_path": ""
+                    }
+                  },
+                  "input_config": {
+                    "includes_auto": true,
+                    "positive_globs": [],
+                    "negative_globs": []
+                  }
+                },
+                "spawn_command": {
+                  "program_path": "<tools>/node_modules/.bin/print-env",
+                  "args": [
+                    "TEST_VAR"
+                  ],
+                  "all_envs": {
+                    "NO_COLOR": "1",
+                    "PATH": "<workspace>/node_modules/.bin:<tools>/node_modules/.bin",
+                    "TEST_VAR": "hello_world"
+                  },
+                  "cwd": "<workspace>/"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "neighbors": []
+  }
+]

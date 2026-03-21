@@ -1,0 +1,143 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: task_graph_json
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/nested-cache-override
+---
+[
+  {
+    "key": [
+      "<workspace>/",
+      "inner"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/nested-cache-override",
+        "task_name": "inner",
+        "package_path": "<workspace>/"
+      },
+      "resolved_config": {
+        "command": "print-file package.json",
+        "resolved_options": {
+          "cwd": "<workspace>/",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "PackageJsonScript"
+    },
+    "neighbors": []
+  },
+  {
+    "key": [
+      "<workspace>/",
+      "outer-cache"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/nested-cache-override",
+        "task_name": "outer-cache",
+        "package_path": "<workspace>/"
+      },
+      "resolved_config": {
+        "command": "vt run --cache inner",
+        "resolved_options": {
+          "cwd": "<workspace>/",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "PackageJsonScript"
+    },
+    "neighbors": []
+  },
+  {
+    "key": [
+      "<workspace>/",
+      "outer-inherit"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/nested-cache-override",
+        "task_name": "outer-inherit",
+        "package_path": "<workspace>/"
+      },
+      "resolved_config": {
+        "command": "vt run inner",
+        "resolved_options": {
+          "cwd": "<workspace>/",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "PackageJsonScript"
+    },
+    "neighbors": []
+  },
+  {
+    "key": [
+      "<workspace>/",
+      "outer-no-cache"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/nested-cache-override",
+        "task_name": "outer-no-cache",
+        "package_path": "<workspace>/"
+      },
+      "resolved_config": {
+        "command": "vt run --no-cache inner",
+        "resolved_options": {
+          "cwd": "<workspace>/",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "PackageJsonScript"
+    },
+    "neighbors": []
+  }
+]

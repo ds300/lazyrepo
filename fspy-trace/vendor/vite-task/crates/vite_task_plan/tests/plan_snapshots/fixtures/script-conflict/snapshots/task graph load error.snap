@@ -1,0 +1,6 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: err_str.as_ref()
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/script-conflict
+---
+Task @test/script-conflict#build conflicts with a package.json script of the same name. Remove the script from package.json or rename the task

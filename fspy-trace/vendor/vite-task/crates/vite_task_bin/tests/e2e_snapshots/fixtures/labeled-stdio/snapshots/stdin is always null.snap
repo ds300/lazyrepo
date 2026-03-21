@@ -1,0 +1,6 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+> echo from-stdin | vt run --log=labeled read-stdin
+[labeled-stdio-test#read-stdin] $ read-stdin ⊘ cache disabled

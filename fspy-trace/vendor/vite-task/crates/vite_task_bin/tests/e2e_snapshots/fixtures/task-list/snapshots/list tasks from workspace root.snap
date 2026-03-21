@@ -1,0 +1,11 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+> echo '' | vt run
+  hello: echo hello from root
+  list-tasks: vt run
+  app#build: echo build app
+  app#lint: echo lint app
+  app#test: echo test app
+  lib#build: echo build lib

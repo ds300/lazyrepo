@@ -1,0 +1,121 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: "&plan_json"
+info:
+  args:
+    - run
+    - "--no-cache"
+    - outer-cache
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/nested-cache-override
+---
+[
+  {
+    "key": [
+      "<workspace>/",
+      "outer-cache"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/nested-cache-override",
+        "task_name": "outer-cache",
+        "package_path": "<workspace>/"
+      },
+      "items": [
+        {
+          "execution_item_display": {
+            "task_display": {
+              "package_name": "@test/nested-cache-override",
+              "task_name": "outer-cache",
+              "package_path": "<workspace>/"
+            },
+            "command": "vt run --cache inner",
+            "and_item_index": null,
+            "cwd": "<workspace>/"
+          },
+          "kind": {
+            "Expanded": [
+              {
+                "key": [
+                  "<workspace>/",
+                  "inner"
+                ],
+                "node": {
+                  "task_display": {
+                    "package_name": "@test/nested-cache-override",
+                    "task_name": "inner",
+                    "package_path": "<workspace>/"
+                  },
+                  "items": [
+                    {
+                      "execution_item_display": {
+                        "task_display": {
+                          "package_name": "@test/nested-cache-override",
+                          "task_name": "inner",
+                          "package_path": "<workspace>/"
+                        },
+                        "command": "print-file package.json",
+                        "and_item_index": null,
+                        "cwd": "<workspace>/"
+                      },
+                      "kind": {
+                        "Leaf": {
+                          "Spawn": {
+                            "cache_metadata": {
+                              "spawn_fingerprint": {
+                                "cwd": "",
+                                "program_fingerprint": {
+                                  "OutsideWorkspace": {
+                                    "program_name": "print-file"
+                                  }
+                                },
+                                "args": [
+                                  "package.json"
+                                ],
+                                "env_fingerprints": {
+                                  "fingerprinted_envs": {},
+                                  "untracked_env_config": [
+                                    "<default untracked envs>"
+                                  ]
+                                }
+                              },
+                              "execution_cache_key": {
+                                "UserTask": {
+                                  "task_name": "inner",
+                                  "and_item_index": 0,
+                                  "extra_args": [],
+                                  "package_path": ""
+                                }
+                              },
+                              "input_config": {
+                                "includes_auto": true,
+                                "positive_globs": [],
+                                "negative_globs": []
+                              }
+                            },
+                            "spawn_command": {
+                              "program_path": "<tools>/node_modules/.bin/print-file",
+                              "args": [
+                                "package.json"
+                              ],
+                              "all_envs": {
+                                "NO_COLOR": "1",
+                                "PATH": "<workspace>/node_modules/.bin:<tools>/node_modules/.bin"
+                              },
+                              "cwd": "<workspace>/"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "neighbors": []
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "neighbors": []
+  }
+]

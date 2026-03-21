@@ -25,7 +25,6 @@ cli
     default: false,
   })
   .action(async (scriptName, options) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     return await run({ scriptName, options })
   })
 
@@ -42,7 +41,6 @@ cli
     default: false,
   })
   .action(async (scriptName, options) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     return await run({ scriptName, options })
   })
 
@@ -64,7 +62,6 @@ cli
     default: false,
   })
   .action(async (options) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     return await inherit(options)
   })
 
@@ -80,33 +77,26 @@ const upperCaseFirst = (/** @type {string} */ str) => {
  */
 export async function execCli(argv) {
   /** @type {string} */
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const version = isTest
     ? '0.0.0-test'
-    : // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version
+    : JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version
   logger.log(pc.bold('lazyrepo'), pc.gray(`${version}`))
   logger.log(rainbow('-'.repeat(`lazyrepo ${version}`.length)))
 
   try {
     cli.parse(argv, { run: false })
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const exitCode = (await cli.runMatchedCommand()) ?? 0
     if (typeof exitCode === 'number') return exitCode
     return 0
   } catch (/** @type {any} */ e) {
     // find out if this is a CACError instance
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (e.name === 'CACError') {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
       const msg = upperCaseFirst(e.message)
-      // eslint-disable-next-line no-console
       console.log(pc.red(msg) + '\n')
       cli.outputHelp()
     } else if (e instanceof LazyError) {
       logger.log(e.format())
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
       logger.log(e.stack ?? e.message ?? e)
     }
     return 1

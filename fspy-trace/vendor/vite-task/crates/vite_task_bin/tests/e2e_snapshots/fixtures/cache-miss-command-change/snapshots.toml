@@ -1,0 +1,11 @@
+# Tests cache behavior when command changes partially
+
+[[e2e]]
+name = "cache miss command change"
+steps = [
+  "vt run task # cache miss",
+  "json-edit vite-task.json '_.tasks.task.command = \"print baz && print bar\"' # change first subtask",
+  "vt run task # first: cache miss, second: cache hit",
+  "json-edit vite-task.json '_.tasks.task.command = \"print bar\"' # remove first subtask",
+  "vt run task # cache hit",
+]

@@ -1,0 +1,13 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: "&compact_plan"
+info:
+  args:
+    - run
+    - build
+  cwd: packages/self-dep
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/package-self-dependency
+---
+{
+  "packages/self-dep#build": []
+}

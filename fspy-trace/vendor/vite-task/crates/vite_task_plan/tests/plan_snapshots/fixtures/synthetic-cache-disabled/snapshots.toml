@@ -1,0 +1,23 @@
+[[plan]]
+name = "script without cache.scripts defaults to no cache"
+args = ["run", "lint"]
+
+[[plan]]
+name = "task with cache false disables synthetic cache"
+args = ["run", "lint-no-cache"]
+
+[[plan]]
+name = "task with cache true enables synthetic cache"
+args = ["run", "lint-with-cache"]
+
+[[plan]]
+name = "task untrackedEnv inherited by synthetic"
+args = ["run", "lint-with-untracked-env"]
+
+[[plan]]
+name = "parent cache false does not affect expanded query tasks"
+args = ["run", "run-build-no-cache"]
+
+[[plan]]
+name = "script cache false does not affect expanded synthetic cache"
+args = ["run", "run-build-cache-false"]

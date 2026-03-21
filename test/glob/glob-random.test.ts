@@ -1,11 +1,10 @@
-/* eslint-disable jest/expect-expect */
 import { vol } from 'memfs'
 import { Dir, File } from '../integration/runIntegrationTests.js'
 import { Random } from '../test-utils.js'
 import { globCheckingAgainstReference, makeFiles } from './glob-test-utils.js'
 
-jest.mock('../../src/fs.js', () => {
-  return require('memfs')
+vi.mock('../../src/fs.js', async () => {
+  return await import('memfs')
 })
 
 beforeEach(() => {
@@ -762,4 +761,37 @@ test('regression 27', () => {
       "/dist-dist/src",
     ]
   `)
+})
+
+test('regression 28', () => {
+  expect(
+    doComparison({
+      patterns: [
+        '!{dist*}/node_modules_src/+(bulb-banana.md|bulb-stick|*stove.md)',
+        '!/**/node_modules*',
+      ],
+      cwd: '/.node_modules-src/dist',
+      paths: {
+        'bulb.ts': 'ok',
+        lib_lib: {
+          node_modules: {
+            node_modules_lib: {
+              'stick-stove.ts': 'ok',
+            },
+          },
+        },
+        '.node_modules-src': {
+          dist: {
+            node_modules: {
+              'banana-stick': 'ok',
+            },
+          },
+        },
+        'bulb.json': 'ok',
+      },
+      expandDirectories: false,
+      dot: false,
+      types: 'files',
+    }),
+  ).toMatchInlineSnapshot(`[]`)
 })

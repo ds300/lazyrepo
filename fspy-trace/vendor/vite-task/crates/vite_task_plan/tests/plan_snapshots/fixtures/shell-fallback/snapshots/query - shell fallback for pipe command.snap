@@ -1,0 +1,90 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: "&plan_json"
+info:
+  args:
+    - run
+    - pipe-test
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/shell-fallback
+---
+[
+  {
+    "key": [
+      "<workspace>/",
+      "pipe-test"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "",
+        "task_name": "pipe-test",
+        "package_path": "<workspace>/"
+      },
+      "items": [
+        {
+          "execution_item_display": {
+            "task_display": {
+              "package_name": "",
+              "task_name": "pipe-test",
+              "package_path": "<workspace>/"
+            },
+            "command": "echo hello | node -e \"process.stdin.pipe(process.stdout)\"",
+            "and_item_index": null,
+            "cwd": "<workspace>/"
+          },
+          "kind": {
+            "Leaf": {
+              "Spawn": {
+                "cache_metadata": {
+                  "spawn_fingerprint": {
+                    "cwd": "",
+                    "program_fingerprint": {
+                      "OutsideWorkspace": {
+                        "program_name": "<os_shell_name>"
+                      }
+                    },
+                    "args": [
+                      "<os_shell_args>",
+                      "echo hello | node -e \"process.stdin.pipe(process.stdout)\""
+                    ],
+                    "env_fingerprints": {
+                      "fingerprinted_envs": {},
+                      "untracked_env_config": [
+                        "<default untracked envs>"
+                      ]
+                    }
+                  },
+                  "execution_cache_key": {
+                    "UserTask": {
+                      "task_name": "pipe-test",
+                      "and_item_index": 0,
+                      "extra_args": [],
+                      "package_path": ""
+                    }
+                  },
+                  "input_config": {
+                    "includes_auto": true,
+                    "positive_globs": [],
+                    "negative_globs": []
+                  }
+                },
+                "spawn_command": {
+                  "program_path": "<os_shell_path>",
+                  "args": [
+                    "<os_shell_args>",
+                    "echo hello | node -e \"process.stdin.pipe(process.stdout)\""
+                  ],
+                  "all_envs": {
+                    "NO_COLOR": "1",
+                    "PATH": "<workspace>/node_modules/.bin:<tools>/node_modules/.bin"
+                  },
+                  "cwd": "<workspace>/"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "neighbors": []
+  }
+]

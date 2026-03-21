@@ -1,0 +1,8 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+[1]> echo '' | vt run buid
+Task "buid" not found. Did you mean:
+  app#build: echo build app
+  lib#build: echo build lib

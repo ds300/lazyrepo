@@ -1,0 +1,25 @@
+# Tests that tasks modifying their own inputs (read-write overlap) are not cached.
+# replace-file-content reads then writes the same file — fspy detects both.
+
+# Single rw-task: compact summary shows "not cached because it modified its input"
+[[e2e]]
+name = "single read-write task shows not cached message"
+cwd = "packages/rw-pkg"
+steps = ["vt run task", "vt run task"]
+
+# Multi-task (recursive): compact summary shows stats + InputModified notice
+[[e2e]]
+name = "multi task with read-write shows not cached in summary"
+steps = ["vt run -r task", "vt run -r task"]
+
+# Verbose: full summary shows the overlapping path
+[[e2e]]
+name = "verbose read-write task shows path in full summary"
+cwd = "packages/rw-pkg"
+steps = ["vt run -v task"]
+
+# Single O_RDWR open (touch-file) is also detected as read-write overlap
+[[e2e]]
+name = "single O_RDWR open is not cached"
+cwd = "packages/touch-pkg"
+steps = ["vt run task", "vt run task"]

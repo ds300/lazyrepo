@@ -1,0 +1,53 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: "&plan_json"
+info:
+  args:
+    - run
+    - test
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/script-hooks-task-no-hook
+---
+[
+  {
+    "key": [
+      "<workspace>/",
+      "test"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/script-hooks-task-no-hook",
+        "task_name": "test",
+        "package_path": "<workspace>/"
+      },
+      "items": [
+        {
+          "execution_item_display": {
+            "task_display": {
+              "package_name": "@test/script-hooks-task-no-hook",
+              "task_name": "test",
+              "package_path": "<workspace>/"
+            },
+            "command": "echo test-task",
+            "and_item_index": null,
+            "cwd": "<workspace>/"
+          },
+          "kind": {
+            "Leaf": {
+              "InProcess": {
+                "kind": {
+                  "Echo": {
+                    "strings": [
+                      "test-task"
+                    ],
+                    "trailing_newline": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "neighbors": []
+  }
+]

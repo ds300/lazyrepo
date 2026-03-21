@@ -1,0 +1,12 @@
+# Test that glob meta characters in package paths are correctly escaped by wax::escape.
+# Without escaping, "packages/[lib]/src/**/*.ts" would interpret [lib] as a character
+# class matching 'l', 'i', or 'b' instead of the literal directory name.
+
+[[e2e]]
+name = "cache hit then miss on file change"
+steps = [
+  "vt run [lib]#build",
+  "vt run [lib]#build",
+  "replace-file-content packages/[lib]/src/main.ts initial modified",
+  "vt run [lib]#build",
+]

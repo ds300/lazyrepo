@@ -1,0 +1,6 @@
+{
+  "name": "@test/cache-true-no-force-enable",
+  "scripts": {
+    "test": "print-file package.json"
+  }
+}

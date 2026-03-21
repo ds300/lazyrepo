@@ -1,0 +1,20 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: "&compact_plan"
+info:
+  args:
+    - run
+    - "--filter"
+    - "!@test/core"
+    - build
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/filter-workspace
+---
+{
+  "packages/app#build": [
+    "packages/lib#build",
+    "packages/utils#build"
+  ],
+  "packages/cli#build": [],
+  "packages/lib#build": [],
+  "packages/utils#build": []
+}

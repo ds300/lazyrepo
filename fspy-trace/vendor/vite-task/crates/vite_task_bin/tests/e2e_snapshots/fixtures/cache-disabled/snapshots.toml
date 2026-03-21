@@ -1,0 +1,9 @@
+# Tests that cache: false in task config disables caching
+
+[[e2e]]
+name = "task with cache disabled"
+steps = ["vt run no-cache-task # cache miss", "vt run no-cache-task # cache disabled, runs again"]
+
+[[e2e]]
+name = "task with cache enabled"
+steps = ["vt run cached-task # cache miss", "vt run cached-task # cache hit"]

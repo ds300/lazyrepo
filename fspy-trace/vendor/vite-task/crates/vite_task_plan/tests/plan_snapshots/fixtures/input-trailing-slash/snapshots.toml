@@ -1,0 +1,1 @@
+# Test that trailing `/` in glob patterns is expanded to `/**`

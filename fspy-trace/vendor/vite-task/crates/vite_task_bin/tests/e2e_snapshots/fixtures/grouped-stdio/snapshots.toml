@@ -1,0 +1,42 @@
+# Tests stdio behavior in grouped mode (--log=grouped).
+#
+# In grouped mode, stdio is always piped regardless of cache state:
+# - stdin is /dev/null
+# - stdout/stderr are buffered per task and printed as a block on completion
+#
+# `check-tty` prints whether each stdio fd is a TTY.
+# `read-stdin` reads one line from stdin and prints it.
+
+# ─── stdout/stderr: always piped (not-tty), output grouped ───
+
+[[e2e]]
+name = "single task, cache off, grouped output"
+steps = ["vt run --log=grouped check-tty"]
+
+[[e2e]]
+name = "multiple tasks, cache off, grouped output"
+steps = ["vt run --log=grouped -r check-tty"]
+
+[[e2e]]
+name = "single task, cache miss, grouped output"
+steps = ["vt run --log=grouped check-tty-cached"]
+
+[[e2e]]
+name = "multiple tasks, cache miss, grouped output"
+steps = ["vt run --log=grouped -r check-tty-cached"]
+
+# ─── cache hit → replayed in grouped blocks ───────────────────
+
+[[e2e]]
+name = "single task, cache hit, replayed"
+steps = ["vt run --log=grouped check-tty-cached", "vt run --log=grouped check-tty-cached"]
+
+[[e2e]]
+name = "multiple tasks, cache hit, replayed"
+steps = ["vt run --log=grouped -r check-tty-cached", "vt run --log=grouped -r check-tty-cached"]
+
+# ─── stdin: always null ───────────────────────────────────────
+
+[[e2e]]
+name = "stdin is always null"
+steps = ["echo from-stdin | vt run --log=grouped read-stdin"]

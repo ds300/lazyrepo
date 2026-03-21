@@ -1,7 +1,10 @@
 import assert from 'assert'
+import micromatch from 'micromatch'
 import pc from 'picocolors'
+import { statSync } from '../fs.js'
 import { glob } from '../glob/glob.js'
 import { isAbsolute, join, relative } from '../path.js'
+import { getTrackedReadPaths } from '../tracking/compareTrackedInputs.js'
 import { createTimer } from '../utils/createTimer.js'
 import { uniq } from '../utils/uniq.js'
 
@@ -50,6 +53,13 @@ export function getInputFiles(tasks, task, extraFiles) {
   const taskDir = task.workspace.dir
   const allWorkspaceDirs = [...tasks.config.project.workspacesByDir.keys()]
 
+  const expandedExcludes = expandGlobPaths({
+    patterns: excludePatterns,
+    rootDir,
+    taskDir,
+    allWorkspaceDirs,
+  })
+
   const localFiles = globCacheConfig({
     task,
     workspaceRoot: tasks.config.project.root.dir,
@@ -59,15 +69,49 @@ export function getInputFiles(tasks, task, extraFiles) {
       taskDir,
       allWorkspaceDirs,
     }),
-    excludes: expandGlobPaths({
-      patterns: excludePatterns,
-      rootDir,
-      taskDir,
-      allWorkspaceDirs,
-    }),
+    excludes: expandedExcludes,
   })
 
-  return [...new Set([...localFiles, ...extraFiles])].sort()
+  const trackedFileExcludes = [
+    ...expandedExcludes,
+    join(rootDir, '**/node_modules/**'),
+    join(rootDir, '**/.git/**'),
+  ]
+  const trackedFiles = loadPreviousTrackedFiles(taskConfig, rootDir, trackedFileExcludes)
+
+  return [...new Set([...localFiles, ...extraFiles, ...trackedFiles])].sort()
+}
+
+/**
+ * Load tracked read paths from a previous run's tracking JSON, filtering out
+ * files that no longer exist, files matching exclude patterns, and skipping
+ * if auto-tracking is disabled.
+ *
+ * @param {import('../config/config.js').TaskConfig} taskConfig
+ * @param {string} projectRoot
+ * @param {string[]} expandedExcludes - Absolute glob patterns to exclude
+ * @returns {string[]}
+ */
+function loadPreviousTrackedFiles(taskConfig, projectRoot, expandedExcludes) {
+  if (taskConfig.cache === 'none' || taskConfig.cache.auto === false) {
+    return []
+  }
+
+  const trackingPath = taskConfig.getManifestPath().replace('manifest.tsv', 'tracked-inputs.json')
+  const paths = getTrackedReadPaths(trackingPath, projectRoot)
+  if (!paths) return []
+
+  return paths.filter((p) => {
+    const full = join(projectRoot, p)
+    if (expandedExcludes.length > 0 && micromatch.isMatch(full, expandedExcludes)) {
+      return false
+    }
+    try {
+      return statSync(full).isFile()
+    } catch {
+      return false
+    }
+  })
 }
 
 export const ALL_WORKSPACES_MACRO = '<allWorkspaceDirs>'

@@ -43,11 +43,13 @@ export async function runTaskIfNeeded(task, tasks) {
   if (task.force) {
     task.logger.log('cache miss, --force flag used')
 
-    didSucceed = (await runTask(task, tasks)).didSucceed
+    const result = await runTask(task, tasks)
+    didSucceed = result.didSucceed
     didRunTask = true
   } else if (manifestResult === null) {
     task.logger.log('cache disabled')
-    didSucceed = (await runTask(task, tasks)).didSucceed
+    const result = await runTask(task, tasks)
+    didSucceed = result.didSucceed
     didRunTask = true
   } else if (manifestResult.didChange) {
     const diffPath = taskConfig.getDiffPath()
@@ -70,7 +72,8 @@ export async function runTaskIfNeeded(task, tasks) {
     } else if (!didHaveManifest) {
       task.logger.log('cache miss, no previous manifest found')
     }
-    didSucceed = (await runTask(task, tasks)).didSucceed
+    const result = await runTask(task, tasks)
+    didSucceed = result.didSucceed
     didRunTask = true
   } else {
     // cache hit
@@ -97,6 +100,7 @@ export async function runTaskIfNeeded(task, tasks) {
         task.logger.log('output log: ' + relative(cwd, taskConfig.getLogPath()))
       }
       await cacheOutputs(tasks, task)
+
       task.logger.success('done')
     } else {
       if (existsSync(previousManifestPath)) {

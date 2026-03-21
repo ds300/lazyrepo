@@ -1,0 +1,35 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+> mkdir .git
+
+> vt run lint # cache miss
+$ vt lint
+
+  ! eslint-plugin-unicorn(no-empty-file): Empty files are not allowed.
+   ,-[a.js:1:1]
+ 1 | // Empty JS file for oxlint
+   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   `----
+  help: Delete this file or add some code to it.
+
+Found 1 warning and 0 errors.
+Finished in <duration> on 1 file with 93 rules using <n> threads.
+> echo hello > .git/foo.txt # add file inside .git
+
+> vt run lint # cache hit, .git is ignored
+$ vt lint ◉ cache hit, replaying
+
+  ! eslint-plugin-unicorn(no-empty-file): Empty files are not allowed.
+   ,-[a.js:1:1]
+ 1 | // Empty JS file for oxlint
+   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   `----
+  help: Delete this file or add some code to it.
+
+Found 1 warning and 0 errors.
+Finished in <duration> on 1 file with 93 rules using <n> threads.
+
+---
+vt run: cache hit, <duration> saved.

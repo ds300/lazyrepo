@@ -1,0 +1,11 @@
+# Tests that tasks with identical commands share cache entries
+
+[[e2e]]
+name = "shared caching input"
+steps = [
+  "vt run script1 # cache miss",
+  "vt run script2 # cache hit, same command as script1",
+  "replace-file-content foo.txt initial modified # modify shared input",
+  "vt run script2 # cache miss, input changed",
+  "vt run script1 # cache hit, script2 already warmed cache",
+]

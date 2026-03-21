@@ -1,0 +1,27 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+info:
+  cwd: packages/lib
+---
+> vt run
+@ expect-milestone: task-select::0
+Select a task (↑/↓, Enter to run, type to search):
+
+  › build           echo build lib
+    lint            echo lint lib
+    test            echo test lib
+    typecheck       echo typecheck lib
+    app (packages/app)
+      build         echo build app
+      lint          echo lint app
+      test          echo test app
+    task-select-test (workspace root)
+      check         echo check root
+      clean         echo clean root
+      deploy        echo deploy root
+  (…5 more)
+@ write-key: enter
+Selected task: build
+~/packages/lib$ echo build lib ⊘ cache disabled
+build lib

@@ -1,0 +1,9 @@
+{
+  "name": "@test/nested-cache-override",
+  "scripts": {
+    "inner": "print-file package.json",
+    "outer-no-cache": "vt run --no-cache inner",
+    "outer-cache": "vt run --cache inner",
+    "outer-inherit": "vt run inner"
+  }
+}

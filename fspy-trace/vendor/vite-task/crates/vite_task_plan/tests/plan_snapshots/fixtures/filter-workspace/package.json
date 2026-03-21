@@ -1,0 +1,10 @@
+{
+  "name": "test-workspace",
+  "private": true,
+  "scripts": {
+    "check": "echo 'Checking workspace'"
+  },
+  "dependencies": {
+    "@test/core": "workspace:*"
+  }
+}

@@ -1,0 +1,15 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: "&compact_plan"
+info:
+  args:
+    - run
+    - "--filter"
+    - "@test/duplicate"
+    - build
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/duplicate-package-names
+---
+{
+  "packages/pkg-a#build": [],
+  "packages/pkg-b#build": []
+}

@@ -1,0 +1,37 @@
+[package]
+name = "fspy_shared"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+allocator-api2 = { workspace = true }
+bincode = { workspace = true }
+bitflags = { workspace = true }
+bstr = { workspace = true }
+bytemuck = { workspace = true, features = ["must_cast", "derive"] }
+shared_memory = { workspace = true, features = ["logging"] }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true, features = ["v4"] }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+bytemuck = { workspace = true }
+os_str_bytes = { workspace = true }
+winapi = { workspace = true, features = ["std"] }
+
+[dev-dependencies]
+assert2 = { workspace = true }
+ctor = { workspace = true }
+rustc-hash = { workspace = true }
+shared_memory = { workspace = true, features = ["logging"] }
+subprocess_test = { workspace = true }
+
+[lints]
+workspace = true
+
+[lib]
+doctest = false
+
+[package.metadata.cargo-shear]
+ignored = ["ctor"]

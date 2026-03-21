@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "read_colon_in_name": "node read_node_fs.js"
+  }
+}

@@ -1,0 +1,79 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: "&plan_json"
+info:
+  args:
+    - run
+    - build
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/script-hooks
+---
+[
+  {
+    "key": [
+      "<workspace>/",
+      "build"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/script-hooks",
+        "task_name": "build",
+        "package_path": "<workspace>/"
+      },
+      "items": [
+        {
+          "execution_item_display": {
+            "task_display": {
+              "package_name": "@test/script-hooks",
+              "task_name": "prebuild",
+              "package_path": "<workspace>/"
+            },
+            "command": "echo prebuild",
+            "and_item_index": null,
+            "cwd": "<workspace>/"
+          },
+          "kind": {
+            "Leaf": {
+              "InProcess": {
+                "kind": {
+                  "Echo": {
+                    "strings": [
+                      "prebuild"
+                    ],
+                    "trailing_newline": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "execution_item_display": {
+            "task_display": {
+              "package_name": "@test/script-hooks",
+              "task_name": "build",
+              "package_path": "<workspace>/"
+            },
+            "command": "echo build",
+            "and_item_index": null,
+            "cwd": "<workspace>/"
+          },
+          "kind": {
+            "Leaf": {
+              "InProcess": {
+                "kind": {
+                  "Echo": {
+                    "strings": [
+                      "build"
+                    ],
+                    "trailing_newline": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "neighbors": []
+  }
+]

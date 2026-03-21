@@ -1,6 +1,6 @@
 {
-  "include": ["**/*", ".eslintrc.cjs"],
-  "exclude": ["node_modules", "coverage"],
+  "include": ["**/*"],
+  "exclude": ["node_modules", "coverage", "fspy-trace/vendor"],
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig to read more about this file */
 
@@ -27,7 +27,7 @@
     // "moduleDetection": "auto",                        /* Control what method is used to detect module-format JS files. */
 
     /* Modules */
-    "module": "ESNext" /* Specify what module code is generated. */,
+    "module": "NodeNext" /* Specify what module code is generated. */,
     // "rootDir": "./",                                  /* Specify the root folder within your source files. */
     "moduleResolution": "nodenext" /* Specify how TypeScript looks up a file from a given module specifier. */,
     // "baseUrl": "./",                                  /* Specify the base directory to resolve non-relative module names. */
@@ -106,6 +106,7 @@
 
     /* Completeness */
     // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
-    "skipLibCheck": true /* Skip type checking all .d.ts files. */
+    "skipLibCheck": true /* Skip type checking all .d.ts files. */,
+    "types": ["vitest/globals"]
   }
 }

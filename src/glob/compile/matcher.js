@@ -65,15 +65,15 @@ export const oneCharMatchFn = (entry, _options, matcher) => {
 
 /** @type {MatchFn} */
 export const recursiveWildcardMatchFn = (entry, options, matcher) => {
-  const ignore = entry.name[0] === '.' && !options.dot
+  const ignore = entry.name[0] === '.' && !options.dot && !matcher.negating
   if (!matcher.next) {
     // negative wildcards always match dotfiles
     if (matcher.negating) return 'terminal'
     return ignore
       ? 'none'
       : options.expandDirectories || entry instanceof LazyFile
-      ? 'terminal'
-      : 'recur'
+        ? 'terminal'
+        : 'recur'
   } else {
     // If this entry is a dotfile and we're not matching dotfiles, then
     // a child matcher might still match the dotfile, so we don't want to ignore

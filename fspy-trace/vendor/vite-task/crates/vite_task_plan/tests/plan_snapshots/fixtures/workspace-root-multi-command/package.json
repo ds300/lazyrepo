@@ -1,0 +1,7 @@
+{
+  "name": "test-workspace",
+  "private": true,
+  "scripts": {
+    "build": "echo pre && vt run -r build"
+  }
+}

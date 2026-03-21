@@ -1,0 +1,14 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+> vt run sub-pkg#dotdot-positive-negative
+~/packages/sub-pkg$ print-file ../shared/src/utils.ts ../shared/dist/output.js
+export const shared = 'initial';
+// initial output
+> replace-file-content packages/shared/src/utils.ts initial modified
+
+> vt run sub-pkg#dotdot-positive-negative
+~/packages/sub-pkg$ print-file ../shared/src/utils.ts ../shared/dist/output.js ○ cache miss: 'packages/shared/src/utils.ts' modified, executing
+export const shared = 'modified';
+// initial output

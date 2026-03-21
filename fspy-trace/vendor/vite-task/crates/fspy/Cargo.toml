@@ -1,0 +1,57 @@
+[package]
+name = "fspy"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+allocator-api2 = { workspace = true, features = ["alloc"] }
+bincode = { workspace = true }
+bstr = { workspace = true, default-features = false }
+bumpalo = { workspace = true }
+const_format = { workspace = true, features = ["fmt"] }
+derive_more = { workspace = true, features = ["debug"] }
+fspy_shared = { workspace = true }
+futures-util = { workspace = true }
+libc = { workspace = true }
+ouroboros = { workspace = true }
+rand = { workspace = true }
+rustc-hash = { workspace = true }
+tempfile = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true, features = ["net", "process", "io-util", "sync", "rt"] }
+which = { workspace = true, features = ["tracing"] }
+xxhash-rust = { workspace = true }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+fspy_seccomp_unotify = { workspace = true, features = ["supervisor"] }
+nix = { workspace = true, features = ["uio"] }
+tokio = { workspace = true, features = ["bytes"] }
+
+[target.'cfg(all(unix, not(target_env = "musl")))'.dependencies]
+fspy_preload_unix = { workspace = true }
+
+[target.'cfg(unix)'.dependencies]
+fspy_shared_unix = { workspace = true }
+nix = { workspace = true, features = ["fs", "process", "socket", "feature"] }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+fspy_detours_sys = { workspace = true }
+fspy_preload_windows = { workspace = true }
+winapi = { workspace = true, features = ["winbase", "securitybaseapi", "handleapi"] }
+winsafe = { workspace = true }
+
+[build-dependencies]
+anyhow = { workspace = true }
+flate2 = { workspace = true }
+tar = { workspace = true }
+xxhash-rust = { workspace = true, features = ["xxh3"] }
+
+[lints]
+workspace = true
+
+[lib]
+doctest = false
+
+[package.metadata.cargo-shear]
+ignored = []

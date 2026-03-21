@@ -1,0 +1,6 @@
+{
+  "name": "@test/script-conflict",
+  "scripts": {
+    "build": "echo from script"
+  }
+}

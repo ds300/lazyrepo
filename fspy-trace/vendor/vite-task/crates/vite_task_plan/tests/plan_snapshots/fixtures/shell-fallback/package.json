@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "pipe-test": "echo hello | node -e \"process.stdin.pipe(process.stdout)\""
+  }
+}

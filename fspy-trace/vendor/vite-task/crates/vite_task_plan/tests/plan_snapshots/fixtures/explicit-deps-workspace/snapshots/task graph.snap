@@ -1,0 +1,396 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: task_graph_json
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/explicit-deps-workspace
+---
+[
+  {
+    "key": [
+      "<workspace>/packages/app",
+      "build"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/app",
+        "task_name": "build",
+        "package_path": "<workspace>/packages/app"
+      },
+      "resolved_config": {
+        "command": "echo 'Building @test/app'",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/app",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "PackageJsonScript"
+    },
+    "neighbors": []
+  },
+  {
+    "key": [
+      "<workspace>/packages/app",
+      "deploy"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/app",
+        "task_name": "deploy",
+        "package_path": "<workspace>/packages/app"
+      },
+      "resolved_config": {
+        "command": "deploy-script --prod",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/app",
+          "cache_config": null
+        }
+      },
+      "source": "TaskConfig"
+    },
+    "neighbors": [
+      [
+        "<workspace>/packages/app",
+        "build"
+      ],
+      [
+        "<workspace>/packages/app",
+        "test"
+      ],
+      [
+        "<workspace>/packages/utils",
+        "lint"
+      ]
+    ]
+  },
+  {
+    "key": [
+      "<workspace>/packages/app",
+      "start"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/app",
+        "task_name": "start",
+        "package_path": "<workspace>/packages/app"
+      },
+      "resolved_config": {
+        "command": "echo 'Starting @test/app'",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/app",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "PackageJsonScript"
+    },
+    "neighbors": []
+  },
+  {
+    "key": [
+      "<workspace>/packages/app",
+      "test"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/app",
+        "task_name": "test",
+        "package_path": "<workspace>/packages/app"
+      },
+      "resolved_config": {
+        "command": "echo 'Testing @test/app'",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/app",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "PackageJsonScript"
+    },
+    "neighbors": []
+  },
+  {
+    "key": [
+      "<workspace>/packages/core",
+      "build"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/core",
+        "task_name": "build",
+        "package_path": "<workspace>/packages/core"
+      },
+      "resolved_config": {
+        "command": "echo 'Building @test/core'",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/core",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "PackageJsonScript"
+    },
+    "neighbors": []
+  },
+  {
+    "key": [
+      "<workspace>/packages/core",
+      "clean"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/core",
+        "task_name": "clean",
+        "package_path": "<workspace>/packages/core"
+      },
+      "resolved_config": {
+        "command": "echo 'Cleaning @test/core'",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/core",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "PackageJsonScript"
+    },
+    "neighbors": []
+  },
+  {
+    "key": [
+      "<workspace>/packages/core",
+      "lint"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/core",
+        "task_name": "lint",
+        "package_path": "<workspace>/packages/core"
+      },
+      "resolved_config": {
+        "command": "eslint src",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/core",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "TaskConfig"
+    },
+    "neighbors": [
+      [
+        "<workspace>/packages/core",
+        "clean"
+      ]
+    ]
+  },
+  {
+    "key": [
+      "<workspace>/packages/core",
+      "test"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/core",
+        "task_name": "test",
+        "package_path": "<workspace>/packages/core"
+      },
+      "resolved_config": {
+        "command": "echo 'Testing @test/core'",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/core",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "PackageJsonScript"
+    },
+    "neighbors": []
+  },
+  {
+    "key": [
+      "<workspace>/packages/utils",
+      "build"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/utils",
+        "task_name": "build",
+        "package_path": "<workspace>/packages/utils"
+      },
+      "resolved_config": {
+        "command": "echo 'Building @test/utils'",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/utils",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "PackageJsonScript"
+    },
+    "neighbors": []
+  },
+  {
+    "key": [
+      "<workspace>/packages/utils",
+      "lint"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/utils",
+        "task_name": "lint",
+        "package_path": "<workspace>/packages/utils"
+      },
+      "resolved_config": {
+        "command": "eslint src",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/utils",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "TaskConfig"
+    },
+    "neighbors": [
+      [
+        "<workspace>/packages/core",
+        "build"
+      ],
+      [
+        "<workspace>/packages/utils",
+        "build"
+      ]
+    ]
+  },
+  {
+    "key": [
+      "<workspace>/packages/utils",
+      "test"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "@test/utils",
+        "task_name": "test",
+        "package_path": "<workspace>/packages/utils"
+      },
+      "resolved_config": {
+        "command": "echo 'Testing @test/utils'",
+        "resolved_options": {
+          "cwd": "<workspace>/packages/utils",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "PackageJsonScript"
+    },
+    "neighbors": []
+  }
+]

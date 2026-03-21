@@ -6,11 +6,11 @@ import { LazyWriter } from '../src/manifest/manifest-types.js'
 import { dirname, join } from '../src/path.js'
 import { Random } from './test-utils.js'
 
-jest.mock('../src/fs.js', () => {
-  return { ...require('memfs') }
+vi.mock('../src/fs.js', async () => {
+  return await import('memfs')
 })
 
-jest.mock('../src/manifest/createLazyWriteStream.js', () => {
+vi.mock('../src/manifest/createLazyWriteStream.js', () => {
   function createLazyWriteStream(path: string): LazyWriter {
     let buffer = ''
     return {
@@ -633,9 +633,8 @@ async function runCreationTest(seed: number) {
 
 for (let i = 0; i < 100; i++) {
   const seed = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)
-  // eslint-disable-next-line jest/expect-expect
   test(`random test ${seed}`, async () => {
-    await runCreationTest(i)
+    await runCreationTest(seed)
   })
 }
 
@@ -728,7 +727,6 @@ async function runUpdateTest(seed: number) {
 
 for (let i = 0; i < 100; i++) {
   const seed = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)
-  // eslint-disable-next-line jest/expect-expect
   test(`random test ${seed}`, async () => {
     await runUpdateTest(seed)
   })

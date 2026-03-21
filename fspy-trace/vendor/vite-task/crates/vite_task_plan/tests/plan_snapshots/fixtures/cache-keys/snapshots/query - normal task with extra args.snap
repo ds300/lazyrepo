@@ -1,0 +1,91 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: "&plan_json"
+info:
+  args:
+    - run
+    - hello
+    - a.txt
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/cache-keys
+---
+[
+  {
+    "key": [
+      "<workspace>/",
+      "hello"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "",
+        "task_name": "hello",
+        "package_path": "<workspace>/"
+      },
+      "items": [
+        {
+          "execution_item_display": {
+            "task_display": {
+              "package_name": "",
+              "task_name": "hello",
+              "package_path": "<workspace>/"
+            },
+            "command": "print-file a.txt",
+            "and_item_index": null,
+            "cwd": "<workspace>/"
+          },
+          "kind": {
+            "Leaf": {
+              "Spawn": {
+                "cache_metadata": {
+                  "spawn_fingerprint": {
+                    "cwd": "",
+                    "program_fingerprint": {
+                      "OutsideWorkspace": {
+                        "program_name": "print-file"
+                      }
+                    },
+                    "args": [
+                      "a.txt"
+                    ],
+                    "env_fingerprints": {
+                      "fingerprinted_envs": {},
+                      "untracked_env_config": [
+                        "<default untracked envs>"
+                      ]
+                    }
+                  },
+                  "execution_cache_key": {
+                    "UserTask": {
+                      "task_name": "hello",
+                      "and_item_index": 0,
+                      "extra_args": [
+                        "a.txt"
+                      ],
+                      "package_path": ""
+                    }
+                  },
+                  "input_config": {
+                    "includes_auto": true,
+                    "positive_globs": [],
+                    "negative_globs": []
+                  }
+                },
+                "spawn_command": {
+                  "program_path": "<tools>/node_modules/.bin/print-file",
+                  "args": [
+                    "a.txt"
+                  ],
+                  "all_envs": {
+                    "NO_COLOR": "1",
+                    "PATH": "<workspace>/node_modules/.bin:<tools>/node_modules/.bin"
+                  },
+                  "cwd": "<workspace>/"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "neighbors": []
+  }
+]

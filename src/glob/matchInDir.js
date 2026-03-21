@@ -21,6 +21,7 @@ export function matchInDir(dir, options, matchers, result) {
 }
 
 const RECURSE = matcher('**', false, recursiveWildcardMatchFn)
+const NEGATED_RECURSE = matcher('**', true, recursiveWildcardMatchFn)
 
 // function createPerfTimer() {
 //   const timer = createTimer()
@@ -76,7 +77,6 @@ function matchDirEntry(entry, options, children, result) {
   let i = 0
   /** @type {Matcher | null} */
   let stashedMatcher = null
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     const matcher = stashedMatcher ?? children[i++]
     if (!matcher) break
@@ -92,6 +92,9 @@ function matchDirEntry(entry, options, children, result) {
     }
     if (match === 'terminal') {
       if (matcher.negating) {
+        if (entry instanceof LazyDir) {
+          nextChildren.push(NEGATED_RECURSE)
+        }
         // break early
         break
       }

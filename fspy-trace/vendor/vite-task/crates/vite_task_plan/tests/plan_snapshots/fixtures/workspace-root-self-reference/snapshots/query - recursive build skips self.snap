@@ -1,0 +1,17 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: "&compact_plan"
+info:
+  args:
+    - run
+    - "-r"
+    - build
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/workspace-root-self-reference
+---
+{
+  "#build": [],
+  "packages/a#build": [],
+  "packages/b#build": [
+    "packages/a#build"
+  ]
+}

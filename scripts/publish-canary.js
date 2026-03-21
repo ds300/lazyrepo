@@ -53,8 +53,16 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     exec(`npm config set registry https://registry.npmjs.org/`)
     exec(`npm whoami`)
 
+    // build fspy-trace and bundle it before publishing
+    exec('cargo build --release --manifest-path fspy-trace/Cargo.toml')
+    const suffix = process.platform === 'win32' ? '.exe' : ''
+    const { copyFileSync, unlinkSync } = await import('fs')
+    const binaryName = `fspy-trace${suffix}`
+    copyFileSync(`fspy-trace/target/release/${binaryName}`, `assets/${binaryName}`)
+
     exec(`npm version ${nextVersion} --no-git-tag-version`)
     exec(`npm publish --tag canary --access public`)
+    unlinkSync(`assets/${binaryName}`)
   } else {
     throw new Error('Invalid bump type provided')
   }

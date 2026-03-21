@@ -1,0 +1,6 @@
+{
+  "name": "@test/exec-api",
+  "scripts": {
+    "lint-task": "vt lint"
+  }
+}

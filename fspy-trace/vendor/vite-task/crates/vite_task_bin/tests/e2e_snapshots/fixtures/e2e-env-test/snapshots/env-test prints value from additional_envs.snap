@@ -1,0 +1,7 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+> vt run env-test -- SYNTHETIC_ENV_VAR test_value_from_synthesizer # prints env value
+$ vt env-test SYNTHETIC_ENV_VAR test_value_from_synthesizer
+test_value_from_synthesizer

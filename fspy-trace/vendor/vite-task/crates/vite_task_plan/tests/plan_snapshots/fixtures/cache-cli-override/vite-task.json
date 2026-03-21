@@ -1,0 +1,16 @@
+{
+  "cache": { "tasks": false },
+  "tasks": {
+    "build": {
+      "command": "print-file package.json"
+    },
+    "deploy": {
+      "command": "print-file vite-task.json",
+      "cache": false
+    },
+    "check": {
+      "command": "print-file package.json",
+      "cache": true
+    }
+  }
+}

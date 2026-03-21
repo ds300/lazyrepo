@@ -1,0 +1,7 @@
+{
+  "name": "additional-envs",
+  "private": true,
+  "scripts": {
+    "hello": "echo hello"
+  }
+}

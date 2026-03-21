@@ -1,0 +1,6 @@
+{
+  "name": "@test/cache-subcommand",
+  "scripts": {
+    "clean-cache": "vt cache clean"
+  }
+}

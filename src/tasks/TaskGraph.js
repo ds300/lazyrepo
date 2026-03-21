@@ -3,6 +3,7 @@ import { cpus } from 'os'
 import pc from 'picocolors'
 import { logger } from '../logger/logger.js'
 import { isAbsolute, join } from '../path.js'
+import { findFspyBinary } from '../tracking/findFspyBinary.js'
 import { isTest } from '../utils/isTest.js'
 import { uniq } from '../utils/uniq.js'
 import { runTaskIfNeeded } from './runTaskIfNeeded.js'
@@ -19,8 +20,8 @@ const numCpus = cpus().length
 const maxConcurrentTasks = process.env.__test__FORCE_PARALLEL
   ? 2
   : isTest
-  ? 1
-  : Math.max(1, numCpus - 1)
+    ? 1
+    : Math.max(1, numCpus - 1)
 
 /**
  * @typedef {Object} TaskGraphProps
@@ -45,12 +46,18 @@ export class TaskGraph {
    * @type {string[]}
    */
   sortedTaskKeys = []
+  /**
+   * @readonly
+   * @type {string}
+   */
+  fspyBinaryPath
 
   /**
    * @param {TaskGraphProps} arg
    */
   constructor({ config, requestedTasks }) {
     this.config = config
+    this.fspyBinaryPath = findFspyBinary()
 
     /**
      * @param {string[]} path
@@ -243,7 +250,6 @@ export class TaskGraph {
       const readyTasks = this.allReadyTaskKeys()
 
       if (runningTasks.length === 0 && readyTasks.length === 0) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return resolve(null)
       }
 
@@ -263,7 +269,6 @@ export class TaskGraph {
       for (let i = 0; i < numTasksToStart; i++) {
         const taskKey = readyTasks[i]
         this.allTasks[taskKey].status = 'running'
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         runTask(readyTasks[i])
       }
 
@@ -284,7 +289,6 @@ export class TaskGraph {
 
     tick()
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return await promise
   }
 }

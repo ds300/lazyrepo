@@ -1,0 +1,5 @@
+# Tests that fs.read('node:fs') with colon in filename works correctly
+
+[[e2e]]
+name = "read file with colon in name"
+steps = ["vt run read_colon_in_name # cache miss", "vt run read_colon_in_name # cache hit"]

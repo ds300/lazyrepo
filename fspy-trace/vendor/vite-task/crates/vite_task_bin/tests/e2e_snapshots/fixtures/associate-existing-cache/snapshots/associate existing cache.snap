@@ -1,0 +1,18 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+> vt run script1 # cache miss
+$ print hello
+hello
+> vt run script2 # cache hit, same command as script1
+$ print hello ◉ cache hit, replaying
+hello
+
+---
+vt run: cache hit, <duration> saved.
+> json-edit package.json '_.scripts.script2 = "print world"' # change script2
+
+> vt run script2 # cache miss
+$ print world ○ cache miss: args changed, executing
+world

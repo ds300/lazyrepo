@@ -87,9 +87,9 @@ test('when circular dependencies are detected an error is thrown', () => {
       requestedTasks: [makeTask('core-build', ['packages/core'])],
     })
   }).toThrowErrorMatchingInlineSnapshot(`
-    "Circular dependency detected: 
+    [Error: Circular dependency detected: 
     core-build::packages/core
-     -> core-build::packages/core"
+     -> core-build::packages/core]
   `)
 
   expect(() => {
@@ -105,10 +105,10 @@ test('when circular dependencies are detected an error is thrown', () => {
       requestedTasks: [makeTask('core-build', ['packages/core'])],
     })
   }).toThrowErrorMatchingInlineSnapshot(`
-    "Circular dependency detected: 
+    [Error: Circular dependency detected: 
     core-build::packages/core
      -> utils-build::packages/utils
-     -> core-build::packages/core"
+     -> core-build::packages/core]
   `)
 })
 

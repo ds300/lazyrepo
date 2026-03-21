@@ -1,0 +1,9 @@
+{
+  "cache": true,
+  "tasks": {
+    "build": {
+      "command": "vt run -r build",
+      "dependsOn": ["lint"]
+    }
+  }
+}

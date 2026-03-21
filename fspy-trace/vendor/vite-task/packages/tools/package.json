@@ -1,0 +1,22 @@
+{
+  "name": "vite-task-tools",
+  "private": true,
+  "bin": {
+    "check-tty": "./src/check-tty.js",
+    "json-edit": "./src/json-edit.ts",
+    "print": "./src/print.ts",
+    "print-env": "./src/print-env.js",
+    "print-file": "./src/print-file.ts",
+    "read-stdin": "./src/read-stdin.js",
+    "replace-file-content": "./src/replace-file-content.ts",
+    "touch-file": "./src/touch-file.ts"
+  },
+  "type": "module",
+  "dependencies": {
+    "cross-env": "^10.1.0",
+    "oxfmt": "0.41.0",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
+    "vite-task-tools": "link:"
+  }
+}

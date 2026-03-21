@@ -1,0 +1,8 @@
+{
+  "name": "pkg-a",
+  "scripts": {
+    "fail": "node -e \"process.exit(42)\"",
+    "check": "node -e \"process.exit(1)\"",
+    "chained": "node -e \"process.exit(3)\" && echo 'second'"
+  }
+}

@@ -1,0 +1,87 @@
+# Test glob base directory behavior
+# Globs are relative to PACKAGE directory, NOT task cwd
+# No special cross-package filtering - just normal relative path matching
+
+# 1. Root package - glob matches files in root's src/
+[[e2e]]
+name = "root glob - matches src files"
+steps = [
+  "vt run root-glob-test",
+  # Modify matched file
+  "replace-file-content src/root.ts initial modified",
+  # Cache miss: file matches glob
+  "vt run root-glob-test",
+]
+
+[[e2e]]
+name = "root glob - unmatched directory"
+steps = [
+  "vt run root-glob-test",
+  # Modify file outside glob pattern
+  "replace-file-content other/other.ts initial modified",
+  # Cache hit: file doesn't match glob
+  "vt run root-glob-test",
+]
+
+[[e2e]]
+name = "root glob - subpackage path unmatched by relative glob"
+steps = [
+  "vt run root-glob-test",
+  # Modify file in subpackage - relative glob src/** doesn't reach packages/sub-pkg/src/
+  "replace-file-content packages/sub-pkg/src/sub.ts initial modified",
+  # Cache hit: path simply doesn't match the relative glob pattern
+  "vt run root-glob-test",
+]
+
+# 2. Root package with custom cwd - glob still relative to package root
+[[e2e]]
+name = "root glob with cwd - glob relative to package not cwd"
+steps = [
+  "vt run root-glob-with-cwd",
+  # Modify file - glob is src/** relative to package root
+  "replace-file-content src/root.ts initial modified",
+  # Cache miss: file matches glob (relative to package, not cwd)
+  "vt run root-glob-with-cwd",
+]
+
+# 3. Subpackage - glob matches files in subpackage's src/
+[[e2e]]
+name = "subpackage glob - matches own src files"
+steps = [
+  "vt run sub-pkg#sub-glob-test",
+  # Modify matched file in subpackage
+  "replace-file-content packages/sub-pkg/src/sub.ts initial modified",
+  # Cache miss: file matches subpackage's glob
+  "vt run sub-pkg#sub-glob-test",
+]
+
+[[e2e]]
+name = "subpackage glob - unmatched directory in subpackage"
+steps = [
+  "vt run sub-pkg#sub-glob-test",
+  # Modify file outside glob pattern
+  "replace-file-content packages/sub-pkg/other/other.ts initial modified",
+  # Cache hit: file doesn't match glob
+  "vt run sub-pkg#sub-glob-test",
+]
+
+[[e2e]]
+name = "subpackage glob - root path unmatched by relative glob"
+steps = [
+  "vt run sub-pkg#sub-glob-test",
+  # Modify file in root - relative glob src/** is resolved from subpackage dir
+  "replace-file-content src/root.ts initial modified",
+  # Cache hit: path simply doesn't match the relative glob pattern
+  "vt run sub-pkg#sub-glob-test",
+]
+
+# 4. Subpackage with custom cwd - glob still relative to subpackage root
+[[e2e]]
+name = "subpackage glob with cwd - glob relative to package not cwd"
+steps = [
+  "vt run sub-pkg#sub-glob-with-cwd",
+  # Modify file - glob is src/** relative to subpackage root
+  "replace-file-content packages/sub-pkg/src/sub.ts initial modified",
+  # Cache miss: file matches glob (relative to subpackage, not cwd)
+  "vt run sub-pkg#sub-glob-with-cwd",
+]

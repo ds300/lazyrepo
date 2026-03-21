@@ -1,0 +1,6 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: err_str.as_ref()
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/cache-scripts-error-non-root
+---
+`cache` can only be set in the workspace root config, but found in <workspace>/packages/pkg-a

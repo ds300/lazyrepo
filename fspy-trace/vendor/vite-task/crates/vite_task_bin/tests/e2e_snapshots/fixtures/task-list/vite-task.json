@@ -1,0 +1,10 @@
+{
+  "tasks": {
+    "hello": {
+      "command": "echo hello from root"
+    },
+    "list-tasks": {
+      "command": "vt run"
+    }
+  }
+}

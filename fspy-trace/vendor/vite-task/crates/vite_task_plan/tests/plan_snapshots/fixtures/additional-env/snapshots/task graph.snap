@@ -1,0 +1,75 @@
+---
+source: crates/vite_task_plan/tests/plan_snapshots/main.rs
+expression: task_graph_json
+input_file: crates/vite_task_plan/tests/plan_snapshots/fixtures/additional-env
+---
+[
+  {
+    "key": [
+      "<workspace>/",
+      "env-test"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "additional-envs",
+        "task_name": "env-test",
+        "package_path": "<workspace>/"
+      },
+      "resolved_config": {
+        "command": "vt env-test TEST_VAR hello_world",
+        "resolved_options": {
+          "cwd": "<workspace>/",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "PackageJsonScript"
+    },
+    "neighbors": []
+  },
+  {
+    "key": [
+      "<workspace>/",
+      "hello"
+    ],
+    "node": {
+      "task_display": {
+        "package_name": "additional-envs",
+        "task_name": "hello",
+        "package_path": "<workspace>/"
+      },
+      "resolved_config": {
+        "command": "echo hello",
+        "resolved_options": {
+          "cwd": "<workspace>/",
+          "cache_config": {
+            "env_config": {
+              "fingerprinted_envs": [],
+              "untracked_env": [
+                "<default untracked envs>"
+              ]
+            },
+            "input_config": {
+              "includes_auto": true,
+              "positive_globs": [],
+              "negative_globs": []
+            }
+          }
+        }
+      },
+      "source": "PackageJsonScript"
+    },
+    "neighbors": []
+  }
+]

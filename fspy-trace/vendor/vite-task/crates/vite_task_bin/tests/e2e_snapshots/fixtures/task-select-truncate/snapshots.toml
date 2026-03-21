@@ -1,0 +1,18 @@
+# Interactive: long commands are truncated to terminal width (no line wrapping)
+[[e2e]]
+name = "interactive long command truncated"
+cwd = "packages/app"
+steps = [
+  { command = "vt run", interactions = [
+    { "expect-milestone" = "task-select::0" },
+    { "write-key" = "down" },
+    { "expect-milestone" = "task-select::1" },
+    { "write-key" = "down" },
+    { "expect-milestone" = "task-select::2" },
+    { "write-key" = "down" },
+    { "expect-milestone" = "task-select::3" },
+    { "write-key" = "up" },
+    { "expect-milestone" = "task-select::2" },
+    { "write-key" = "enter" },
+  ] },
+]

@@ -1,0 +1,6 @@
+{
+  "name": "@test/lib",
+  "scripts": {
+    "build": "print built-lib"
+  }
+}

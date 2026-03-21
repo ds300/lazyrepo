@@ -1,0 +1,8 @@
+{
+  "name": "@test/script-hooks-disabled",
+  "scripts": {
+    "pretest": "echo pretest",
+    "test": "echo test",
+    "posttest": "echo posttest"
+  }
+}

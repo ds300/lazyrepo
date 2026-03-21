@@ -1,0 +1,10 @@
+---
+source: crates/vite_task_bin/tests/e2e_snapshots/main.rs
+expression: e2e_outputs
+---
+> vt run env-test -- FOO bar # sets FOO=bar
+$ vt env-test FOO bar
+bar
+> vt run env-test -- BAZ qux # sets BAZ=qux
+$ vt env-test BAZ qux
+qux
