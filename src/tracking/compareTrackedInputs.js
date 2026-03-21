@@ -7,34 +7,10 @@ import { normalize, relative } from '../path.js'
  * @property {string} mode
  */
 
-const IGNORED_PATH_SEGMENTS = [
-  'node_modules',
-  '.git',
-  '/tmp/',
-  '/private/tmp/',
-  '/var/',
-  '/dev/',
-  '/proc/',
-  '/sys/',
-  '/etc/',
-  '/usr/lib/',
-  '/usr/share/',
-  '/System/',
-  '/Library/',
-  '/Applications/',
-  'fspy',
-]
-
 /**
- * @param {string} path
- * @returns {boolean}
- */
-function shouldIgnorePath(path) {
-  return IGNORED_PATH_SEGMENTS.some((segment) => path.includes(segment))
-}
-
-/**
- * Parse an fspy-trace JSON file and return sorted relative read paths.
+ * Parse an fspy-trace JSON file and return sorted relative read paths
+ * within the project root. Callers are responsible for applying any
+ * exclude patterns (e.g. node_modules, dist, .git).
  *
  * @param {string} trackingJsonPath - Path to the fspy-trace output JSON
  * @param {string} projectRoot - Absolute path to the project root
@@ -72,9 +48,6 @@ export function getTrackedReadPaths(trackingJsonPath, projectRoot) {
       process.platform === 'win32' ? normalizedAccessPath.toLowerCase() : normalizedAccessPath
 
     if (!comparableAccessPath.startsWith(comparableProjectRoot)) {
-      continue
-    }
-    if (shouldIgnorePath(normalizedAccessPath)) {
       continue
     }
     const relativePath = relative(normalizedProjectRoot, normalizedAccessPath)

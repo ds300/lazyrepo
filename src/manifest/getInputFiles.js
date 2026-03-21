@@ -72,7 +72,12 @@ export function getInputFiles(tasks, task, extraFiles) {
     excludes: expandedExcludes,
   })
 
-  const trackedFiles = loadPreviousTrackedFiles(taskConfig, rootDir, expandedExcludes)
+  const trackedFileExcludes = [
+    ...expandedExcludes,
+    join(rootDir, '**/node_modules/**'),
+    join(rootDir, '**/.git/**'),
+  ]
+  const trackedFiles = loadPreviousTrackedFiles(taskConfig, rootDir, trackedFileExcludes)
 
   return [...new Set([...localFiles, ...extraFiles, ...trackedFiles])].sort()
 }
