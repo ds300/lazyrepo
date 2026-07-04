@@ -2,7 +2,7 @@ import pc from 'picocolors'
 import stripAnsi from 'strip-ansi'
 import { cwd } from '../cwd.js'
 import { createLazyWriteStream } from '../manifest/createLazyWriteStream.js'
-import { join, relative } from '../path.js'
+import { delimiter, join, relative } from '../path.js'
 import { spawn } from './spawn.js'
 
 /**
@@ -33,9 +33,10 @@ export async function runTask(task, tasks) {
       stdio: [null],
       env: {
         ...process.env,
-        PATH: `./node_modules/.bin:${join(tasks.config.project.root.dir, 'node_modules/.bin')}:${
-          process.env.PATH ?? ''
-        }`,
+        PATH: `./node_modules/.bin${delimiter}${join(
+          tasks.config.project.root.dir,
+          'node_modules/.bin',
+        )}${delimiter}${process.env.PATH ?? ''}`,
         FORCE_COLOR: '1',
         npm_lifecycle_event: task.scriptName,
         __LAZY_WORKFLOW__: 'true',
