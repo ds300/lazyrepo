@@ -20,3 +20,5 @@ export const dirname = (...args) => slash(path.dirname(...args))
 export const basename = (...args) => slash(path.basename(...args))
 /** @type {typeof path.normalize} */
 export const normalize = (...args) => slash(path.normalize(...args))
+
+export const delimiter = path.delimiter
